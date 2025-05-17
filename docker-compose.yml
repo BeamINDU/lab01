@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  nextjs-app:
+    image: rag-frontend-v2
+    container_name: rag-frontend-v2
+    build:
+      context: .  # ใช้ root directory เป็น context
+      dockerfile: src/Dockerfile  # หาก Dockerfile อยู่ใน src/
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./:/app  # mount ทั้งโปรเจกต์
+      - /app/node_modules  # volume แยกสำหรับ node_modules เพื่อป้องกันการเขียนทับ
+    environment:
+      - NODE_ENV=development
+    command: npm run dev
+
+
