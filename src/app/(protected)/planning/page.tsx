@@ -16,11 +16,11 @@ import ExportButton from "@/app/components/common/ExportButton";
 import DataTable from "@/app/components/table/DataTable";
 import PlanningColumns from "./components/planning-column";
 import PlanningFilterForm from './components/planning-filter';
-// import PlanningFormModal from "./components/planning-form";
+import PlanningFormModal from "./components/planning-form";
 
 export default function Page() {
   const { hasPermission } = usePermission();
-  const { register, getValues, setValue, reset } = useForm();
+  const { register, getValues, setValue, reset, control } = useForm(); // เพิ่ม control ตรงนี้
   const [data, setData] = useState<Planning[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingData, setEditingData] = useState<Planning | null>(null);
@@ -36,9 +36,9 @@ export default function Page() {
       const param: ParamSearch = {
         dateFrom: formValues.dateFrom || '',
         dateTo: formValues.dateTo || '',
-        productId: formValues.status || '',
-        lotNo: formValues.notifyEmail || '',
-        lineId: formValues.notifyEmail || '',
+        productId: formValues.productId || '',
+        lotNo: formValues.lotNo || '',
+        lineId: formValues.lineId || '',
       };
       const products = await search(param);
       setData(products);
@@ -142,9 +142,10 @@ export default function Page() {
       <div className="p-4 mx-auto">
       <div className="mb-6 max-w-full text-sm">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Filters Form */}
+            {/* Filters Form - ส่ง control prop เพิ่มเติม */}
             <PlanningFilterForm 
-              register={register} 
+              register={register}
+              control={control} 
               onSearch={handleSearch} 
             />
             
@@ -204,7 +205,7 @@ export default function Page() {
         />
 
         {/* Add & Edit Modal */}
-        {/* {isFormModalOpen && (
+        {isFormModalOpen && (
           <PlanningFormModal
             canEdit={hasPermission(Menu.Planning, Action.Edit)}
             showModal={isFormModalOpen}
@@ -212,7 +213,7 @@ export default function Page() {
             editingData={editingData}
             onSave={handleSave}
           />
-        )} */}
+        )}
 
       </div>
     </>

@@ -9,10 +9,10 @@ import { User } from "@/app/types/user";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 const UserSchema = z.object({
-  userId: z.string().min(1, "รหัสผู้ใช้จำเป็นต้องระบุ"),
-  userName: z.string().min(1, "ชื่อผู้ใช้จำเป็นต้องระบุ"),
-  fullName: z.string().min(1, "ชื่อ-นามสกุลจำเป็นต้องระบุ"),
-  roleName: z.string().optional(),
+  userId: z.string().min(1, "User ID is required"),
+  userName: z.string().min(1, "Username is required"),
+  fullName: z.string().min(1, "Full name is required"),
+  roleName: z.string().min(1, "Role name is required"),
   status: z.number(),
   isCreateMode: z.boolean().optional(),
 }); 
@@ -96,7 +96,15 @@ export default function UserFormModal({
           <X className="text-red-500" size={20} />
         </button>
 
-        <h2 className="text-lg font-bold mb-4">{editingData && !editingData.isCreateMode ? 'Edit User' : 'Add User'}</h2>
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          {editingData
+            ? editingData.isCreateMode
+              ? 'Add User'
+              : canEdit
+                ? 'Edit User'
+                : 'Detail User'
+            : 'Add User'}
+        </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
@@ -111,7 +119,7 @@ export default function UserFormModal({
                 readOnly={editingData && !editingData.isCreateMode ? true : undefined}
               />
             </div>
-            {errors.userId && <p className="text-red-500 ml-110">{errors.userId.message}</p>}
+            {errors.userId && <p className="text-red-500 ml-160">{errors.userId.message}</p>}
           </div>
           
           <div className="mb-4">
@@ -119,7 +127,7 @@ export default function UserFormModal({
               <label className="font-normal w-32">User Name:</label>
               <input {...register("userName")} className="border p-2 w-full mb-1" />
             </div>
-            {errors.userName && <p className="text-red-500 ml-110">{errors.userName.message}</p>}
+            {errors.userName && <p className="text-red-500 ml-160">{errors.userName.message}</p>}
           </div>
           
           <div className="mb-4">
@@ -130,7 +138,7 @@ export default function UserFormModal({
                 className="border p-2 w-full mb-1"
               />
             </div>
-            {errors.fullName && <p className="text-red-500 ml-110">{errors.fullName.message}</p>}
+            {errors.fullName && <p className="text-red-500 ml-160">{errors.fullName.message}</p>}
           </div>
           
           <div className="mb-4">
@@ -141,7 +149,7 @@ export default function UserFormModal({
                 className="border p-2 w-full mb-1"
               />
             </div>
-            {errors.roleName && <p className="text-red-500 ml-110">{errors.roleName.message}</p>}
+            {errors.roleName && <p className="text-red-500 ml-160">{errors.roleName.message}</p>}
           </div>
           
           <div className="mb-4">

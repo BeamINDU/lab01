@@ -94,7 +94,15 @@ export default function RoleFormModal({
           <X className="text-red-500" size={20} />
         </button>
 
-        <h2 className="text-lg font-bold mb-4">{editingData && !editingData.isCreateMode ? 'Edit Role' : 'Add Role'}</h2>
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          {editingData
+            ? editingData.isCreateMode
+              ? 'Add Role'
+              : canEdit
+                ? 'Edit Role'
+                : 'Detail Role'
+            : 'Add Role'}
+        </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
@@ -109,7 +117,7 @@ export default function RoleFormModal({
                 readOnly={editingData && !editingData.isCreateMode ? true : undefined}
               />
             </div>
-            {errors.roleId && <p className="text-red-500 ml-110">{errors.roleId.message}</p>}
+            {errors.roleId && <p className="text-red-500 ml-160">{errors.roleId.message}</p>}
           </div>
           
           <div className="mb-4">
@@ -117,7 +125,7 @@ export default function RoleFormModal({
               <label className="font-normal w-32">Role Name:</label>
               <input {...register("roleName")} className="border p-2 w-full mb-1" />
             </div>
-            {errors.roleName && <p className="text-red-500 ml-110">{errors.roleName.message}</p>}
+            {errors.roleName && <p className="text-red-500 ml-160">{errors.roleName.message}</p>}
           </div>
           
           <div className="mb-4">
@@ -129,7 +137,7 @@ export default function RoleFormModal({
                 rows={3}
               />
             </div>
-            {errors.description && <p className="text-red-500 ml-110">{errors.description.message}</p>}
+            {errors.description && <p className="text-red-500 ml-160">{errors.description.message}</p>}
           </div>
           
           <div className="mb-4">

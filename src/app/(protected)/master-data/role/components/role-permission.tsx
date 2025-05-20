@@ -519,19 +519,23 @@ export default function RolePermissionModal({
   };
 
   return (
-<div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-  <div className="bg-white rounded-lg shadow-lg w-[600px] max-w-3xl overflow-hidden">
-    <div className="relative border-b p-4">
-      <h2 className="text-lg font-semibold text-center">Permission</h2>
-      <button 
-        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700" 
-        onClick={() => setShowModal(false)}
-      >
-        <X className="text-red-500" size={20} />
-      </button>
-    </div>
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+      <div className="bg-white p-6 rounded shadow-lg w-1/3 relative ">
+        <button
+          type="button"
+          className="absolute top-2 right-2 text-gray-600 hover:text-gray-900 "
+          onClick={() => setShowModal(false)}
+        >
+          <X className="text-red-500" size={20} />
+        </button>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="relative border-b">
+          <h2 className="text-2xl font-semibold text-center mb-4">
+            {editingData && !editingData.isCreateMode ? 'Edit Permission' : 'Add Permission'}
+          </h2>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('roleId')} value={editingData?.roleId || ''} />
           
           <div className="flex border-b">
@@ -562,7 +566,7 @@ export default function RolePermissionModal({
           </div>
           
           {/* Footer with buttons */}
-          <div className="flex justify-end gap-2 mt-4 px-4 py-3 bg-gray-50">
+          <div className="flex justify-end gap-2 mt-4">
             {canEdit && (
               <button
                 type="submit"

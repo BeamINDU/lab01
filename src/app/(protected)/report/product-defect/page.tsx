@@ -36,7 +36,7 @@ export default function Page() {
         dateTo: formValues.dateTo || '',
         productName: formValues.productName || '',
         defectType: formValues.defectType || '',
-        status: formValues.status || '',
+        cameraId: formValues.cameraId || '',
       };
       const products = await search(param);
       setData(products);
@@ -53,17 +53,11 @@ export default function Page() {
     const fileName = "Report_Product";
   
     switch (type) {
-      case ExportType.Text:
-        exportText(data, headers, keys, fileName);
-        break;
       case ExportType.CSV:
         exportCSV(data, headers, keys, fileName);
         break;
       case ExportType.Excel:
         exportExcel(data, headers, keys, fileName);
-        break;
-      case ExportType.Word:
-        exportWord(data, headers, keys, fileName);
         break;
     }
   };
@@ -71,8 +65,8 @@ export default function Page() {
   const handleDetail = async (row?: ReportProduct) => {
     try {
       if (row) {
-        const updatedRow = await detail(row.productId ?? "") as ProductDetail;
-        
+        const result = (await detail(row.productId ?? "")) ?? (row as ReportProduct);
+        const updatedRow = { ...result, isCreateMode: !row.productId };
         setEditingData(updatedRow);
       } else {
         reset();

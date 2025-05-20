@@ -15,10 +15,13 @@ const mockData: ProductType[] = Array.from({ length: 20 }, (_, i) => ({
 export const search = async (param?: ParamSearch) => { 
   if (!param) return mockData;
 
+  const parsedStatus = isNaN(Number(param.status)) ? undefined  : Number(param.status);
+
   return mockData.filter(item => {
     return (
       (!param.productTypeId || item.productTypeId.includes(param.productTypeId)) &&
-      (!param.productTypeName || item.productTypeName.includes(param.productTypeName))
+      (!param.productTypeName || item.productTypeName.includes(param.productTypeName)) &&
+      (parsedStatus === undefined || item.status === parsedStatus)
     );
   });
   // const productType = await api.get<ProductType[]>('/search')

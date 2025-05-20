@@ -11,7 +11,7 @@ const colors = ['#60a5fa', '#1d4ed8'];
 export default function GoodNgDonut() {
   return (
     <div className="p-4 bg-white rounded-xl shadow max-w-xs mx-auto">
-      <h2 className="text-base font-semibold text-center mb-2">
+      <h2 className="text-xl font-semibold text-center mb-1"> 
         Good / NG Ratio
       </h2>
       <ResponsiveContainer width="100%" height={150}>

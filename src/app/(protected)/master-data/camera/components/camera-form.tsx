@@ -31,7 +31,7 @@ export default function CameraFormModal({
   setShowModal,
   editingData,
   onSave,
-  canEdit
+  canEdit,
 }: CameraModalProps) {
   const { data: session } = useSession();
   const [isActive, setIsActive] = useState(true);
@@ -93,7 +93,15 @@ export default function CameraFormModal({
           <X className="text-red-500" size={20} />
         </button>
 
-        <h2 className="text-lg font-bold mb-4">{editingData && !editingData.isCreateMode ? 'Edit Camera' : 'Add Camera'}</h2>
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          {editingData
+            ? editingData.isCreateMode
+              ? 'Add Camera'
+              : canEdit
+                ? 'Edit Camera'
+                : 'Detail Camera'
+            : 'Add Camera'}
+        </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
@@ -108,7 +116,7 @@ export default function CameraFormModal({
                 readOnly={editingData && !editingData.isCreateMode ? true : undefined}
               />
             </div>
-            {errors.cameraId && <p className="text-red-500 ml-110">{errors.cameraId.message}</p>}
+            {errors.cameraId && <p className="text-red-500 ml-160">{errors.cameraId.message}</p>}
           </div>
           
           <div className="mb-4">
@@ -116,7 +124,7 @@ export default function CameraFormModal({
               <label className="font-normal w-32">Camera Name:</label>
               <input {...register("cameraName")} className="border p-2 w-full mb-1" />
             </div>
-            {errors.cameraName && <p className="text-red-500 ml-110">{errors.cameraName.message}</p>}
+            {errors.cameraName && <p className="text-red-500 ml-160">{errors.cameraName.message}</p>}
           </div>
           
           <div className="mb-4">
@@ -127,7 +135,7 @@ export default function CameraFormModal({
                 className="border p-2 w-full mb-1"
               />
             </div>
-            {errors.location && <p className="text-red-500 ml-110">{errors.location.message}</p>}
+            {errors.location && <p className="text-red-500 ml-160">{errors.location.message}</p>}
           </div>
           
           <div className="mb-4">
@@ -140,7 +148,7 @@ export default function CameraFormModal({
                 disabled={!canEdit}
               />
             </div>
-            {errors.status && <p className="text-red-500 ml-110">{errors.status.message}</p>}
+            {errors.status && <p className="text-red-500 ml-160">{errors.status.message}</p>}
           </div>
 
           <div className="flex justify-end gap-2 mt-4">

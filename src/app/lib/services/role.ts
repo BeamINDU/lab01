@@ -15,10 +15,13 @@ const mockData: Role[] = Array.from({ length: 20 }, (_, i) => ({
 export const search = async (param?: ParamSearch) => { 
   if (!param) return mockData;
 
+  const parsedStatus = isNaN(Number(param.status)) ? undefined  : Number(param.status);
+
   return mockData.filter(item => {
     return (
-      (!param.roleId || item.roleId.includes(param.roleId)) &&
-      (!param.roleName || item.roleName.includes(param.roleName))
+      (!param.roleId || item.roleId.toLowerCase().includes(param.roleId.toLowerCase())) &&
+      (!param.roleName || item.roleName.toLowerCase().includes(param.roleName.toLowerCase())) &&
+      (parsedStatus === undefined || item.status === parsedStatus)
     );
   });
   // const role = await api.get<Role[]>('/search')

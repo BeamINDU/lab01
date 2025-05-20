@@ -11,13 +11,25 @@ const mockData: ReportProduct[] = Array.from({ length: 20 }, (_, i) => ({
   cameraId: i % 2 === 0 ? "1" : "2",
 }))
 
+const removeTime = (date: Date) => {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+};
+
 export const search = async (param?: ParamSearch) => { 
   if (!param) return mockData;
 
+  const parsedStartDate = param.dateFrom ? removeTime(new Date(param.dateFrom)) : undefined;
+  const parsedEndDate = param.dateTo ? removeTime(new Date(param.dateTo)) : undefined;
+  // const parsedStatus = isNaN(Number(param.status)) ? undefined  : Number(param.status);
+
   return mockData.filter(item => {
     return (
-      (!param.productName || item.productId.includes(param.productName)) &&
-      (!param.defectType || item.defectType.toLowerCase().includes(param.defectType.toLowerCase()))
+      (parsedStartDate ? removeTime(item.datetime) >= parsedStartDate : true) &&
+      (parsedEndDate ? removeTime(item.datetime) <= parsedEndDate : true) &&
+      (!param.productName || item.productName.toLowerCase().includes(param.productName.toLowerCase())) &&
+      (!param.defectType || item.defectType.toLowerCase().includes(param.defectType.toLowerCase())) &&
+      (!param.cameraId || item.cameraId.toLowerCase().includes(param.cameraId.toLowerCase()))
+      // (parsedStatus === undefined || item.status === parsedStatus)
     );
   });
   // const product = await api.get<Product[]>('/search')

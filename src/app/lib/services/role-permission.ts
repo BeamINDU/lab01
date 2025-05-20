@@ -23,8 +23,8 @@ const allMenuData: UserPermission[] = [
   { menuId: "RP001", parentId: "RP000", menuName: "Product Defect Result", icon: "", seq: 1, path: "/report/product-defect", actions: [1, 6] },
   { menuId: "RP002", parentId: "RP000", menuName: "Defect Summary", icon: "", seq: 2, path: "/report/defect-summary", actions: [1, 6] },
   { menuId: "RP003", parentId: "RP000", menuName: "Transaction", icon: "", seq: 3, path: "/report/transaction", actions: [1, 6] },
-  { menuId: "DM000", parentId: "", menuName: "Detection Model", icon: "", seq: 5, path: "/detection-model", actions: [1, 2, 3, 4] },
   { menuId: "PL000", parentId: "", menuName: "Planning", icon: "", seq: 6, path: "/planning", actions: [1, 2, 3, 4, 5, 6] },
+  { menuId: "DM000", parentId: "", menuName: "Detection Model", icon: "", seq: 5, path: "/detection-model", actions: [1, 2, 3, 4] },
 ];
 
 /**

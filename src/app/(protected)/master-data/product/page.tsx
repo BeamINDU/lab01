@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Trash2 } from 'lucide-react'
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import { toastSuccess, toastError } from '@/app/utils/toast';
 import { exportText, exportExcel, exportWord, exportCSV } from "@/app/lib/export";
 import { ExportType } from '@/app/lib/constants/export-type';
 import { Product, ParamSearch } from "@/app/types/product"
@@ -38,6 +37,7 @@ export default function Page() {
         productName: formValues.productName || '',
         productType: formValues.productType || '',
         serialNo: formValues.SerialNo || '',
+        status: formValues.status !== undefined ? formValues.status : undefined,
       };
       const products = await search(param);
       setData(products);
@@ -54,17 +54,11 @@ export default function Page() {
     const fileName = "Product";
   
     switch (type) {
-      case ExportType.Text:
-        exportText(data, headers, keys, fileName);
-        break;
       case ExportType.CSV:
         exportCSV(data, headers, keys, fileName);
         break;
       case ExportType.Excel:
         exportExcel(data, headers, keys, fileName);
-        break;
-      case ExportType.Word:
-        exportWord(data, headers, keys, fileName);
         break;
     }
   };
@@ -83,7 +77,7 @@ export default function Page() {
   const handleAddEdit = async (row?: Product) => {
     try {
       if (row) {
-        const result = await detail(row.productId ?? "") as Product;
+        const result = (await detail(row.productId ?? "")) ?? (row as Product);
         const updatedRow = { ...result, isCreateMode: !row.productId };
         setEditingData(updatedRow);
       } else {
@@ -106,7 +100,6 @@ export default function Page() {
         }
         setData(prev => prev.filter(item => !selectedIds.includes(item.productId ?? "")));
         setSelectedIds([]);
-        toastSuccess(`Deleted successfully`);
         showSuccess(`Deleted successfully`)
       } catch (error) {
         console.error('Delete operation failed:', error);
@@ -124,7 +117,6 @@ export default function Page() {
         const updatedData = await update(formData) as Product;
         setData(prev => prev.map(item => (item.productId === formData.productId ? updatedData : item)));
       }
-      toastSuccess(`Saved successfully`);
       showSuccess(`Saved successfully`)
     } catch (error) {
       console.error('Save operation failed:', error);

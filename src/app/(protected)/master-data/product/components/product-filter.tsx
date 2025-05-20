@@ -54,7 +54,7 @@ export default function ProductFilterForm({ register, onSearch }: ProductFilterF
         <div className="grid grid-cols-[100px_1fr] items-center gap-2">
           <label className="font-semibold w-[120px]">Status</label>
           <select
-            {...register("status")}
+            {...register("status", { valueAsNumber: true })}
             className="rounded px-3 py-2 border border-gray-300 w-full"
           >
             <option value="">All</option>

@@ -8,6 +8,7 @@ export type  ReportDefect = {
 }
 
 export type ParamSearch = {
-  lotNo: string
-  productType: string
+  lotNo?: string
+  productType?: string
+  defectType?: string
 }

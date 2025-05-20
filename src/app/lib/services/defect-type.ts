@@ -16,8 +16,8 @@ export const search = async (param?: ParamSearch) => {
 
   return mockData.filter(item => {
     return (
-      (!param.defectTypeId || item.defectTypeId.includes(param.defectTypeId)) &&
-      (!param.defectTypeName || item.defectTypeName.includes(param.defectTypeName))
+      (!param.defectTypeId || item.defectTypeId.toLowerCase().includes(param.defectTypeId.toLowerCase())) &&
+      (!param.defectTypeName || item.defectTypeName.toLowerCase().includes(param.defectTypeName.toLowerCase()))
     );
   });
   // const defectType = await api.get<DefectType[]>('/search')

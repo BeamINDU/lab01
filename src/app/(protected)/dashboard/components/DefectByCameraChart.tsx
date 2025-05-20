@@ -21,7 +21,7 @@ export default function DefectByCameraChart() {
 
   return (
     <div className="bg-white rounded-xl shadow p-4 h-full">
-      <h2 className="text-lg font-semibold text-center mb-4">
+      <h2 className="text-xl font-semibold text-center mb-4">
         Defects by Camera
       </h2>
       <div className="h-60">

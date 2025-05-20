@@ -15,12 +15,14 @@ const mockData: Camera[] = Array.from({ length: 20 }, (_, i) => ({
 export const search = async (param?: ParamSearch) => { 
   if (!param) return mockData;
 
+  const parsedStatus = isNaN(Number(param.status)) ? undefined  : Number(param.status);
+
   return mockData.filter(item => {
     return (
-      (!param.cameraId || item.cameraName.includes(param.cameraId)) &&
-      (!param.cameraName || item.cameraName.includes(param.cameraName)) &&
-      (!param.location || item.cameraName.includes(param.location)) &&
-      (!param.status || item.cameraName.includes(param.status))
+      (!param.cameraId || item.cameraId.toLowerCase().includes(param.cameraId.toLowerCase())) &&
+      (!param.cameraName || item.cameraName.toLowerCase().includes(param.cameraName.toLowerCase())) &&
+      (!param.location || item.location.toLowerCase().includes(param.location.toLowerCase())) &&
+      (parsedStatus === undefined || item.status === parsedStatus)
     );
   });
   // const camera = await api.get<Camera[]>('/search')

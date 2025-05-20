@@ -38,8 +38,8 @@ export type ParamSearch = {
 }
 
 export type ParamUpdate = {
-  productId: string
-  status: string
+  productId?: string
+  status?: string
   comment?: string,
   updatedBy?: string
 }

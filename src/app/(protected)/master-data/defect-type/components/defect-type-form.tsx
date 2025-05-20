@@ -83,7 +83,15 @@ export default function DefectTypeFormModal({
           <X className="text-red-500" size={20} />
         </button>
 
-        <h2 className="text-lg font-bold mb-4">{editingData && !editingData.isCreateMode ? 'Edit Defect Type' : 'Add Defect Type'}</h2>
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          {editingData
+            ? editingData.isCreateMode
+              ? 'Add Defect Type'
+              : canEdit
+                ? 'Edit Defect Type'
+                : 'Detail Defect Type'
+            : 'Add Defect Type'}
+        </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
@@ -97,7 +105,7 @@ export default function DefectTypeFormModal({
                 className="border p-2 w-full mb-1" 
               />
             </div>
-            {errors.defectTypeId && <p className="text-red-500 ml-110">{errors.defectTypeId.message}</p>}
+            {errors.defectTypeId && <p className="text-red-500 ml-160">{errors.defectTypeId.message}</p>}
           </div>
           
           <div className="mb-4">
@@ -105,7 +113,7 @@ export default function DefectTypeFormModal({
               <label className="font-normal w-32">Defect Type Name:</label>
               <input {...register("defectTypeName")} className="border p-2 w-full mb-1" />
             </div>
-            {errors.defectTypeName && <p className="text-red-500 ml-110">{errors.defectTypeName.message}</p>}
+            {errors.defectTypeName && <p className="text-red-500 ml-160">{errors.defectTypeName.message}</p>}
           </div>
           
           <div className="mb-4">
@@ -117,7 +125,7 @@ export default function DefectTypeFormModal({
                 rows={3}
               />
             </div>
-            {errors.description && <p className="text-red-500 ml-110">{errors.description.message}</p>}
+            {errors.description && <p className="text-red-500 ml-160">{errors.description.message}</p>}
           </div>
 
           <div className="flex justify-end gap-2 mt-4">

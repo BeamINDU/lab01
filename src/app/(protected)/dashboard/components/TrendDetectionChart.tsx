@@ -15,7 +15,7 @@ export default function TrendDetectionChart() {
       <h2 className="text-xl font-semibold text-center mb-4">
         Trend of Top 5 Detection Types
       </h2>
-      <LineChart data={data} width={460} height={270}>
+      <LineChart data={data} width={460} height={280}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="time" />
         <YAxis label={{ value: 'Quantity', angle: -90 }} />

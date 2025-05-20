@@ -98,7 +98,15 @@ export default function ProductFormModal({
           <X className="text-red-500" size={20} />
         </button>
 
-        <h2 className="text-lg font-bold mb-4">{editingData ? 'Edit Product' : 'Add Product'}</h2>
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          {editingData
+            ? editingData.isCreateMode
+              ? 'Add Product'
+              : canEdit
+                ? 'Edit Product'
+                : 'Detail Product'
+            : 'Add Product'}
+        </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
@@ -108,7 +116,7 @@ export default function ProductFormModal({
               <label className="font-normal w-32">Production ID</label>
               <input {...register("productId")} className="border p-2 w-full mb-1" />
             </div>
-            {errors.productId && <p className="text-red-500 ml-110">{errors.productId.message}</p>}
+            {errors.productId && <p className="text-red-500 ml-160">{errors.productId.message}</p>}
           </div>
           
           <div className="mb-4">
@@ -116,21 +124,21 @@ export default function ProductFormModal({
               <label className="font-normal w-32">Product Name:</label>
               <input {...register("productName")} className="border p-2 w-full mb-1" />
             </div>
-            {errors.productName && <p className="text-red-500 ml-110">{errors.productName.message}</p>}
+            {errors.productName && <p className="text-red-500 ml-160">{errors.productName.message}</p>}
           </div>
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Product Type:</label>
               <input {...register("productType")} className="border p-2 w-full mb-1" />
             </div>
-            {errors.productType && <p className="text-red-500 ml-110">{errors.productType.message}</p>}
+            {errors.productType && <p className="text-red-500 ml-160">{errors.productType.message}</p>}
           </div>
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Serial No:</label>
               <input {...register("serialNo")} className="border p-2 w-full mb-1" autoComplete="new-password" />
             </div>
-            {errors.serialNo && <p className="text-red-500 ml-110">{errors.serialNo.message}</p>}
+            {errors.serialNo && <p className="text-red-500 ml-160">{errors.serialNo.message}</p>}
           </div>
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">

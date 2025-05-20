@@ -15,8 +15,9 @@ export const search = async (param?: ParamSearch) => {
 
   return mockData.filter(item => {
     return (
-      (!param.lotNo || item.lotNo.includes(param.lotNo)) &&
-      (!param.productType || item.productType.toLowerCase().includes(param.productType.toLowerCase()))
+      (!param.lotNo || item.lotNo.toLowerCase().includes(param.lotNo.toLowerCase())) &&
+      (!param.productType || item.productType.toLowerCase().includes(param.productType.toLowerCase())) &&
+      (!param.defectType || item.defectType.toLowerCase().includes(param.defectType.toLowerCase())) 
     );
   });
   // const product = await api.get<Product[]>('/search')

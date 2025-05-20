@@ -23,6 +23,8 @@ COPY ../fontawesome.js ./
 
 # Install dependencies
 RUN npm install --legacy-peer-deps
+RUN npm install @mui/x-date-pickers @mui/material @emotion/react @emotion/styled dayjs
+RUN npm install react-image-annotate
 
 # ? COPY source code **after** installing dependencies to avoid overwriting node_modules
 COPY . .

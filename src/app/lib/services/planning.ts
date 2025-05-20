@@ -13,13 +13,23 @@ const mockData: Planning[] = Array.from({ length: 20 }, (_, i) => ({
   updatedBy: 'admin',
 }))
 
+const removeTime = (date: Date) => {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+};
+
 export const search = async (param?: ParamSearch) => { 
   if (!param) return mockData;
 
+  const parsedStartDate = param.dateFrom ? removeTime(new Date(param.dateFrom)) : undefined;
+  const parsedEndDate = param.dateTo ? removeTime(new Date(param.dateTo)) : undefined;
+
   return mockData.filter(item => {
     return (
-      (!param.productId || item.productId.includes(param.productId)) &&
-      (!param.lotNo || item.lotNo.includes(param.lotNo))
+      (parsedStartDate ? removeTime(item.startDate) >= parsedStartDate : true) &&
+      (parsedEndDate ? removeTime(item.endDate) <= parsedEndDate : true) &&
+      (!param.productId || item.productId.toLowerCase().includes(param.productId.toLowerCase())) &&
+      (!param.lotNo || item.lotNo.toLowerCase().includes(param.lotNo.toLowerCase())) &&
+      (!param.lineId || item.lineId.toLowerCase().includes(param.lineId.toLowerCase()))
     );
   });
   // const planningId = await api.get<Planning[]>('/search')

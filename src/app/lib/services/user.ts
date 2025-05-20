@@ -16,10 +16,14 @@ const mockData: User[] = Array.from({ length: 20 }, (_, i) => ({
 export const search = async (param?: ParamSearch) => { 
   if (!param) return mockData;
 
+  const parsedStatus = isNaN(Number(param.status)) ? undefined  : Number(param.status);
+
   return mockData.filter(item => {
     return (
-      (!param.userId || item.userId.includes(param.userId)) &&
-      (!param.userName || item.userName.includes(param.userName))
+      (!param.userId || item.userId.toLowerCase().includes(param.userId.toLowerCase())) &&
+      (!param.userName || item.userName.toLowerCase().includes(param.userName.toLowerCase())) &&
+      (!param.roleName || item.roleName?.toLowerCase().includes(param.roleName.toLowerCase())) &&
+      (parsedStatus === undefined || item.status === parsedStatus)
     );
   });
   // const User = await api.get<User[]>('/search')

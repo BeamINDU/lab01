@@ -76,7 +76,9 @@ export default function ProductFormModal({
           <X className="text-red-500" size={20} />
         </button>
 
-        <h2 className="text-lg font-bold mb-4">Product Detail</h2>
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          Product Detail
+        </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>

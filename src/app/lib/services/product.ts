@@ -1,7 +1,7 @@
 import { api } from '@/app/utils/api'
 import type { Product, ParamSearch } from "@/app/types/product"
 
-const mockData: Product[] = Array.from({ length: 5 }, (_, i) => ({
+const mockData: Product[] = Array.from({ length: 20 }, (_, i) => ({
   productId: `PROD${i+1}`,
   productName: i % 2 === 0 ? 'Grape' : 'Orange',
   productType: 'Bottle',
@@ -16,12 +16,15 @@ const mockData: Product[] = Array.from({ length: 5 }, (_, i) => ({
 export const search = async (param?: ParamSearch) => { 
   if (!param) return mockData;
 
+  const parsedStatus = isNaN(Number(param.status)) ? undefined  : Number(param.status);
+
   return mockData.filter(item => {
     return (
-      (!param.productId || item.productId.includes(param.productId)) &&
+      (!param.productId || item.productId.toLowerCase().includes(param.productId.toLowerCase())) &&
       (!param.productName || item.productName.toLowerCase().includes(param.productName.toLowerCase())) &&
       (!param.productType || item.productType.toLowerCase().includes(param.productType.toLowerCase())) &&
-      (!param.serialNo || item.serialNo.includes(param.serialNo))
+      (!param.serialNo || item.serialNo.toLowerCase().includes(param.serialNo.toLowerCase())) &&
+      (parsedStatus === undefined || item.status === parsedStatus)
     );
   });
   // const product = await api.get<Product[]>('/search')

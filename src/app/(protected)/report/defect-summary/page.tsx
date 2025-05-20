@@ -35,6 +35,7 @@ export default function Page() {
       const param: ParamSearch = {
         lotNo: formValues.lotNo || '',
         productType: formValues.productType || '',
+        defectType: formValues.defectType || '',
       };
       const products = await search(param);
       setData(products);
@@ -51,17 +52,11 @@ export default function Page() {
     const fileName = "Report_Defect_Summary";
   
     switch (type) {
-      case ExportType.Text:
-        exportText(data, headers, keys, fileName);
-        break;
       case ExportType.CSV:
         exportCSV(data, headers, keys, fileName);
         break;
       case ExportType.Excel:
         exportExcel(data, headers, keys, fileName);
-        break;
-      case ExportType.Word:
-        exportWord(data, headers, keys, fileName);
         break;
     }
   };

@@ -37,7 +37,7 @@ export default function Page() {
         cameraId: formValues.cameraId || '',
         cameraName: formValues.cameraName || '',
         location: formValues.location || '',
-        status: formValues.status || '',
+        status: formValues.status !== undefined ? formValues.status : undefined,
       };
       const products = await search(param);
       setData(products);
@@ -54,17 +54,11 @@ export default function Page() {
     const fileName = "Product";
 
     switch (type) {
-      case ExportType.Text:
-        exportText(data, headers, keys, fileName);
-        break;
       case ExportType.CSV:
         exportCSV(data, headers, keys, fileName);
         break;
       case ExportType.Excel:
         exportExcel(data, headers, keys, fileName);
-        break;
-      case ExportType.Word:
-        exportWord(data, headers, keys, fileName);
         break;
     }
   };
@@ -83,7 +77,7 @@ export default function Page() {
   const handleAddEdit = async (row?: Camera) => {
     try {
       if (row) {
-        const result = await detail(row.cameraId ?? "") as Camera;
+        const result = (await detail(row.cameraId ?? "")) ?? (row as Camera);
         const updatedRow = { ...result, isCreateMode: !row.cameraId };
         setEditingData(updatedRow);
       } else {
@@ -118,7 +112,8 @@ export default function Page() {
     try {
       if (formData.isCreateMode) {
         const newData = await create(formData) as Camera;
-        setData(prev => [...prev, newData]);
+        const newDataWithFlag: Camera = { ...newData, isCreateMode: false };
+        setData(prev => [...prev, newDataWithFlag]);
       } else {
         const updatedData = await update(formData) as Camera;
         setData(prev => prev.map(item => (item.cameraId === formData.cameraId ? updatedData : item)));

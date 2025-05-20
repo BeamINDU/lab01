@@ -94,7 +94,15 @@ export default function ProductTypeFormModal({
           <X className="text-red-500" size={20} />
         </button>
 
-        <h2 className="text-lg font-bold mb-4">{editingData && !editingData.isCreateMode ? 'Edit Product Type' : 'Add Product Type'}</h2>
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          {editingData
+            ? editingData.isCreateMode
+              ? 'Add Product Type'
+              : canEdit
+                ? 'Edit Product Type'
+                : 'Detail Product Type'
+            : 'Add Product Type'}
+        </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
@@ -108,7 +116,7 @@ export default function ProductTypeFormModal({
                 className="border p-2 w-full mb-1" 
               />
             </div>
-            {errors.productTypeId && <p className="text-red-500 ml-110">{errors.productTypeId.message?.toString()}</p>}
+            {errors.productTypeId && <p className="text-red-500 ml-160">{errors.productTypeId.message?.toString()}</p>}
           </div>
           
           <div className="mb-4">
@@ -116,7 +124,7 @@ export default function ProductTypeFormModal({
             <label className="font-normal">Product Type Name:</label>
             <input {...register("productTypeName")} className="border p-2 w-full mb-1" />
           </div>
-            {errors.productTypeName && <p className="text-red-500 ml-110">{errors.productTypeName.message?.toString()}</p>}
+            {errors.productTypeName && <p className="text-red-500 ml-160">{errors.productTypeName.message?.toString()}</p>}
           </div>
           
           <div className="mb-4">
@@ -128,7 +136,7 @@ export default function ProductTypeFormModal({
                 rows={3}
               />
             </div>
-            {errors.description && <p className="text-red-500 ml-110">{errors.description.message?.toString()}</p>}
+            {errors.description && <p className="text-red-500 ml-160">{errors.description.message?.toString()}</p>}
           </div>
           
           <div className="mb-4">

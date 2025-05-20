@@ -97,16 +97,16 @@ export default function productColumns({
       header: "Product Name",
     },
     {
-      accessorKey: "status",
-      header: "Status",
-    },
-    {
       accessorKey: "defectType",
       header: "Defect Type",
     },
     {
       accessorKey: "cameraId",
       header: "Camera ID",
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
     },
     {
       id: "actions",

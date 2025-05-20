@@ -28,10 +28,10 @@ export default function Page() {
     try {
       const formValues = getValues();
       const param: ParamSearch = {
+        dateFrom: formValues.dateFrom || '',
+        dateTo: formValues.dateTo || '',
         lotNo: formValues.lotNo || '',
         productId: formValues.productId || '',
-        dateFrom: formValues.dateFrom || '',
-        dateTo: formValues.dateTo || ''
       };
       const products = await search(param);
       setData(products);
@@ -48,17 +48,11 @@ export default function Page() {
     const fileName = "Transaction";
   
     switch (type) {
-      case ExportType.Text:
-        exportText(data, headers, keys, fileName);
-        break;
       case ExportType.CSV:
         exportCSV(data, headers, keys, fileName);
         break;
       case ExportType.Excel:
         exportExcel(data, headers, keys, fileName);
-        break;
-      case ExportType.Word:
-        exportWord(data, headers, keys, fileName);
         break;
     }
   };

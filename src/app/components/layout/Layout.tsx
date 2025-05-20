@@ -9,15 +9,23 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="flex h-screen bg-[#F4F4F4]">
+    <>
       <ToastNotifications /> 
+
       <NextTopLoader />
-      <Sidebar />
-      <div className="flex flex-col flex-1 overflow-hidden">
-        <Navbar />
-        <main className="flex-1 p-4 overflow-auto">{children}</main>
+
+      <Navbar />
+
+      <div className="min-h-[7px] bg-[#38BDF8]" />
+
+      <div className="grid grid-cols-[230px_1fr] mt-0 gap-6">
+        <Sidebar />
+
+        <div className="bg-[#F4F4F4]">
+          <main className="flex-1 p-4 overflow-auto">{children}</main>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
  

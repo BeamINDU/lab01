@@ -16,5 +16,5 @@ export type ParamSearch = {
   dateTo?: Date,
   productId?: string,
   lotNo?: string,
-  lineId?: number,
+  lineId?: string,
 }

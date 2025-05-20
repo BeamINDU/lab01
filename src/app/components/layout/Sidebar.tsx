@@ -113,7 +113,7 @@ const Sidebar = () => {
   if (loading) return <div>Loading menu...</div>;
 
   return (
-    <aside className="w-64 bg-white h-screen border-r overflow-y-auto py-4">
+    <aside className="bg-white overflow-y-auto py-2 w-64 h-[calc(100vh-80px)] ">
       <nav className="space-y-2 px-2">
         {renderMenu(menuTree)}
       </nav>
