@@ -14,6 +14,7 @@ import dayjs from 'dayjs';
 
 
 const PlanningSchema = z.object({
+  planId: z.string().min(1, "Plan ID is required"),
   productId: z.string().min(1, "Product ID is required"),
   lotNo: z.string().min(1, "Lot No is required"),
   lineId: z.string().min(1, "Line ID is required"),
@@ -49,6 +50,7 @@ export default function PlanningFormModal({
   };
 
   const defaultValues: PlanningFormValues = {
+    planId: '',
     productId: '',
     lotNo: '',
     lineId: '',
@@ -118,12 +120,21 @@ export default function PlanningFormModal({
           <X className="text-red-500" size={20} />
         </button>
 
-        <h2 className="text-lg font-bold mb-4">{editingData && !editingData.isCreateMode ? 'Edit Planning' : 'Add Planning'}</h2>
+        <h2 className="text-2xl font-semibold text-center mb-6">{editingData && !editingData.isCreateMode ? 'Edit Planning' : 'Add Planning'}</h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('isCreateMode')} />
-          
+            <div className="mb-4">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Plan ID:</label>
+              <input 
+                {...register("planId")} 
+                className="border p-2 w-full mb-1 bg-white"
+              />
+            </div>
+            {errors.productId && <p className="text-red-500 ml-160">{errors.productId.message}</p>}
+          </div>
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Product ID:</label>

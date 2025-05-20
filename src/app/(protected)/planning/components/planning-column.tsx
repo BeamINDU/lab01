@@ -76,8 +76,12 @@ export default function PlanningColumns({
       enableSorting: false,
     },
     {
+      accessorKey: "planId", 
+      header: "Plan ID",
+    },
+    {
       accessorKey: "productId",
-      header: "Product ID",
+      header: "Products ID",
     },
     {
       accessorKey: "lotNo",

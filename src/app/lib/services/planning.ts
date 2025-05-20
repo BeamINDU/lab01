@@ -3,6 +3,7 @@ import type { Planning, ParamSearch } from "@/app/types/planning"
 
 const mockData: Planning[] = Array.from({ length: 20 }, (_, i) => ({
   productId: `PRD${i+1}`,
+  planId: `PLAN-${i+1}`,
   lotNo: `LOT-${i+1}`,
   lineId:`Line ${i+1}`,
   startDate: new Date(),
@@ -27,6 +28,7 @@ export const search = async (param?: ParamSearch) => {
     return (
       (parsedStartDate ? removeTime(item.startDate) >= parsedStartDate : true) &&
       (parsedEndDate ? removeTime(item.endDate) <= parsedEndDate : true) &&
+      (!param.planId || item.planId.includes(param.planId)) && 
       (!param.productId || item.productId.toLowerCase().includes(param.productId.toLowerCase())) &&
       (!param.lotNo || item.lotNo.toLowerCase().includes(param.lotNo.toLowerCase())) &&
       (!param.lineId || item.lineId.toLowerCase().includes(param.lineId.toLowerCase()))

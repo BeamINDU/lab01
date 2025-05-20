@@ -20,7 +20,7 @@ import PlanningFormModal from "./components/planning-form";
 
 export default function Page() {
   const { hasPermission } = usePermission();
-  const { register, getValues, setValue, reset, control } = useForm(); // เพิ่ม control ตรงนี้
+  const { register, getValues, setValue, reset ,control} = useForm();
   const [data, setData] = useState<Planning[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingData, setEditingData] = useState<Planning | null>(null);
@@ -34,6 +34,7 @@ export default function Page() {
     try {
       const formValues = getValues();
       const param: ParamSearch = {
+        planId: formValues.planId || '',
         dateFrom: formValues.dateFrom || '',
         dateTo: formValues.dateTo || '',
         productId: formValues.productId || '',
@@ -50,8 +51,8 @@ export default function Page() {
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["Product ID", "Lot No", "Line ID", "Start Date", "End Date"];
-    const keys: (keyof Planning)[] = ["productId", "lotNo", "lineId", "startDate", "endDate"];
+    const headers = ["Plan ID", "Product ID", "Lot No", "Line ID", "Start Date", "End Date"];
+    const keys: (keyof Planning)[] = ["planId", "productId", "lotNo", "lineId", "startDate", "endDate"];
     const fileName = "Planning";
   
     switch (type) {
@@ -84,7 +85,7 @@ export default function Page() {
   const handleAddEdit = async (row?: Planning) => {
     try {
       if (row) {
-        const updatedRow = await detail(row.productId ?? "") as Planning;;
+        const updatedRow = await detail(row.productId ?? "") as Planning;
         setEditingData(updatedRow);
       } else {
         reset();
@@ -142,10 +143,10 @@ export default function Page() {
       <div className="p-4 mx-auto">
       <div className="mb-6 max-w-full text-sm">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Filters Form - ส่ง control prop เพิ่มเติม */}
+            {/* Filters Form */}
             <PlanningFilterForm 
-              register={register}
-              control={control} 
+              register={register} 
+              control={control}
               onSearch={handleSearch} 
             />
             
@@ -201,7 +202,7 @@ export default function Page() {
           })}
           data={data}
           selectedIds={selectedIds}
-          defaultSorting={[{ id: "productId", desc: false }]}
+          defaultSorting={[{ id: "planId", desc: false }]}
         />
 
         {/* Add & Edit Modal */}

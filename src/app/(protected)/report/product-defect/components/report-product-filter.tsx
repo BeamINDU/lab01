@@ -15,7 +15,7 @@ interface ReportProductFilterFormProps {
 }
 
 export default function ReportProductFilterForm({ register, control, onSearch }: ReportProductFilterFormProps) {
-  const dateFormat = 'YYYY-MM-DD';
+  const dateFormat = 'YYYY-MM-DD HH:mm';
   
 
   const inputStyle = {

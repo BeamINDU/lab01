@@ -1,4 +1,5 @@
 export type Planning = {
+  planId: string,
   productId: string,
   lotNo: string,
   lineId: string,
@@ -12,6 +13,7 @@ export type Planning = {
 }
 
 export type ParamSearch = {
+  planId?: string,
   dateFrom?: Date,
   dateTo?: Date,
   productId?: string,

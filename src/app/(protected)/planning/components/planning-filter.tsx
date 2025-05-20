@@ -15,7 +15,7 @@ interface PlanningFilterFormProps {
 }
 
 export default function PlanningFilterForm({ register, control, onSearch }: PlanningFilterFormProps) {
-  const dateFormat = 'YYYY-MM-DD';
+  const dateFormat = 'YYYY-MM-DD HH:mm';
   
   const inputStyle = {
     backgroundColor: 'white',
@@ -75,20 +75,19 @@ export default function PlanningFilterForm({ register, control, onSearch }: Plan
               )}
             />
           </div>
-          
-          {/* Line ID */}
-          <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-            <label className="font-semibold w-[120px]">Line ID</label>
-            <input
-              type="text"
-              {...register("lineId")}
-              className="rounded px-3 py-2 border border-gray-300 w-full bg-white"
-            />
-          </div>
+
         </div>
       </LocalizationProvider>
-      
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Plan ID */}
+      <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+        <label className="font-semibold w-[120px]">Plan ID</label>
+        <input
+          type="text"
+          {...register("planId")}
+          className="rounded px-3 py-2 border border-gray-300 w-full"
+        />
+      </div>
         {/* Product ID */}
         <div className="grid grid-cols-[100px_1fr] items-center gap-2">
           <label className="font-semibold w-[120px]">Product ID</label>
@@ -99,7 +98,11 @@ export default function PlanningFilterForm({ register, control, onSearch }: Plan
           />
         </div>
         
-        {/* Lot No */}
+
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Product ID */}
         <div className="grid grid-cols-[100px_1fr] items-center gap-2">
           <label className="font-semibold w-[120px]">Lot No</label>
           <input
@@ -108,6 +111,17 @@ export default function PlanningFilterForm({ register, control, onSearch }: Plan
             className="rounded px-3 py-2 border border-gray-300 w-full bg-white"
           />
         </div>
+        
+          
+          {/* Line ID */}
+          <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+            <label className="font-semibold w-[120px]">Line ID</label>
+            <input
+              type="text"
+              {...register("lineId")}
+              className="rounded px-3 py-2 border border-gray-300 w-full bg-white"
+            />
+          </div>
         
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">

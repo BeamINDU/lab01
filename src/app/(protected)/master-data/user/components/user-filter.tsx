@@ -24,7 +24,7 @@ export default function UserFilterForm({ register, onSearch }: UserFilterFormPro
           <label className="font-semibold w-[150px]">Username</label>
           <input
             type="text"
-            {...register("username")}
+            {...register("userName")}
             className="rounded px-3 py-2 border border-gray-300 w-full"
           />
         </div>

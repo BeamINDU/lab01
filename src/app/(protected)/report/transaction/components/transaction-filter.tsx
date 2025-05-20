@@ -15,7 +15,7 @@ interface TransactionFilterFormProps {
 }
 
 export default function TransactionFilterForm({ register, control, onSearch }: TransactionFilterFormProps) {
-  const dateFormat = 'YYYY-MM-DD';
+  const dateFormat = 'YYYY-MM-DD HH:mm';
   
   const inputStyle = {
     backgroundColor: 'white',

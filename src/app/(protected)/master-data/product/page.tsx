@@ -36,7 +36,7 @@ export default function Page() {
         productId: formValues.productId || '',
         productName: formValues.productName || '',
         productType: formValues.productType || '',
-        serialNo: formValues.SerialNo || '',
+        serialNo: formValues.serialNo || '',
         status: formValues.status !== undefined ? formValues.status : undefined,
       };
       const products = await search(param);
