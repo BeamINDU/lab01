@@ -16,7 +16,7 @@ import TransactionFilterForm from './components/transaction-filter';
 
 export default function Page() {
   const { hasPermission } = usePermission();
-  const { register, getValues, setValue, reset } = useForm();
+  const { register, getValues, setValue, reset, control } = useForm(); 
   const [data, setData] = useState<Transaction[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -30,6 +30,8 @@ export default function Page() {
       const param: ParamSearch = {
         lotNo: formValues.lotNo || '',
         productId: formValues.productId || '',
+        dateFrom: formValues.dateFrom || '',
+        dateTo: formValues.dateTo || ''
       };
       const products = await search(param);
       setData(products);
@@ -71,6 +73,7 @@ export default function Page() {
             {/* Filters Form */}
             <TransactionFilterForm 
               register={register} 
+              control={control}
               onSearch={handleSearch} 
             />
             

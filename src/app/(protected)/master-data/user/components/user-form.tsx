@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect , useState} from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User } from "@/app/types/user";
 import { useSession } from "next-auth/react";
-
+import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 const UserSchema = z.object({
   userId: z.string().min(1, "รหัสผู้ใช้จำเป็นต้องระบุ"),
   userName: z.string().min(1, "ชื่อผู้ใช้จำเป็นต้องระบุ"),
@@ -35,13 +35,13 @@ export default function UserFormModal({
   canEdit
 }: UserModalProps) {
   const { data: session } = useSession();
-
+  const [isActive, setIsActive] = useState(true);
   const defaultValues: UserFormValues = {
     userId: '',
     userName: '',
     fullName: '',
     roleName: '',
-    status: 1, // 1 = Active, 0 = Inactive
+    status: 1,
     isCreateMode: true,
   };
 
@@ -49,20 +49,29 @@ export default function UserFormModal({
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors },
   } = useForm<UserFormValues>({
     resolver: zodResolver(UserSchema),
     defaultValues,
   });
 
+
   useEffect(() => {
     if (editingData) {
       reset(editingData);
+      setIsActive(editingData.status === 1);
     } else {
       reset({...defaultValues, isCreateMode: true});
+      setIsActive(true);
     }
   }, [editingData, reset]);
 
+  const handleStatusToggle = (enabled: boolean) => {
+    setIsActive(enabled);
+    setValue("status", enabled ? 1 : 0);
+  };
   if (!showModal) return null;
 
   const onSubmit: SubmitHandler<UserFormValues> = async (formData) => {
@@ -94,8 +103,8 @@ export default function UserFormModal({
           <input type="hidden" {...register('isCreateMode')} />
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
-              <label className="font-normal w-32">User Id:</label>
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">User ID:</label>
               <input 
                 {...register("userId")} 
                 className="border p-2 w-full mb-1" 
@@ -106,7 +115,7 @@ export default function UserFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">User Name:</label>
               <input {...register("userName")} className="border p-2 w-full mb-1" />
             </div>
@@ -114,7 +123,7 @@ export default function UserFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Full Name:</label>
               <input 
                 {...register("fullName")} 
@@ -125,7 +134,7 @@ export default function UserFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Role Name:</label>
               <input 
                 {...register("roleName")} 
@@ -136,19 +145,15 @@ export default function UserFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Status:</label>
-              <select 
-                {...register("status", { 
-                  setValueAs: (v) => parseInt(v, 10) 
-                })} 
-                className="border p-2 w-full mb-1"
-              >
-                <option value="1">Active</option>
-                <option value="0">Inactive</option>
-              </select>
+              <ToggleSwitch 
+                enabled={isActive}
+                onChange={handleStatusToggle}
+                label={isActive ? "Active" : "Inactive"}
+                disabled={!canEdit}
+              />
             </div>
-            {errors.status && <p className="text-red-500 ml-110">{errors.status.message}</p>}
           </div>
 
           <div className="flex justify-end gap-2 mt-4">
@@ -168,7 +173,7 @@ export default function UserFormModal({
               className="px-4 py-2 bg-secondary rounded flex items-center gap-2"
               onClick={() => setShowModal(false)}
             >
-              ปิด
+              Close
               <X size={16} />
             </button>
           </div>

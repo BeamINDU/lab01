@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect,useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProductType } from "@/app/types/product-type";
 import { useSession } from "next-auth/react";
+import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 
 const ProductTypeSchema = z.object({
   productTypeId: z.string().min(1, "Production Type Id is required"),
@@ -34,7 +35,7 @@ export default function ProductTypeFormModal({
   canEdit
 }: ProductTypeModalProps) {
   const { data: session } = useSession();
-
+  const [isActive, setIsActive] = useState(true);
   const defaultValues: ProductTypeFormValues = {
     productTypeId: '',
     productTypeName: '',
@@ -47,6 +48,7 @@ export default function ProductTypeFormModal({
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<ProductTypeFormValues>({
     resolver: zodResolver(ProductTypeSchema),
@@ -56,10 +58,17 @@ export default function ProductTypeFormModal({
   useEffect(() => {
     if (editingData) {
       reset(editingData);
+      setIsActive(editingData.status === 1);
     } else {
       reset({...defaultValues, isCreateMode: true});
+      setIsActive(true);
     }
   }, [editingData, reset]);
+
+  const handleStatusToggle = (enabled: boolean) => {
+    setIsActive(enabled);
+    setValue("status", enabled ? 1 : 0);
+  };
 
   if (!showModal) return null;
 
@@ -92,8 +101,8 @@ export default function ProductTypeFormModal({
           <input type="hidden" {...register('isCreateMode')} />
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
-              <label className="font-normal w-32">Product Type Id:</label>
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">  
+              <label className="font-normal w-32">Product Type ID:</label>
               <input 
                 {...register("productTypeId")} 
                 className="border p-2 w-full mb-1" 
@@ -103,15 +112,15 @@ export default function ProductTypeFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
-              <label className="font-normal w-32">Product Type Name:</label>
-              <input {...register("productTypeName")} className="border p-2 w-full mb-1" />
-            </div>
+          <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+            <label className="font-normal">Product Type Name:</label>
+            <input {...register("productTypeName")} className="border p-2 w-full mb-1" />
+          </div>
             {errors.productTypeName && <p className="text-red-500 ml-110">{errors.productTypeName.message?.toString()}</p>}
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Description:</label>
               <textarea 
                 {...register("description")} 
@@ -123,17 +132,14 @@ export default function ProductTypeFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Status:</label>
-              <select 
-                {...register("status", { 
-                  setValueAs: (v) => parseInt(v, 10) 
-                })} 
-                className="border p-2 w-full mb-1"
-              >
-                <option value="1">Active</option>
-                <option value="0">Inactive</option>
-              </select>
+              <ToggleSwitch 
+                enabled={isActive}
+                onChange={handleStatusToggle}
+                label={isActive ? "Active" : "Inactive"}
+                disabled={!canEdit}
+              />
             </div>
             {errors.status && <p className="text-red-500 ml-110">{errors.status.message?.toString()}</p>}
           </div>

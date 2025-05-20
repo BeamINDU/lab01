@@ -90,8 +90,8 @@ export default function DefectTypeFormModal({
           <input type="hidden" {...register('isCreateMode')} />
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
-              <label className="font-normal w-32">Defect Type Id:</label>
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Defect Type ID:</label>
               <input 
                 {...register("defectTypeId")} 
                 className="border p-2 w-full mb-1" 
@@ -101,7 +101,7 @@ export default function DefectTypeFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Defect Type Name:</label>
               <input {...register("defectTypeName")} className="border p-2 w-full mb-1" />
             </div>
@@ -109,7 +109,7 @@ export default function DefectTypeFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Description:</label>
               <textarea 
                 {...register("description")} 
@@ -137,7 +137,7 @@ export default function DefectTypeFormModal({
               className="px-4 py-2 bg-secondary rounded flex items-center gap-2"
               onClick={() => setShowModal(false)}
             >
-              ปิด
+              Close
               <X size={16} />
             </button>
           </div>

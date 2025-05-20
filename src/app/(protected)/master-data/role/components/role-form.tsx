@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect,useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Role } from "@/app/types/role";
 import { useSession } from "next-auth/react";
+import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 
 const RoleSchema = z.object({
   roleId: z.string().min(1, "Role Id  is required"),
@@ -34,7 +35,7 @@ export default function RoleFormModal({
   canEdit
 }: RoleModalProps) {
   const { data: session } = useSession();
-
+  const [isActive, setIsActive] = useState(true);
   const defaultValues: RoleFormValues = {
     roleId: '',
     roleName: '',
@@ -46,6 +47,7 @@ export default function RoleFormModal({
   const {
     register,
     handleSubmit,
+    setValue,
     reset,
     formState: { errors },
   } = useForm<RoleFormValues>({
@@ -56,10 +58,17 @@ export default function RoleFormModal({
   useEffect(() => {
     if (editingData) {
       reset(editingData);
+      setIsActive(editingData.status === 1);
     } else {
       reset({...defaultValues, isCreateMode: true});
+      setIsActive(true);
     }
   }, [editingData, reset]);
+
+  const handleStatusToggle = (enabled: boolean) => {
+    setIsActive(enabled);
+    setValue("status", enabled ? 1 : 0);
+  };
 
   if (!showModal) return null;
 
@@ -92,8 +101,8 @@ export default function RoleFormModal({
           <input type="hidden" {...register('isCreateMode')} />
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
-              <label className="font-normal w-32">Role Id:</label>
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Role ID:</label>
               <input 
                 {...register("roleId")} 
                 className="border p-2 w-full mb-1" 
@@ -104,7 +113,7 @@ export default function RoleFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Role Name:</label>
               <input {...register("roleName")} className="border p-2 w-full mb-1" />
             </div>
@@ -112,7 +121,7 @@ export default function RoleFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Description:</label>
               <textarea 
                 {...register("description")} 
@@ -124,17 +133,14 @@ export default function RoleFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Status:</label>
-              <select 
-                {...register("status", { 
-                  setValueAs: (v) => parseInt(v, 10) 
-                })} 
-                className="border p-2 w-full mb-1"
-              >
-                <option value="1">Active</option>
-                <option value="0">Inactive</option>
-              </select>
+              <ToggleSwitch 
+                enabled={isActive}
+                onChange={handleStatusToggle}
+                label={isActive ? "Active" : "Inactive"}
+                disabled={!canEdit}
+              />
             </div>
             {errors.status && <p className="text-red-500 ml-110">{errors.status.message}</p>}
           </div>
@@ -156,7 +162,7 @@ export default function RoleFormModal({
               className="px-4 py-2 bg-secondary rounded flex items-center gap-2"
               onClick={() => setShowModal(false)}
             >
-              ปิด
+              Close
               <X size={16} />
             </button>
           </div>

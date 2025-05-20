@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera } from "@/app/types/camera";
 import { useSession } from "next-auth/react";
-
+import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 const CameraSchema = z.object({
   cameraId: z.string().min(1, "Camera Id is required"),
   cameraName: z.string().min(1, "Camera Name is required"),
@@ -34,7 +34,7 @@ export default function CameraFormModal({
   canEdit
 }: CameraModalProps) {
   const { data: session } = useSession();
-
+  const [isActive, setIsActive] = useState(true);
   const defaultValues: CameraFormValues = {
     cameraId: '',
     cameraName: '',
@@ -47,6 +47,7 @@ export default function CameraFormModal({
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<CameraFormValues>({
     resolver: zodResolver(CameraSchema),
@@ -56,10 +57,17 @@ export default function CameraFormModal({
   useEffect(() => {
     if (editingData) {
       reset(editingData);
+      setIsActive(editingData.status === 1);
     } else {
       reset({...defaultValues, isCreateMode: true});
+      setIsActive(true);
     }
   }, [editingData, reset]);
+
+  const handleStatusToggle = (enabled: boolean) => {
+    setIsActive(enabled);
+    setValue("status", enabled ? 1 : 0);
+  };
 
   if (!showModal) return null;
 
@@ -92,8 +100,8 @@ export default function CameraFormModal({
           <input type="hidden" {...register('isCreateMode')} />
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
-              <label className="font-normal w-32">Camera Id:</label>
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Camera ID:</label>
               <input 
                 {...register("cameraId")} 
                 className="border p-2 w-full mb-1" 
@@ -104,7 +112,7 @@ export default function CameraFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Camera Name:</label>
               <input {...register("cameraName")} className="border p-2 w-full mb-1" />
             </div>
@@ -112,7 +120,7 @@ export default function CameraFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">location:</label>
               <input 
                 {...register("location")} 
@@ -123,17 +131,14 @@ export default function CameraFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Status:</label>
-              <select 
-                {...register("status", { 
-                  setValueAs: (v) => parseInt(v, 10) 
-                })} 
-                className="border p-2 w-full mb-1"
-              >
-                <option value="1">Active</option>
-                <option value="0">Inactive</option>
-              </select>
+              <ToggleSwitch 
+                enabled={isActive}
+                onChange={handleStatusToggle}
+                label={isActive ? "Active" : "Inactive"}
+                disabled={!canEdit}
+              />
             </div>
             {errors.status && <p className="text-red-500 ml-110">{errors.status.message}</p>}
           </div>
@@ -155,7 +160,7 @@ export default function CameraFormModal({
               className="px-4 py-2 bg-secondary rounded flex items-center gap-2"
               onClick={() => setShowModal(false)}
             >
-              ปิด
+              Close
               <X size={16} />
             </button>
           </div>

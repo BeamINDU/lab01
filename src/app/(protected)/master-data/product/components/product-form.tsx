@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect,useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Product } from "@/app/types/product"
 import { useSession } from "next-auth/react";
+import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 
 const ProductSchema = z.object({
   productId: z.string().min(1, "Production Id is required"),
@@ -35,7 +36,7 @@ export default function ProductFormModal({
   canEdit
 }: ProductModalProps) {
   const { data: session } = useSession();
-
+  const [isActive, setIsActive] = useState(true);
   const defaultValues: ProductFormValues = {
     productId: '',
     productName: '',
@@ -51,7 +52,7 @@ export default function ProductFormModal({
     reset,
     // watch,
     // getValues,
-    // setValue,
+    setValue,
     formState: { errors },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(ProductSchema),
@@ -61,10 +62,17 @@ export default function ProductFormModal({
   useEffect(() => {
     if (editingData) {
       reset(editingData);
+      setIsActive(editingData.status === 1);
     } else {
-      reset();
+      reset({...defaultValues, isCreateMode: true});
+      setIsActive(true);
     }
   }, [editingData, reset]);
+
+  const handleStatusToggle = (enabled: boolean) => {
+    setIsActive(enabled);
+    setValue("status", enabled ? 1 : 0);
+  };
 
   if (!showModal) return null;
 
@@ -96,7 +104,7 @@ export default function ProductFormModal({
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('isCreateMode')} />
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Production ID</label>
               <input {...register("productId")} className="border p-2 w-full mb-1" />
             </div>
@@ -104,30 +112,35 @@ export default function ProductFormModal({
           </div>
           
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Product Name:</label>
               <input {...register("productName")} className="border p-2 w-full mb-1" />
             </div>
             {errors.productName && <p className="text-red-500 ml-110">{errors.productName.message}</p>}
           </div>
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Product Type:</label>
               <input {...register("productType")} className="border p-2 w-full mb-1" />
             </div>
             {errors.productType && <p className="text-red-500 ml-110">{errors.productType.message}</p>}
           </div>
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Serial No:</label>
               <input {...register("serialNo")} className="border p-2 w-full mb-1" autoComplete="new-password" />
             </div>
             {errors.serialNo && <p className="text-red-500 ml-110">{errors.serialNo.message}</p>}
           </div>
           <div className="mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Status</label>
-              <input {...register("status")} className="border p-2 w-full mb-1" autoComplete="new-password" />
+                <ToggleSwitch 
+                enabled={isActive}
+                onChange={handleStatusToggle}
+                label={isActive ? "Active" : "Inactive"}
+                disabled={!canEdit}
+              />
             </div>
             {errors.status && <p className="text-red-500 ml-110">{errors.status.message}</p>}
           </div>

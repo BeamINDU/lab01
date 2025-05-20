@@ -17,7 +17,7 @@ import DataTable from "@/app/components/table/DataTable";
 import RoleColumns from "./components/role-column";
 import RoleFilterForm from './components/role-filter';
 import RoleFormModal from "./components/role-form";
-
+import RolePermissionModal from './components/role-permission';
 
 export default function Page() {
   const { hasPermission } = usePermission();
@@ -26,11 +26,20 @@ export default function Page() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingData, setEditingData] = useState<Role | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-
+  const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
   useEffect(() => {
     handleSearch();
   }, []);
-
+  const handleSavePermission = async (data: {roleId: string, permissions: {menuId: string, actions: number[]}[]}) => {
+    try {
+      console.log('Save permission data:', data);
+      showSuccess('Permissions saved successfully');
+      setIsPermissionModalOpen(false);
+    } catch (error) {
+      console.error('Failed to save permissions:', error);
+      showError('Failed to save permissions');
+    }
+  };
   const handleSearch = async () => {
     try {
       const formValues = getValues();
@@ -96,7 +105,10 @@ export default function Page() {
       showError('Failed to load role details');
     }
   };
-
+  const handlePermission = async (row?: Role) => {
+    setEditingData(row || null);
+    setIsPermissionModalOpen(true);
+  };
   const handleDelete = async () => {
     const result = await showConfirm('Are you sure you want to delete these product role?')
     if (result.isConfirmed) {
@@ -135,9 +147,6 @@ export default function Page() {
     }
   };
   
-  const handlePermission = async (row?: Role) => {
-
-  };
 
   return (
     <>
@@ -206,7 +215,15 @@ export default function Page() {
           selectedIds={selectedIds}
           defaultSorting={[{ id: "roleId", desc: false }]}
         />
-
+        {isPermissionModalOpen && (
+          <RolePermissionModal
+            canEdit={hasPermission(Menu.Role, Action.Edit)}
+            showModal={isPermissionModalOpen}
+            setShowModal={setIsPermissionModalOpen}
+            editingData={editingData}
+            onSave={handleSavePermission }
+          />
+        )}
         {/* Add & Edit Modal */}
         {isFormModalOpen && (
           <RoleFormModal

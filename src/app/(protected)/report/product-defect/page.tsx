@@ -18,7 +18,7 @@ import ReportProductFilterForm from './components/report-product-filter';
 
 export default function Page() {
   const { hasPermission } = usePermission();
-  const { register, getValues, setValue, reset } = useForm();
+  const { register, getValues, setValue, reset, control } = useForm(); 
   const [data, setData] = useState<ReportProduct[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingData, setEditingData] = useState<ProductDetail | null>(null);
@@ -108,9 +108,10 @@ export default function Page() {
       <div className="p-4 mx-auto">
         <div className="mb-6 max-w-full text-sm">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Filters Form */}
+            {/* Filters Form - Pass control prop */}
             <ReportProductFilterForm 
-              register={register} 
+              register={register}
+              control={control} 
               onSearch={handleSearch} 
             />
             

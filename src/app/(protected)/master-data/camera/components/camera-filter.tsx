@@ -44,11 +44,14 @@ export default function CameraFilterForm({ register, onSearch }: CameraFilterFor
         {/* Status */}
         <div className="grid grid-cols-[100px_1fr] items-center gap-2">
           <label className="font-semibold w-[120px]">Status</label>
-          <input
-            type="text"
+          <select
             {...register("status")}
             className="rounded px-3 py-2 border border-gray-300 w-full"
-          />
+          >
+            <option value="">All</option>
+            <option value="1">Active</option>
+            <option value="0">Inactive</option>
+          </select>
         </div>
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
