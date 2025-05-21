@@ -177,6 +177,9 @@ export default function PlanningFormModal({
                       value={field.value ? dayjs(field.value) : null}
                       onChange={(date) => field.onChange(date ? date.format(dateFormat) : '')}
                       format={dateFormat}
+                      ampm={false}
+                      timeSteps={{ minutes: 1 }}
+                      closeOnSelect={false} 
                       slotProps={{ 
                         textField: { 
                           size: "small",
@@ -205,6 +208,9 @@ export default function PlanningFormModal({
                       value={field.value ? dayjs(field.value) : null}
                       onChange={(date) => field.onChange(date ? date.format(dateFormat) : '')}
                       format={dateFormat}
+                      ampm={false}
+                      timeSteps={{ minutes: 1 }}
+                      closeOnSelect={false} 
                       slotProps={{ 
                         textField: { 
                           size: "small",

@@ -43,8 +43,8 @@ export const getRolePermissions = async (roleId: string): Promise<{menuId: strin
   return [
     { menuId: "DB000", actions: [1] },
     { menuId: "LI000", actions: [1] },
-    { menuId: "MD000", actions: [1, 2, 3] },
-    { menuId: "MD001", actions: [1, 2, 3, 4, 5] }
+    { menuId: "MD001", actions: [1, 2, 3, 4, 5] },
+    { menuId: "MD002", actions: [1] }
   ];
 };
 

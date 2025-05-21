@@ -1,21 +1,23 @@
+// src/app/types/planning.ts
 export type Planning = {
   planId: string,
   productId: string,
   lotNo: string,
   lineId: string,
-  startDate: Date,
-  endDate: Date,
-  createdDate?: Date,
+  // กำหนดให้ยอมรับได้ทั้ง Date, string หรือ number
+  startDate: Date | string | number,
+  endDate: Date | string | number,
+  createdDate?: Date | string,
   createdBy?: string,
-  updatedDate?: Date,
+  updatedDate?: Date | string,
   updatedBy?: string,
   isCreateMode?: boolean
 }
 
 export type ParamSearch = {
   planId?: string,
-  dateFrom?: Date,
-  dateTo?: Date,
+  dateFrom?: Date | string,
+  dateTo?: Date | string,
   productId?: string,
   lotNo?: string,
   lineId?: string,

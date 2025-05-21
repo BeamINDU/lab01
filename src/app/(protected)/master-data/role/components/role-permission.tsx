@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
-import { X, Save, Check } from 'lucide-react';
+import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import { Role } from "@/app/types/role";
 import { UserPermission } from "@/app/types/user-permissions";
 import { Menu, Action } from '@/app/lib/constants/menu';
-import { getAllMenus } from "@/app/lib/services/role-permission";
+import { getAllMenus, getRolePermissions, saveRolePermissions } from "@/app/lib/services/role-permission";
 
 // Schema for the form
 const RolePermissionSchema = z.object({
@@ -52,6 +52,8 @@ export default function RolePermissionModal({
   const [menuGroups, setMenuGroups] = useState<MenuGroup[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<string>("");
   const [selectedPermissions, setSelectedPermissions] = useState<{[key: string]: number[]}>({});
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   
   const {
     register,
@@ -69,6 +71,9 @@ export default function RolePermissionModal({
   // Fetch all menus when component loads
   useEffect(() => {
     const fetchMenus = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
         const menus = await getAllMenus();
         setAllMenus(menus);
@@ -80,7 +85,7 @@ export default function RolePermissionModal({
         const topLevelMenus = menus.filter(menu => menu.parentId === "");
         
         topLevelMenus.forEach(topMenu => {
-          // Count all children (including nested)
+          // Count all children
           const countChildren = (parentId: string): number => {
             const directChildren = menus.filter(m => m.parentId === parentId);
             return directChildren.length + directChildren.reduce((sum, child) => sum + countChildren(child.menuId), 0);
@@ -94,7 +99,7 @@ export default function RolePermissionModal({
             count: childCount,
             menus: [topMenu, ...menus.filter(m => m.parentId === topMenu.menuId || 
                                              menus.find(subMenu => subMenu.parentId === topMenu.menuId && 
-                                                       subMenu.menuId === m.parentId))]
+                                                        subMenu.menuId === m.parentId))]
           });
         });
         
@@ -106,24 +111,49 @@ export default function RolePermissionModal({
         }
       } catch (error) {
         console.error("Failed to fetch menus:", error);
+        setError("Failed to load menu data. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
     };
     
     fetchMenus();
   }, []);
 
-
+  // Fetch role permissions when editing data changes
   useEffect(() => {
-    if (editingData) {
-      reset({
-        roleId: editingData.roleId,
-        permissions: []
-      });
+    const fetchPermissions = async () => {
+      if (!editingData?.roleId) return;
       
-      const mockPermissions: {[key: string]: number[]} = {};
+      setIsLoading(true);
+      setError(null);
       
-      setSelectedPermissions(mockPermissions);
-    }
+      try {
+        // Get permissions for this role from API
+        const permissions = await getRolePermissions(editingData.roleId);
+        
+        // Reset form with the role ID
+        reset({
+          roleId: editingData.roleId,
+          permissions: []
+        });
+        
+        // Convert API response to the format we need for the UI
+        const permissionsMap: {[key: string]: number[]} = {};
+        permissions.forEach(p => {
+          permissionsMap[p.menuId] = p.actions;
+        });
+        
+        setSelectedPermissions(permissionsMap);
+      } catch (error) {
+        console.error("Failed to fetch permissions:", error);
+        setError("Failed to load permission data for this role. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchPermissions();
   }, [editingData, reset]);
 
   if (!showModal) return null;
@@ -222,19 +252,38 @@ export default function RolePermissionModal({
   };
 
   const onSubmit: SubmitHandler<RolePermissionFormValues> = async () => {
-    const permissions = Object.entries(selectedPermissions)
-      .filter(([_, actions]) => actions.length > 0)
-      .map(([menuId, actions]) => ({
-        menuId,
-        actions
-      }));
+    if (!editingData?.roleId) return;
     
-    const formData = {
-      roleId: editingData?.roleId || '',
-      permissions
-    };
+    setIsLoading(true);
+    setError(null);
     
-    onSave(formData);
+    try {
+      const permissions = Object.entries(selectedPermissions)
+        .filter(([_, actions]) => actions.length > 0)
+        .map(([menuId, actions]) => ({
+          menuId,
+          actions
+        }));
+      
+      const formData = {
+        roleId: editingData.roleId,
+        permissions
+      };
+      
+      // Send data to the API
+      await saveRolePermissions(editingData.roleId, permissions);
+      
+      // Notify parent component
+      onSave(formData);
+      
+      // Close modal
+      setShowModal(false);
+    } catch (error) {
+      console.error("Failed to save permissions:", error);
+      setError("Failed to save permissions. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Helper function to check if all actions are selected for the current group or menu
@@ -300,6 +349,35 @@ export default function RolePermissionModal({
 
   // Render permissions panel based on selected group
   const renderPermissionsPanel = () => {
+    // Loading state
+    if (isLoading) {
+      return (
+        <div className="flex-1 p-4 h-[400px] flex items-center justify-center">
+          <div className="text-center">
+            <div className="spinner-border animate-spin inline-block w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mb-2"></div>
+            <p>Loading permissions...</p>
+          </div>
+        </div>
+      );
+    }
+    
+    // Error state
+    if (error) {
+      return (
+        <div className="flex-1 p-4 h-[400px] flex items-center justify-center">
+          <div className="text-center text-red-500">
+            <p>{error}</p>
+            <button 
+              className="mt-2 px-4 py-1 bg-blue-500 text-white rounded"
+              onClick={() => setError(null)}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      );
+    }
+    
     // Get the current group
     const currentGroup = menuGroups.find(g => g.id === selectedGroup);
     if (!currentGroup) return null;
@@ -538,26 +616,46 @@ export default function RolePermissionModal({
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('roleId')} value={editingData?.roleId || ''} />
           
+          {error && (
+            <div className="bg-red-100 text-red-700 p-2 rounded mb-4">
+              {error}
+            </div>
+          )}
+          
           <div className="flex border-b">
             {/* Left panel - Permission Groups */}
             <div className="w-[200px] border-r p-3 h-[400px] overflow-y-auto">
               <h3 className="text-sm font-medium mb-2">Permission Group</h3>
               
               <div className="space-y-2">
-                {menuGroups.map(group => (
-                  <button
-                    key={group.id}
-                    type="button"
-                    className={`w-full text-left px-3 py-2 rounded-md text-sm ${
-                      selectedGroup === group.id 
-                        ? 'bg-violet-500 text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                    onClick={() => handleGroupSelect(group.id)}
-                  >
-                    {group.name} ({group.count + 1})
-                  </button>
-                ))}
+                {menuGroups.map(group => {
+                  // จำนวนสิทธิ์ที่ถูกเลือกสำหรับเมนูนี้และเมนูย่อย
+                  const groupMenuIds = getAllMenusInGroup(group.id);
+                  console.log("Selected permissions for " + group.name + ":", 
+                    Object.entries(selectedPermissions)
+                      .filter(([key]) => groupMenuIds.includes(key))
+                      .map(([key, value]) => ({ menuId: key, actions: value }))
+                  );
+                  const selectedCount = groupMenuIds.reduce((count, menuId) => {
+                    const permissions = selectedPermissions[menuId] || [];
+                    return count + permissions.length;
+                  }, 0);
+                  
+                  return (
+                    <button
+                      key={group.id}
+                      type="button"
+                      className={`w-full text-left px-3 py-2 rounded-md text-sm ${
+                        selectedGroup === group.id 
+                          ? 'bg-violet-500 text-white' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                      onClick={() => handleGroupSelect(group.id)}
+                    >
+                      {group.name} ({selectedCount})
+                    </button>
+                  );
+                })}
               </div>
             </div>
             
@@ -570,18 +668,23 @@ export default function RolePermissionModal({
             {canEdit && (
               <button
                 type="submit"
-                className="px-4 py-2 btn-primary-dark rounded flex items-center gap-2">
-                Save
-                <Save size={16} />
+                disabled={isLoading}
+                className={`px-4 py-2 btn-primary-dark rounded flex items-center gap-2 ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {isLoading ? 'Saving...' : 'Save'}
+                {!isLoading && <Save size={16} />}
               </button>
             )}
             <button
               type="button"
               className="px-4 py-2 bg-secondary rounded flex items-center gap-2"
               onClick={() => setShowModal(false)}
+              disabled={isLoading}
             >
               Cancel
-            <X size={16} />
+              <X size={16} />
             </button> 
           </div>
         </form>

@@ -17,6 +17,7 @@ import RoleColumns from "./components/role-column";
 import RoleFilterForm from './components/role-filter';
 import RoleFormModal from "./components/role-form";
 import RolePermissionModal from './components/role-permission';
+import { saveRolePermissions } from "@/app/lib/services/role-permission";
 
 export default function Page() {
   const { hasPermission } = usePermission();
@@ -32,6 +33,9 @@ export default function Page() {
   const handleSavePermission = async (data: {roleId: string, permissions: {menuId: string, actions: number[]}[]}) => {
     try {
       console.log('Save permission data:', data);
+
+      await saveRolePermissions(data.roleId, data.permissions);
+
       showSuccess('Permissions saved successfully');
       setIsPermissionModalOpen(false);
     } catch (error) {

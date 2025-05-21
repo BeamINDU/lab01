@@ -37,6 +37,10 @@ export default function TransactionFilterForm({ register, control, onSearch }: T
                   value={field.value ? dayjs(field.value) : null}
                   onChange={(date) => field.onChange(date ? date.format(dateFormat) : null)}
                   format={dateFormat}
+                  ampm={false}
+                  timeSteps={{ minutes: 1 }}
+                  closeOnSelect={false} 
+                  minutesStep={1}
                   slotProps={{ 
                     textField: { 
                       size: "small",
@@ -62,6 +66,10 @@ export default function TransactionFilterForm({ register, control, onSearch }: T
                   value={field.value ? dayjs(field.value) : null}
                   onChange={(date) => field.onChange(date ? date.format(dateFormat) : null)}
                   format={dateFormat}
+                  ampm={false}
+                  timeSteps={{ minutes: 1 }}
+                  closeOnSelect={false} 
+                  minutesStep={1}
                   slotProps={{ 
                     textField: { 
                       size: "small",
