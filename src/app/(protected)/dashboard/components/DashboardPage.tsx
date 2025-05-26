@@ -4,6 +4,8 @@
 import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import { showError, showSuccess } from '@/app/utils/swal';
+import { getDashboardData } from '@/app/lib/services/dashboard';
+import { DashboardData, DashboardFilters } from '@/app/types/dashboard';
 import HeaderFilters from './HeaderFilters';
 import TotalProductsCard from './TotalProductsCard';
 import GoodNGRatioChart from './GoodNGRatioChart';
@@ -20,8 +22,13 @@ export default function DashboardPage() {
   const [selectedYear, setSelectedYear] = useState<string>('');
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
-
   
+  // Dashboard data state
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Initialize default date range
   useEffect(() => {
     const today = dayjs();
     const startOfDay = today.startOf('day').format('YYYY-MM-DD HH:mm'); 
@@ -36,37 +43,63 @@ export default function DashboardPage() {
     });
   }, []);
 
+  // Load dashboard data when filters change
+  useEffect(() => {
+    if (dateFrom && dateTo) {
+      refreshDashboardData();
+    }
+  }, [selectedProduct, selectedCamera, selectedLine, selectedMonth, selectedYear, dateFrom, dateTo]);
+
+  const refreshDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const filters: DashboardFilters = {
+        productId: selectedProduct || undefined,
+        cameraId: selectedCamera || undefined,
+        lineId: selectedLine || undefined,
+        startDate: dateFrom ? new Date(dateFrom) : undefined,
+        endDate: dateTo ? new Date(dateTo) : undefined,
+      };
+
+      console.log('Refreshing dashboard with filters:', filters);
+      
+      const data = await getDashboardData(filters);
+      setDashboardData(data);
+      
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+      setError('Failed to load dashboard data. Please try again.');
+      showError('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleProductChange = (productId: string) => {
     setSelectedProduct(productId);
     console.log('Selected Product:', productId);
-    //  API เพื่อดึงข้อมูลตาม product ที่เลือก
-    refreshDashboardData();
   };
 
   const handleCameraChange = (cameraId: string) => {
     setSelectedCamera(cameraId);
     console.log('Selected Camera:', cameraId);
-    //  API เพื่อดึงข้อมูลตาม camera ที่เลือก
-    refreshDashboardData();
   };
 
   const handleLineChange = (lineId: string) => {
     setSelectedLine(lineId);
     console.log('Selected Line:', lineId);
-    //  API เพื่อดึงข้อมูลตาม line ที่เลือก
-    refreshDashboardData();
   };
 
   const handleMonthChange = (month: string) => {
     setSelectedMonth(month);
     console.log('Selected Month:', month);
-    refreshDashboardData();
   };
 
   const handleYearChange = (year: string) => {
     setSelectedYear(year);
     console.log('Selected Year:', year);
-    refreshDashboardData();
   };
 
   const handleDateFromChange = (date: string | null) => {
@@ -85,7 +118,6 @@ export default function DashboardPage() {
     } else {
       setDateFrom('');
     }
-    refreshDashboardData();
   };
 
   const handleDateToChange = (date: string | null) => {
@@ -101,21 +133,74 @@ export default function DashboardPage() {
     } else {
       setDateTo('');
     }
-    refreshDashboardData();
   };
 
-  const refreshDashboardData = () => {
-    //  API เพื่อดึงข้อมูล dashboard ใหม่ตาม filters ที่เลือก
-    console.log('Refreshing dashboard with filters:', {
-      product: selectedProduct,
-      camera: selectedCamera,  
-      line: selectedLine,
-      month: selectedMonth,
-      year: selectedYear,
-      dateFrom: dateFrom,
-      dateTo: dateTo
-    });
-  };
+  // Loading state
+  if (loading && !dashboardData) {
+    return (
+      <main className="p-2">
+        <HeaderFilters 
+          selectedProduct={selectedProduct}
+          selectedCamera={selectedCamera}
+          selectedLine={selectedLine}
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onProductChange={handleProductChange}
+          onCameraChange={handleCameraChange}
+          onLineChange={handleLineChange}
+          onMonthChange={handleMonthChange}
+          onYearChange={handleYearChange}
+          onDateFromChange={handleDateFromChange}
+          onDateToChange={handleDateToChange}
+        />
+        
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+            <p className="text-gray-600">Loading dashboard data...</p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <main className="p-2">
+        <HeaderFilters 
+          selectedProduct={selectedProduct}
+          selectedCamera={selectedCamera}
+          selectedLine={selectedLine}
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onProductChange={handleProductChange}
+          onCameraChange={handleCameraChange}
+          onLineChange={handleLineChange}
+          onMonthChange={handleMonthChange}
+          onYearChange={handleYearChange}
+          onDateFromChange={handleDateFromChange}
+          onDateToChange={handleDateToChange}
+        />
+        
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center text-red-500">
+            <p>{error}</p>
+            <button 
+              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={refreshDashboardData}
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="p-2">
@@ -136,27 +221,37 @@ export default function DashboardPage() {
         onDateToChange={handleDateToChange}
       />
 
+      {/* Loading overlay during refresh */}
+      {loading && dashboardData && (
+        <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg shadow-lg">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
+            <p className="text-sm text-gray-600">Updating data...</p>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
         {/* Left column: Total products and Good/NG Ratio stacked */}
         <div className="lg:col-span-1 space-y-6">
-          <TotalProductsCard />
-          <GoodNGRatioChart />
+          <TotalProductsCard data={dashboardData} />
+          <GoodNGRatioChart data={dashboardData} />
         </div>
 
         {/* Middle: Trend and Top Defects */}
         <div className="lg:col-span-2">
-          <TrendDetectionChart />
+          <TrendDetectionChart data={dashboardData} />
         </div>
         <div className="lg:col-span-3">
-          <FrequentDefectsChart />
+          <FrequentDefectsChart data={dashboardData} />
         </div>
 
         {/* Bottom row: NG Distribution and Camera Defects */}
         <div className="lg:col-span-3">
-          <NGDistributionChart />
+          <NGDistributionChart data={dashboardData} />
         </div>
         <div className="lg:col-span-3">
-          <DefectByCameraChart />
+          <DefectByCameraChart data={dashboardData} />
         </div>
       </div>
     </main>

@@ -5,6 +5,8 @@ export type DashboardFilters = {
   dateRange?: string;
   startDate?: Date;
   endDate?: Date;
+  month?: string;
+  year?: string;
 }
 
 export type DashboardData = {

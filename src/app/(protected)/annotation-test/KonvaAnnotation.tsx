@@ -211,14 +211,14 @@ const KonvaInlineAnnotation = () => {
     
     // Calculate label position
     let labelX = ann.startX;
-    let labelY = ann.startY - 10;
+    let labelY = ann.startY - 15;
     
     if (ann.type === 'rect') {
       labelX = ann.startX + ann.width / 2;
-      labelY = ann.startY - 10;
+      labelY = ann.startY - 15;
     } else if (ann.type === 'circle') {
       labelX = ann.startX;
-      labelY = ann.startY - ann.radius - 10;
+      labelY = ann.startY - ann.radius - 15;
     }
 
     return (

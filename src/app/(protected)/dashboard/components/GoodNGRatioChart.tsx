@@ -1,50 +1,54 @@
-import { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { generateBlueColor } from "@/app/utils/color"
+import { DashboardData } from '@/app/types/dashboard';
 
-const data = [
-  { name: "Good", value: 900 },
-  { name: "Not Good", value: 100 },
-];
+interface GoodNGRatioChartProps {
+  data: DashboardData | null;
+}
 
 const colors = ['#60a5fa', '#1d4ed8'];
 
-export default function GoodNgDonut() {
+export default function GoodNGRatioChart({ data }: GoodNGRatioChartProps) {
+  const chartData = data ? [
+    { name: "Good", value: data.goodCount },
+    { name: "Not Good", value: data.ngCount },
+  ] : [
+    { name: "Good", value: 900 },
+    { name: "Not Good", value: 100 },
+  ];
+
   return (
-    <div className="bg-white p-2 rounded shadow w-full">
-      <h2 className="text-xl font-semibold text-center mb-2 mt-2">
+    <div className="p-4 bg-white rounded-xl shadow max-w-xs mx-auto">
+      <h2 className="text-xl font-semibold text-center mb-1"> 
         Good / NG Ratio
       </h2>
-      <div className="w-full h-[170px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={40}
-              outerRadius={60}
-              dataKey="value"
-              label={({ value, percent }) =>
-                `${value}, ${(percent * 100).toFixed(0)}%`
-              }
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={colors[index]} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend
-              verticalAlign="bottom"
-              iconType="circle"
-              wrapperStyle={{ 
-                bottom: 12,
-                fontSize: '0.8rem' 
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
+      <ResponsiveContainer width="100%" height={150}>
+        <PieChart>
+          <Pie
+            data={chartData}
+            cx="50%"
+            cy="50%"
+            innerRadius={40}
+            outerRadius={60}
+            dataKey="value"
+            label={({ value, percent }) =>
+              `${value}, ${(percent * 100).toFixed(0)}%`
+            }
+          >
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={colors[index]} />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend
+            verticalAlign="bottom"
+            iconType="circle"
+            wrapperStyle={{ 
+              bottom: -5,
+              fontSize: '0.75rem' 
+            }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
     </div>
   );
 }

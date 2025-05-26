@@ -1,22 +1,19 @@
-import { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Cell, LabelList } from 'recharts';
-import { generateBlueColor } from "@/app/utils/color"
- 
-const data = [
-  { camera: 'CAM A1', defects: 45 },
-  { camera: 'CAM A2', defects: 80 },
-  { camera: 'CAM B1', defects: 60 },
-  { camera: 'CAM B2', defects: 70 },
-];
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer, Cell } from 'recharts';
+import { DashboardData } from '@/app/types/dashboard';
 
-export default function DefectByCameraChart() {
-  const [isClient, setIsClient] = useState(false);
+interface DefectByCameraChartProps {
+  data: DashboardData | null;
+}
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+const colors = ['#93c5fd', '#60a5fa', '#3b82f6', '#1d4ed8'];
 
-  if (!isClient) return null;
+export default function DefectByCameraChart({ data }: DefectByCameraChartProps) {
+  const chartData = data?.defectsByCamera || [
+    { camera: 'CAM A1', defects: 45 },
+    { camera: 'CAM A2', defects: 80 },
+    { camera: 'CAM B1', defects: 60 },
+    { camera: 'CAM B2', defects: 70 },
+  ];
 
   return (
     <div className="bg-white rounded-xl shadow p-4 h-full">
@@ -25,15 +22,14 @@ export default function DefectByCameraChart() {
       </h2>
       <div className="h-60">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} layout="vertical">
+          <BarChart data={chartData} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis type="number" tick={{ fontSize: 11 }} />
             <YAxis dataKey="camera" type="category" tick={{ fontSize: 11 }} />
             <Tooltip contentStyle={{ fontSize: '11px' }} />
             <Bar dataKey="defects" barSize={25}>
-              <LabelList dataKey="defects" position="right" fontSize={11} />
-              {data.map((entry, index) => (
-                <Cell key={index} fill={generateBlueColor(index, data.length)} />
+              {chartData.map((entry, index) => (
+                <Cell key={index} fill={colors[index % colors.length]} />
               ))}
             </Bar>
           </BarChart>

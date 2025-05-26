@@ -93,7 +93,7 @@ export default function UserColumns({
     },
         {
       accessorKey: "email",
-      header: "Email Name",
+      header: "Email",
     },
     {
       accessorKey: "roleName",

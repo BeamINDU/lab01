@@ -10,10 +10,10 @@ import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 const UserSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
-  userName: z.string().min(1, "Username is required"),
+  userName: z.string().min(1, "User name is required"),
   firstname: z.string().min(1, "First name is required"),
-  lastname: z.string().min(1, "Email is required"),
-  email: z.string().min(1, "First name is required"),
+  lastname: z.string().min(1, "Last name is required"),
+  email: z.string().min(1, "Email is required"),
   roleName: z.string().min(1, "Role name is required"),
   status: z.number(),
   isCreateMode: z.boolean().optional(),
