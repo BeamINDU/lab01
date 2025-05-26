@@ -2,7 +2,7 @@ import { api } from '@/app/utils/api'
 import type { UserPermission } from "@/app/types/user-permissions"
 import { Menu, Action } from "@/app/lib/constants/menu"
 
-// Sample menu data for testing
+// Sample menu
 const allMenuData: UserPermission[] = [
   { menuId: "DB000", parentId: "", menuName: "Dashboard", icon: "", seq: 1, path: "/dashboard", actions: [1] },
   { menuId: "LI000", parentId: "", menuName: "Live inspection view", icon: "", seq: 2, path: "", actions: [1] },
@@ -27,35 +27,29 @@ const allMenuData: UserPermission[] = [
   { menuId: "DM000", parentId: "", menuName: "Detection Model", icon: "", seq: 5, path: "/detection-model", actions: [1, 2, 3, 4] },
 ];
 
-/**
- * Get all available menus with their permissions
- */
+
 export const getAllMenus = async (): Promise<UserPermission[]> => {
   
   return allMenuData;
 };
 
-/**
- * Get permissions for a specific role
- */
+
 export const getRolePermissions = async (roleId: string): Promise<{menuId: string, actions: number[]}[]> => {
-  // Mock data - in a real app this would fetch from API
   return [
     { menuId: "DB000", actions: [1] },
     { menuId: "LI000", actions: [1] },
     { menuId: "MD001", actions: [1, 2, 3, 4, 5] },
-    { menuId: "MD002", actions: [1] }
+    { menuId: "MD002", actions: [1] },
+    { menuId: "RP001", actions: [1] },
+    { menuId: "DM000", actions: [2,3,4] }
   ];
 };
 
-/**
- * Save permissions for a role
- */
+
 export const saveRolePermissions = async (
   roleId: string, 
   permissions: {menuId: string, actions: number[]}[]
 ): Promise<{roleId: string, permissions: {menuId: string, actions: number[]}[]}> => {
-  // In a real app, this would be an API call
   console.log("Saving permissions for role", roleId, permissions);
   
   return {

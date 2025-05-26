@@ -72,7 +72,7 @@ export default function Page() {
             />
             
             <div className="md:col-span-1 flex flex-col justify-end items-end gap-4">
-              <div className="flex flex-wrap justify-end gap-2">
+              <div className="flex flex-wrap justify-end gap-2 mr-2 ">
                 {/* Export Button */}
                 {hasPermission(Menu.ReportTransaction, Action.Export) && (
                   <ExportButton onExport={handleExport} />

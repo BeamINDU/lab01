@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const data = [
   { time: '9:00', MissingPart: 1, Misalignment: 2, Dent: 1, Crack: 0, Scratch: 1 },
@@ -15,23 +15,39 @@ export default function TrendDetectionChart() {
       <h2 className="text-xl font-semibold text-center mb-4">
         Trend of Top 5 Detection Types
       </h2>
-      <LineChart data={data} width={460} height={280}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="time" />
-        <YAxis label={{ value: 'Quantity', angle: -90 }} />
-        <Tooltip />
-        <Legend 
-          verticalAlign="bottom"
-          iconType="circle"
-          wrapperStyle={{ fontSize: '0.875rem' }}
-        />
-        <Line type="monotone" dataKey="MissingPart" stroke="#8884d8" />
-        <Line type="monotone" dataKey="Misalignment" stroke="#82ca9d" />
-        <Line type="monotone" dataKey="Dent" stroke="#ffc658" />
-        <Line type="monotone" dataKey="Crack" stroke="#ff7300" />
-        <Line type="monotone" dataKey="Scratch" stroke="#00c49f" />
-      </LineChart>
+      <div style={{ height: 310 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={data}
+            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="time" />
+            <YAxis 
+              label={{ 
+                value: 'Quantity', 
+                angle: -90, 
+                position: 'insideLeft',
+                style: { textAnchor: 'middle' }
+              }} 
+            />
+            <Tooltip />
+            <Legend 
+              verticalAlign="bottom"
+              iconType="circle"
+              wrapperStyle={{ 
+                fontSize: '0.875rem',
+                paddingTop: '10px'
+              }}
+            />
+            <Line type="monotone" dataKey="MissingPart" stroke="#8884d8" strokeWidth={2} />
+            <Line type="monotone" dataKey="Misalignment" stroke="#82ca9d" strokeWidth={2} />
+            <Line type="monotone" dataKey="Dent" stroke="#ffc658" strokeWidth={2} />
+            <Line type="monotone" dataKey="Crack" stroke="#ff7300" strokeWidth={2} />
+            <Line type="monotone" dataKey="Scratch" stroke="#00c49f" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
-
