@@ -15,14 +15,14 @@ export default function TrendDetectionChart() {
       <h2 className="text-xl font-semibold text-center mb-4">
         Trend of Top 5 Detection Types
       </h2>
-      <div style={{ height: 310 }}>
+      <div style={{ height: 300 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={data}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="time" />
+            <XAxis dataKey="time" tick={{ fontSize: 12 }} />
             <YAxis 
               label={{ 
                 value: 'Quantity', 
@@ -30,6 +30,7 @@ export default function TrendDetectionChart() {
                 position: 'insideLeft',
                 style: { textAnchor: 'middle' }
               }} 
+              tick={{ fontSize: 12 }}
             />
             <Tooltip />
             <Legend 
@@ -38,7 +39,7 @@ export default function TrendDetectionChart() {
               wrapperStyle={{ 
                 fontSize: '0.875rem',
                 paddingTop: '10px'
-              }}
+              }} 
             />
             <Line type="monotone" dataKey="MissingPart" stroke="#8884d8" strokeWidth={2} />
             <Line type="monotone" dataKey="Misalignment" stroke="#82ca9d" strokeWidth={2} />

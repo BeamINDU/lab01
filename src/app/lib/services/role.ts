@@ -8,8 +8,8 @@ const mockData: Role[] = Array.from({ length: 20 }, (_, i) => ({
   status: i % 2 === 0 ? 1: 0,
   createdDate: new Date(),
   createdBy: 'admin',
-  updatedDate: new Date(),
-  updatedBy: 'admin',
+  pdatedDate: null,
+  updatedBy: null,
 }))
 
 export const search = async (param?: ParamSearch) => { 

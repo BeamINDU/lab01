@@ -5,8 +5,8 @@ export type Role = {
   status: number,
   createdDate?: Date
   createdBy?: string
-  updatedDate?: Date
-  updatedBy?: string
+  updatedDate?: Date | null
+  updatedBy?: string | null
   isCreateMode?: boolean
 }
 

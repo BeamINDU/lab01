@@ -49,14 +49,8 @@ const ExportButton = ({onExport} : ExportButtonProps) => {
       {showExportOptions && (
         <div
           ref={dropdownRef}
-          className="absolute left-0 top-full mt-2 w-full sm:w-32 bg-white border border-gray-300 rounded-md shadow-lg z-50"
+          className="absolute right-0 top-full w-40 bg-white border border-gray-300 rounded-md shadow-lg z-50"
         >
-          {/* <button
-            onClick={() => handleExport(ExportType.Text)}
-            className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-          >
-            Export .txt
-          </button> */}
           <button
             onClick={() => handleExport(ExportType.CSV)}
             className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
@@ -74,6 +68,12 @@ const ExportButton = ({onExport} : ExportButtonProps) => {
             className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
           >
             Export .docx
+          </button> */}
+          {/* <button
+            onClick={() => handleExport(ExportType.Text)}
+            className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+          >
+            Export .txt
           </button> */}
         </div>
       )}

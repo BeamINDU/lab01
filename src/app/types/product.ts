@@ -4,10 +4,10 @@ export type Product = {
   productType: string
   serialNo: string
   status: number,
-  createdDate?: Date
+  createdDate?: Date | null
   createdBy?: string
-  updatedDate?: Date
-  updatedBy?: string
+  updatedDate?: Date | null
+  updatedBy?: string | null
   isCreateMode?: boolean
 }
 

@@ -26,7 +26,7 @@ const mockData: UserPermission[] =
   { menuId: "RP002", parentId: "RP000", menuName: "Defect Summary", icon: "", seq: 2, path: "/report/defect-summary", actions: [1, 6] },
   { menuId: "RP003", parentId: "RP000", menuName: "Transaction", icon: "", seq: 3, path: "/report/transaction", actions: [1, 6] },
   { menuId: "PL000", parentId: "", menuName: "Planning", icon: "", seq: 6, path: "/planning", actions: [1, 2, 3, 4, 5] },
-  { menuId: "DM000", parentId: "", menuName: "Detection Model", icon: "", seq: 5, path: "/detection-model", actions: [1, 2, 3, 4] },
+  { menuId: "DM000", parentId: "", menuName: "Detection Model", icon: "", seq: 5, path: "/detection-model", actions: [1, 2, 3, 4, 5, 6] },
   { menuId: "L001", parentId: "LI000", menuName: "Line Packing 1", icon: "", seq: 1, path: "", actions: [1] },
   { menuId: "CAM1", parentId: "L001", menuName: "CAM 1 Identify", icon: "", seq: 1, path: "/live/cam1", actions: [1] },
   { menuId: "CAM2", parentId: "L001", menuName: "CAM 2 Defect Detection", icon: "", seq: 2, path: "/live/2", actions: [1] },

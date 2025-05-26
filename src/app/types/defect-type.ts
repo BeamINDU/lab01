@@ -4,8 +4,8 @@ export type DefectType = {
   description: string
   createdDate?: Date
   createdBy?: string
-  updatedDate?: Date
-  updatedBy?: string
+  updatedDate?: Date | null
+  updatedBy?: string | null
   isCreateMode?: boolean
 }
 

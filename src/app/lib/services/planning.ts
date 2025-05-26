@@ -1,4 +1,3 @@
-// src/app/lib/services/planning.ts
 import { api } from '@/app/utils/api'
 import type { Planning, ParamSearch } from "@/app/types/planning"
 
@@ -17,8 +16,7 @@ const mockData: Planning[] = Array.from({ length: 20 }, (_, i) => {
     planId: `PLAN-${i+1}`,
     lotNo: `LOT-${i+1}`,
     lineId:`Line ${i+1}`,
-    // กำหนดให้เป็น string ที่มีรูปแบบชัดเจน
-    startDate: startDate.toISOString(), // เป็นรูปแบบ ISO string ชัดเจน
+    startDate: startDate.toISOString(), 
     endDate: endDate.toISOString(),
     createdDate: new Date().toISOString(),
     createdBy: 'admin',
@@ -31,7 +29,6 @@ const removeTime = (date: Date) => {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 };
 
-// แก้ไขฟังก์ชัน search เพื่อให้แสดง console.log สำหรับ debug
 export const search = async (param?: ParamSearch) => { 
   console.log("Search function called with params:", param);
   
@@ -55,7 +52,6 @@ export const search = async (param?: ParamSearch) => {
   });
 };
 
-// แก้ไขฟังก์ชัน detail เพื่อ debug
 export const detail = async (id: string) => {
   console.log("Detail function called for id:", id);
   
@@ -65,7 +61,6 @@ export const detail = async (id: string) => {
   return foundItem;
 };
 
-// แก้ไขฟังก์ชัน create/update เพื่อให้มีการตรวจสอบข้อมูลวันที่
 export const create = async (param: Partial<Planning>) => {
   console.log("Create function called with param:", param);
   return param;

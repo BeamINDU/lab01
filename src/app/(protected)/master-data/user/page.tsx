@@ -36,7 +36,8 @@ export default function Page() {
       const param: ParamSearch = {
         userId: formValues.userId || '',
         userName: formValues.userName || '',
-        fullName: formValues.fullName || '',
+        firstname: formValues.firstname || '',
+        lastname: formValues.lastname || '',
         roleName: formValues.RoleName || '',
         status: formValues.status !== undefined ? formValues.status : undefined,
       };
@@ -50,8 +51,8 @@ export default function Page() {
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["User ID", "User Name", "Full Name", "Role Name", "Status", "Created Date", "Updated Date"];
-    const keys: (keyof User)[] = ["userId", "userName", "fullName", "roleName", "status", "createdDate", "updatedDate"];
+    const headers = ["User ID", "User Name", "First Name","Last Name","Email", "Role Name", "Status", "Created Date", "Updated Date"];
+    const keys: (keyof User)[] = ["userId", "userName", "firstname", "lastname", "email", "roleName", "status", "createdDate", "updatedDate"];
     const fileName = "Product";
   
     switch (type) {

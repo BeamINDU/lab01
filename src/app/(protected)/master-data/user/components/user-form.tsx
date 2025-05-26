@@ -11,7 +11,9 @@ import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 const UserSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
   userName: z.string().min(1, "Username is required"),
-  fullName: z.string().min(1, "Full name is required"),
+  firstname: z.string().min(1, "First name is required"),
+  lastname: z.string().min(1, "Email is required"),
+  email: z.string().min(1, "First name is required"),
   roleName: z.string().min(1, "Role name is required"),
   status: z.number(),
   isCreateMode: z.boolean().optional(),
@@ -39,7 +41,9 @@ export default function UserFormModal({
   const defaultValues: UserFormValues = {
     userId: '',
     userName: '',
-    fullName: '',
+    firstname: '',
+    lastname: '',
+    email: '',
     roleName: '',
     status: 1,
     isCreateMode: true,
@@ -132,15 +136,37 @@ export default function UserFormModal({
           
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">Full Name:</label>
+              <label className="font-normal w-32">First Name:</label>
               <input 
-                {...register("fullName")} 
+                {...register("firstname")} 
                 className="border p-2 w-full mb-1"
               />
             </div>
-            {errors.fullName && <p className="text-red-500 ml-160">{errors.fullName.message}</p>}
+            {errors.firstname && <p className="text-red-500 ml-160">{errors.firstname.message}</p>}
           </div>
-          
+
+          <div className="mb-4">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Last Name:</label>
+              <input 
+                {...register("lastname")} 
+                className="border p-2 w-full mb-1"
+              />
+            </div>
+            {errors.lastname && <p className="text-red-500 ml-160">{errors.lastname.message}</p>}
+          </div>
+
+                    <div className="mb-4">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Email:</label>
+              <input 
+                {...register("email")} 
+                className="border p-2 w-full mb-1"
+              />
+            </div>
+            {errors.email && <p className="text-red-500 ml-160">{errors.email.message}</p>}
+          </div>
+
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Role Name:</label>

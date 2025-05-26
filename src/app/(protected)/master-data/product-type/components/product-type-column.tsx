@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { SquarePen } from "lucide-react";
 import { ProductType } from "@/app/types/product-type"
-import { formatDate } from "@/app/utils/format";
+import { formatDateTime } from "@/app/utils/date";
 
 interface ProductTypeColumnProps {
   showCheckbox?: boolean;
@@ -115,7 +115,7 @@ export default function ProductTypeColumns({
       header: "Created Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
     },
@@ -128,7 +128,7 @@ export default function ProductTypeColumns({
       header: "Updated Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
     },

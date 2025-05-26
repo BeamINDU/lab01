@@ -18,6 +18,14 @@ export const showError = (text?: string) => {
   })
 }
 
+export const showWarning = (text?: string) => {
+  return Swal.fire({
+    icon: 'warning',
+    title: '',
+    text,
+  })
+}
+
 export const showConfirm = (text?: string) => {
   return Swal.fire({
     icon: 'question',

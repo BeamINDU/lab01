@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { SquarePen } from "lucide-react";
 import { Product } from "@/app/types/product"
-import { formatDate, formatNumber } from "@/app/utils/format";
+import { formatDateTime } from "@/app/utils/date";
 import { Action } from '@/app/lib/constants/menu';
 
 interface ProductColumnProps {
@@ -136,7 +136,7 @@ export default function productColumns({
       header: "Created Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
     },
@@ -149,7 +149,7 @@ export default function productColumns({
       header: "Updated Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
     },

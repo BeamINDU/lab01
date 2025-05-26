@@ -4,13 +4,15 @@ import type { User, ParamSearch } from "@/app/types/user"
 const mockData: User[] = Array.from({ length: 20 }, (_, i) => ({
   userId: `UN${i+1}`,
   userName: `User${i+1}`,
-  fullName: `F${i+1} L${i+1}`,
+  firstname: `F${i+1}`,
+  lastname: `L${i+1}`,
+  email: `@csi${i+1}`,
   status: i % 2 === 0 ? 1: 0,
   roleName: 'admin',
   createdDate: new Date(),
   createdBy: 'admin',
-  updatedDate: new Date(),
-  updatedBy: 'admin',
+  updatedDate: null,
+  updatedBy: null,
 }))
 
 export const search = async (param?: ParamSearch) => { 

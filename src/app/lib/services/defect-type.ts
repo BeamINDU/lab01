@@ -7,8 +7,8 @@ const mockData: DefectType[] = Array.from({ length: 20 }, (_, i) => ({
   description: 'description description description description',
   createdDate: new Date(),
   createdBy: 'admin',
-  updatedDate: new Date(),
-  updatedBy: 'admin',
+  pdatedDate: null,
+  updatedBy: null,
 }))
 
 export const search = async (param?: ParamSearch) => { 

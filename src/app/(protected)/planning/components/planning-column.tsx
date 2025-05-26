@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { SquarePen } from "lucide-react";
 import { Planning } from "@/app/types/planning"
-import { formatDate, formatNumber } from "@/app/utils/format";
+import { formatDateTime } from "@/app/utils/date";
 
 interface PlanningColumnProps {
   showCheckbox?: boolean;
@@ -96,7 +96,7 @@ export default function PlanningColumns({
       header: "Start Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
     },
@@ -105,7 +105,7 @@ export default function PlanningColumns({
       header: "End Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
     },
@@ -137,7 +137,7 @@ export default function PlanningColumns({
       header: "Created Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
     },
@@ -150,7 +150,7 @@ export default function PlanningColumns({
     //   header: "Updated Date",
     //   cell: ({ getValue }) => {
     //     const rawValue = getValue() as string | number | Date | null | undefined;
-    //     const formattedDate = formatDate(rawValue);
+    //     const formattedDate = formatDateTime(rawValue);
     //     return <div className="text-center">{formattedDate}</div>;
     //   },
     // },

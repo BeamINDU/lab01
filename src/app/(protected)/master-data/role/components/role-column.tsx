@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { SquarePen, LockKeyhole } from "lucide-react";
 import { Role } from "@/app/types/role"
-import { formatDate } from "@/app/utils/format";
+import { formatDateTime } from "@/app/utils/date";
 
 interface RoleColumnProps {
   showCheckbox?: boolean;
@@ -117,7 +117,7 @@ export default function RoleColumns({
       header: "Created Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
     },
@@ -130,7 +130,7 @@ export default function RoleColumns({
       header: "Updated Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
     },

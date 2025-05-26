@@ -1,6 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Transaction } from "@/app/types/transaction"
-import { formatNumber, formatDate } from "@/app/utils/format";
+import { formatNumber } from "@/app/utils/format";
+import { formatDateTime } from "@/app/utils/date";
 
 export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
   return [
@@ -14,7 +15,7 @@ export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
       header: "Start Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
       meta: {
@@ -26,7 +27,7 @@ export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
       header: "End Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
       meta: {

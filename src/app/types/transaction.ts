@@ -7,8 +7,8 @@ export type Transaction = {
   quantity: number
   createdDate?: Date
   createdBy?: string
-  updatedDate?: Date
-  updatedBy?: string
+  updatedDate?: Date | null
+  updatedBy?: string | null
 }
 
 export type ParamSearch = {

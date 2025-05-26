@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { SquarePen } from "lucide-react";
 import { DefectType } from "@/app/types/defect-type"
-import { formatDate } from "@/app/utils/format";
+import { formatDateTime } from "@/app/utils/date";
 
 interface DefectTypeColumnProps {
   showCheckbox?: boolean;
@@ -96,7 +96,7 @@ export default function DefectTypeColumns({
       header: "Created Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
     },
@@ -109,7 +109,7 @@ export default function DefectTypeColumns({
       header: "Updated Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
     },

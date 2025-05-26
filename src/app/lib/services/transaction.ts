@@ -10,8 +10,8 @@ const mockData: Transaction[] = Array.from({ length: 20 }, (_, i) => ({
   quantity: i+1000,
   createdDate: new Date(),
   createdBy: 'admin',
-  updatedDate: new Date(),
-  updatedBy: 'admin',
+  pdatedDate: null,
+  updatedBy: null,
 }))
 
 const removeTime = (date: Date) => {

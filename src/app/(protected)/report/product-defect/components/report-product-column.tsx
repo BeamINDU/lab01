@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { SquarePen, Eye } from "lucide-react";
 import { ReportProduct } from "@/app/types/report-product-defect"
-import { formatNumber, formatDate } from "@/app/utils/format";
+import { formatDateTime } from "@/app/utils/date";
 
 interface ProductColumnProps {
   showCheckbox?: boolean;
@@ -81,7 +81,7 @@ export default function productColumns({
       header: "Datetime",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
-        const formattedDate = formatDate(rawValue);
+        const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
     },

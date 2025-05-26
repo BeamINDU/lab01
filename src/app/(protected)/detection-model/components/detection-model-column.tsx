@@ -1,29 +1,30 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { SquarePen } from "lucide-react";
-import { User } from "@/app/types/user"
+import { DetectionModel } from "@/app/types/detection-model"
 import { formatDateTime } from "@/app/utils/date";
+import { Action } from '@/app/lib/constants/menu';
 
-interface UserColumnProps {
+interface DetectionModelColumnProps {
   showCheckbox?: boolean;
-  openEditModal: (row?: User) => void;
+  openEditModal: (modelId: string) => void;
   selectedIds: string[];
   setSelectedIds: (updater: (prevState: string[]) => string[]) => void; 
-  data: User[];
+  data: DetectionModel[];
   canEdit: boolean
 }
 
-export default function UserColumns({
+export default function DetectionModelColumns({
   showCheckbox,
   openEditModal, 
   selectedIds,
   setSelectedIds,
   data,
-  canEdit
-}: UserColumnProps): ColumnDef<User>[] {
+  canEdit,
+}: DetectionModelColumnProps): ColumnDef<DetectionModel>[] {
 
-  const toggleSelect = (userId: string) => {
+  const toggleSelect = (modelId: string) => {
     setSelectedIds((prev) =>
-      prev.includes(userId) ? prev.filter((selectedId) => selectedId !== userId) : [...prev, userId]
+      prev.includes(modelId) ? prev.filter((selectedId) => selectedId !== modelId) : [...prev, modelId]
     );
   };
 
@@ -32,8 +33,8 @@ export default function UserColumns({
       prev.length === data.length
         ? [] // If all items are selected, unselect all
         : data
-          .map((item) => item.userId) // Map to ids
-          .filter((userId): userId is string => userId !== undefined) // Filter out undefined values
+          .map((item) => item.modelId) // Map to ids
+          .filter((modelId): modelId is string => modelId !== undefined) // Filter out undefined values
     );
   };
 
@@ -46,7 +47,7 @@ export default function UserColumns({
               <div className="flex justify-center items-center">
                 <input
                   type="checkbox"
-                  checked={selectedIds.length === data.length && data.every(item => selectedIds.includes(item.userId ?? ""))}
+                  checked={selectedIds.length === data.length && data.every(item => selectedIds.includes(item.modelId ?? ""))}
                   onChange={toggleSelectAll}
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
                 />
@@ -56,8 +57,8 @@ export default function UserColumns({
               <div className="flex items-center justify-center">
                 <input
                   type="checkbox"
-                  checked={selectedIds.includes(row.original.userId)} 
-                  onChange={() => toggleSelect(row.original.userId)} 
+                  checked={selectedIds.includes(row.original.modelId)} 
+                  onChange={() => toggleSelect(row.original.modelId)} 
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
                 />
               </div>
@@ -76,48 +77,56 @@ export default function UserColumns({
       enableSorting: false,
     },
     {
-      accessorKey: "userId",
-      header: "User ID",
+      accessorKey: "modelId",
+      header: "Model ID",
     },
     {
-      accessorKey: "userName",
-      header: "User Name",
+      accessorKey: "modelName",
+      header: "Model Name",
     },
     {
-      accessorKey: "firstname",
-      header: "First Name",
+      accessorKey: "version",
+      header: "Version",
     },
     {
-      accessorKey: "lastname",
-      header: "Last Name",
-    },
-        {
-      accessorKey: "email",
-      header: "Email Name",
-    },
-    {
-      accessorKey: "roleName",
-      header: "Role",
+      accessorKey: "function",
+      header: "Function",
     },
     {
       accessorKey: "status",
       header: "Status",
-      cell: ({ getValue }) => {
-        const value = getValue() as number;
-        const isActive = value === 1;
-        return (
-          <span
-            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium ${
-              isActive
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
-            }`}
-          >
-            {isActive ? 'Active' : 'Inactive'}
-          </span>
-        );
-      },
-    },    
+    },
+    // {
+    //   accessorKey: "status",
+    //   header: "Status",
+    //   cell: ({ getValue }) => {
+    //     const value = getValue() as number;
+    //     const isActive = value === 1;
+    //     return (
+    //       <span
+    //         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium ${
+    //           isActive
+    //             ? 'bg-green-100 text-green-800'
+    //             : 'bg-red-100 text-red-800'
+    //         }`}
+    //       >
+    //         {isActive ? 'Active' : 'Inactive'}
+    //       </span>
+    //     );
+    //   },
+    // },    
+    // {
+    //   accessorKey: "quantity",
+    //   header: "Quantity",
+    //   cell: ({ getValue }) => {
+    //     const value = getValue<number>();
+    //     return (
+    //       <div className="text-right">
+    //         {formatNumber(value)}
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       accessorKey: "createdBy",
       header: "Created By",
@@ -151,7 +160,7 @@ export default function UserColumns({
         <div className="flex items-center justify-center gap-2">
           <button 
             className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary"
-            onClick={() => openEditModal(row.original)}
+            onClick={() => openEditModal(row.original.modelId)}
           >
             {canEdit ? 'Edit' : 'Detail'}
             <SquarePen size={16} />
