@@ -44,7 +44,7 @@ const generateMockDashboardData = (filters: DashboardFilters): DashboardData => 
   
   const baseTotal = 5000;
   const totalProducts = Math.floor(baseTotal * productMultiplier * cameraMultiplier * lineMultiplier);
-  const ngRate = 0.1 + (Math.random() * 0.05); // 10-15% NG rate
+  const ngRate = 0.1 + (Math.random() * 0.05); 
   const ngCount = Math.floor(totalProducts * ngRate);
   const goodCount = totalProducts - ngCount;
 
@@ -98,7 +98,7 @@ const generateMockDashboardData = (filters: DashboardFilters): DashboardData => 
 export const getProducts = async (): Promise<ProductOption[]> => {
   try {
     // return await api.get<ProductOption[]>('/dashboard/products');
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
     return mockProducts;
   } catch (error) {
     console.error('Failed to fetch products:', error);
@@ -109,7 +109,7 @@ export const getProducts = async (): Promise<ProductOption[]> => {
 export const getCameras = async (): Promise<CameraOption[]> => {
   try {
     // return await api.get<CameraOption[]>('/dashboard/cameras');
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500)); 
     return mockCameras;
   } catch (error) {
     console.error('Failed to fetch cameras:', error);
@@ -120,7 +120,7 @@ export const getCameras = async (): Promise<CameraOption[]> => {
 export const getLines = async (): Promise<LineOption[]> => {
   try {
     // return await api.get<LineOption[]>('/dashboard/lines');
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500)); 
     return mockLines;
   } catch (error) {
     console.error('Failed to fetch lines:', error);
@@ -130,9 +130,7 @@ export const getLines = async (): Promise<LineOption[]> => {
 
 export const getDashboardData = async (filters: DashboardFilters): Promise<DashboardData> => {
   try {
-    // return await api.post<DashboardData>('/dashboard/data', filters);
-    
-    // Mock implementation
+
     console.log('Fetching dashboard data with filters:', filters);
     await new Promise(resolve => setTimeout(resolve, 800)); // Simulate API delay
     

@@ -85,7 +85,7 @@ export default function productColumns({
       header: "Production Name",
     },
     {
-      accessorKey: "productType",
+      accessorKey: "productTypeName",
       header: "Production Type",
     },
     // {

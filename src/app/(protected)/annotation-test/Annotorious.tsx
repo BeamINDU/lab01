@@ -1,8 +1,8 @@
-
+// src/app/(protected)/annotation-test/Annotorious.tsx
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Download, Trash2, Square, Circle as CircleIcon, Edit3, Hexagon, Type, Save, RefreshCw } from 'lucide-react';
+import { Download, Trash2, Square, Circle as CircleIcon, Edit3, Hexagon, Type, Save, RefreshCw, AlertCircle } from 'lucide-react';
 
 // Annotorious type definitions
 declare global {
@@ -20,7 +20,10 @@ const AnnotoriousImplementation = () => {
   const [defectType, setDefectType] = useState<string>('defect');
   const [labelCounter, setLabelCounter] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [loadingStatus, setLoadingStatus] = useState<string>('Initializing...');
   const [imageError, setImageError] = useState<boolean>(false);
+  const initAttempts = useRef(0);
+  const maxAttempts = 3;
 
   // Defect categories
   const defectCategories = [
@@ -40,119 +43,166 @@ const AnnotoriousImplementation = () => {
     return label;
   };
 
-  // Initialize Annotorious
-  useEffect(() => {
-    let anno: any = null;
+  // Initialize Annotorious with retry logic
+  const initializeAnnotorious = async () => {
+    if (!imageRef.current || !window.Annotorious) {
+      console.log('Prerequisites not ready:', {
+        image: !!imageRef.current,
+        Annotorious: !!window.Annotorious
+      });
+      return false;
+    }
 
-    const loadAnnotorious = async () => {
-      try {
-        // Load Annotorious from CDN
-        if (!window.Annotorious) {
-          const script = document.createElement('script');
-          script.src = 'https://cdn.jsdelivr.net/npm/@recogito/annotorious@2.7.10/dist/annotorious.min.js';
-          script.async = true;
-          
-          await new Promise((resolve, reject) => {
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-          });
-
-          // Load CSS
-          const link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = 'https://cdn.jsdelivr.net/npm/@recogito/annotorious@2.7.10/dist/annotorious.min.css';
-          document.head.appendChild(link);
-        }
-
-        // Wait for image to load
-        if (imageRef.current && imageRef.current.complete && window.Annotorious) {
-          initializeAnnotorious();
-        }
-      } catch (error) {
-        console.error('Failed to load Annotorious:', error);
-        setImageError(true);
+    try {
+      setLoadingStatus('Creating annotation layer...');
+      
+      // Destroy existing instance if any
+      if (annotoriousRef.current) {
+        annotoriousRef.current.destroy();
+        annotoriousRef.current = null;
       }
-    };
 
-    const initializeAnnotorious = () => {
-      if (!imageRef.current || !window.Annotorious) return;
-
-      try {
-        // Initialize Annotorious
-        anno = new window.Annotorious({
-          image: imageRef.current,
-          locale: 'en',
-          allowEmpty: false,
-          widgets: [
-            {
-              widget: 'COMMENT',
-              editable: true
-            },
-            {
-              widget: 'TAG',
-              vocabulary: defectCategories.map(c => c.name)
-            }
-          ]
-        });
-
-        annotoriousRef.current = anno;
-
-        // Custom formatter for colored annotations
-        anno.formatters = [{
-          formatter: (annotation: any) => {
-            const defectTag = annotation.body?.find((b: any) => b.purpose === 'tagging')?.value;
-            const category = defectCategories.find(c => c.name === defectTag);
-            const className = category ? `defect-${category.id}` : 'defect-default';
-            return className;
+      // Initialize Annotorious
+      const anno = new window.Annotorious({
+        image: imageRef.current,
+        locale: 'en',
+        allowEmpty: false,
+        widgets: [
+          {
+            widget: 'COMMENT',
+            editable: true
+          },
+          {
+            widget: 'TAG',
+            vocabulary: defectCategories.map(c => c.name)
           }
-        }];
+        ]
+      });
 
-        // Event handlers
-        anno.on('createAnnotation', (annotation: any) => {
-          handleAnnotationCreate(annotation);
-        });
+      annotoriousRef.current = anno;
 
-        anno.on('updateAnnotation', (annotation: any, previous: any) => {
-          handleAnnotationUpdate(annotation, previous);
-        });
+      // Custom formatter for colored annotations
+      anno.formatters = [{
+        formatter: (annotation: any) => {
+          const defectTag = annotation.body?.find((b: any) => b.purpose === 'tagging')?.value;
+          const category = defectCategories.find(c => c.name === defectTag);
+          const className = category ? `defect-${category.id}` : 'defect-default';
+          return className;
+        }
+      }];
 
-        anno.on('deleteAnnotation', (annotation: any) => {
-          handleAnnotationDelete(annotation);
-        });
+      // Event handlers
+      anno.on('createAnnotation', handleAnnotationCreate);
+      anno.on('updateAnnotation', handleAnnotationUpdate);
+      anno.on('deleteAnnotation', handleAnnotationDelete);
+      anno.on('selectAnnotation', (annotation: any) => setSelectedAnnotation(annotation));
+      anno.on('cancelSelected', () => setSelectedAnnotation(null));
 
-        anno.on('selectAnnotation', (annotation: any) => {
-          setSelectedAnnotation(annotation);
-        });
+      // Set initial tool
+      setCurrentTool(tool);
+      
+      setIsLoading(false);
+      setLoadingStatus('');
+      console.log('Annotorious initialized successfully');
+      return true;
+      
+    } catch (error) {
+      console.error('Failed to initialize Annotorious:', error);
+      return false;
+    }
+  };
 
-        anno.on('cancelSelected', () => {
-          setSelectedAnnotation(null);
-        });
+  // Load Annotorious script from CDN
+  const loadAnnotoriousScript = async () => {
+    setLoadingStatus('Loading Annotorious library...');
+    
+    return new Promise((resolve, reject) => {
+      // Check if already loaded
+      if (window.Annotorious) {
+        resolve(true);
+        return;
+      }
 
-        // Set initial tool
-        setCurrentTool(tool);
+      // Create script element
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/@recogito/annotorious@2.7.10/dist/annotorious.min.js';
+      script.async = true;
+      
+      script.onload = () => {
+        console.log('Annotorious script loaded');
+        resolve(true);
+      };
+      
+      script.onerror = () => {
+        console.error('Failed to load Annotorious script');
+        reject(new Error('Script load failed'));
+      };
+      
+      document.head.appendChild(script);
+
+      // Also load CSS
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/npm/@recogito/annotorious@2.7.10/dist/annotorious.min.css';
+      document.head.appendChild(link);
+    });
+  };
+
+  // Main initialization effect
+  useEffect(() => {
+    let mounted = true;
+    let retryTimeout: NodeJS.Timeout;
+
+    const init = async () => {
+      try {
+        // Step 1: Load Annotorious script
+        await loadAnnotoriousScript();
         
-        setIsLoading(false);
+        // Step 2: Wait for image to be ready
+        setLoadingStatus('Waiting for image...');
+        
+        // Check if image is already loaded
+        if (imageRef.current?.complete) {
+          const success = await initializeAnnotorious();
+          if (!success && mounted && initAttempts.current < maxAttempts) {
+            initAttempts.current++;
+            retryTimeout = setTimeout(init, 1000);
+          }
+        }
       } catch (error) {
-        console.error('Failed to initialize Annotorious:', error);
-        setImageError(true);
+        console.error('Initialization error:', error);
+        if (mounted && initAttempts.current < maxAttempts) {
+          initAttempts.current++;
+          setLoadingStatus(`Retrying... (${initAttempts.current}/${maxAttempts})`);
+          retryTimeout = setTimeout(init, 2000);
+        } else {
+          setImageError(true);
+          setIsLoading(false);
+        }
       }
     };
 
-    // Load Annotorious
-    loadAnnotorious();
+    init();
 
-    // Cleanup
     return () => {
-      if (anno) {
-        anno.destroy();
+      mounted = false;
+      if (retryTimeout) clearTimeout(retryTimeout);
+      if (annotoriousRef.current) {
+        annotoriousRef.current.destroy();
       }
     };
   }, []);
 
+  // Handle image load
+  const handleImageLoad = async () => {
+    console.log('Image loaded');
+    if (window.Annotorious && isLoading) {
+      await initializeAnnotorious();
+    }
+  };
+
   // Handle annotation creation
   const handleAnnotationCreate = (annotation: any) => {
-    // Add auto-generated label
     const label = generateAutoLabel(defectType);
     const category = defectCategories.find(c => c.id === defectType);
     
@@ -173,9 +223,7 @@ const AnnotoriousImplementation = () => {
       defectType: defectType
     };
 
-    // Update annotation with label
     annotoriousRef.current?.updateAnnotation(annotation, enhancedAnnotation);
-    
     setAnnotations(prev => [...prev, enhancedAnnotation]);
   };
 
@@ -193,23 +241,14 @@ const AnnotoriousImplementation = () => {
   const setCurrentTool = (toolName: string) => {
     if (!annotoriousRef.current) return;
 
-    switch (toolName) {
-      case 'rect':
-        annotoriousRef.current.setDrawingTool('rect');
-        break;
-      case 'polygon':
-        annotoriousRef.current.setDrawingTool('polygon');
-        break;
-      case 'circle':
-        // Annotorious doesn't have native circle, use ellipse
-        annotoriousRef.current.setDrawingTool('ellipse');
-        break;
-      case 'freehand':
-        annotoriousRef.current.setDrawingTool('freehand');
-        break;
-      default:
-        annotoriousRef.current.setDrawingTool('rect');
-    }
+    const toolMap: { [key: string]: string } = {
+      'rect': 'rect',
+      'polygon': 'polygon',
+      'circle': 'ellipse',
+      'freehand': 'freehand'
+    };
+
+    annotoriousRef.current.setDrawingTool(toolMap[toolName] || 'rect');
     setTool(toolName);
   };
 
@@ -267,10 +306,8 @@ const AnnotoriousImplementation = () => {
       try {
         const data = JSON.parse(e.target?.result as string);
         if (data.annotations && Array.isArray(data.annotations)) {
-          // Clear existing annotations
           handleClearAll();
           
-          // Add imported annotations
           data.annotations.forEach((ann: any) => {
             const annotation = {
               '@context': 'http://www.w3.org/ns/anno.jsonld',
@@ -317,28 +354,32 @@ const AnnotoriousImplementation = () => {
           <div className="flex gap-2">
             <button
               onClick={() => setCurrentTool('rect')}
-              className={`p-2 rounded ${tool === 'rect' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              disabled={isLoading}
+              className={`p-2 rounded ${tool === 'rect' ? 'bg-blue-500 text-white' : 'bg-gray-200'} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               title="Rectangle"
             >
               <Square size={20} />
             </button>
             <button
               onClick={() => setCurrentTool('circle')}
-              className={`p-2 rounded ${tool === 'circle' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              disabled={isLoading}
+              className={`p-2 rounded ${tool === 'circle' ? 'bg-blue-500 text-white' : 'bg-gray-200'} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               title="Circle/Ellipse"
             >
               <CircleIcon size={20} />
             </button>
             <button
               onClick={() => setCurrentTool('polygon')}
-              className={`p-2 rounded ${tool === 'polygon' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              disabled={isLoading}
+              className={`p-2 rounded ${tool === 'polygon' ? 'bg-blue-500 text-white' : 'bg-gray-200'} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               title="Polygon"
             >
               <Hexagon size={20} />
             </button>
             <button
               onClick={() => setCurrentTool('freehand')}
-              className={`p-2 rounded ${tool === 'freehand' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+              disabled={isLoading}
+              className={`p-2 rounded ${tool === 'freehand' ? 'bg-blue-500 text-white' : 'bg-gray-200'} ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               title="Freehand"
             >
               <Edit3 size={20} />
@@ -349,7 +390,8 @@ const AnnotoriousImplementation = () => {
           <select
             value={defectType}
             onChange={(e) => setDefectType(e.target.value)}
-            className="px-3 py-2 border rounded"
+            disabled={isLoading}
+            className="px-3 py-2 border rounded disabled:opacity-50"
           >
             {defectCategories.map(cat => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -360,7 +402,7 @@ const AnnotoriousImplementation = () => {
           <div className="flex gap-2 ml-auto">
             <button
               onClick={handleDeleteSelected}
-              disabled={!selectedAnnotation}
+              disabled={!selectedAnnotation || isLoading}
               className="px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-300 flex items-center gap-2"
             >
               <Trash2 size={16} />
@@ -368,7 +410,7 @@ const AnnotoriousImplementation = () => {
             </button>
             <button
               onClick={handleClearAll}
-              disabled={annotations.length === 0}
+              disabled={annotations.length === 0 || isLoading}
               className="px-4 py-2 bg-orange-500 text-white rounded disabled:bg-gray-300 flex items-center gap-2"
             >
               <RefreshCw size={16} />
@@ -382,13 +424,14 @@ const AnnotoriousImplementation = () => {
               <Download size={16} />
               Export ({annotations.length})
             </button>
-            <label className="px-4 py-2 bg-blue-500 text-white rounded cursor-pointer flex items-center gap-2">
+            <label className={`px-4 py-2 bg-blue-500 text-white rounded cursor-pointer flex items-center gap-2 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}>
               <Save size={16} />
               Import
               <input
                 type="file"
                 accept=".json"
                 onChange={handleImport}
+                disabled={isLoading}
                 className="hidden"
               />
             </label>
@@ -402,21 +445,33 @@ const AnnotoriousImplementation = () => {
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-md p-4">
             <div className="relative">
+              {/* Enhanced Loading State */}
               {isLoading && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-75 z-10">
-                  <div className="text-center">
-                    <div className="spinner-border animate-spin inline-block w-8 h-8 border-4 rounded-full border-blue-500 border-t-transparent"></div>
-                    <p className="mt-2">Loading Annotorious...</p>
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100 bg-opacity-90 z-10 rounded">
+                  <div className="text-center bg-white p-6 rounded-lg shadow-lg">
+                    <div className="spinner-border animate-spin inline-block w-12 h-12 border-4 rounded-full border-blue-500 border-t-transparent mb-4"></div>
+                    <p className="text-lg font-medium mb-2">Loading Annotorious</p>
+                    <p className="text-sm text-gray-600">{loadingStatus}</p>
+                    {initAttempts.current > 0 && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        Attempt {initAttempts.current} of {maxAttempts}
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
               
+              {/* Error State */}
               {imageError ? (
-                <div className="border-2 border-dashed border-gray-300 rounded p-8 text-center">
-                  <p className="text-red-500">Failed to load image or Annotorious library</p>
+                <div className="border-2 border-dashed border-red-300 rounded p-8 text-center bg-red-50">
+                  <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                  <p className="text-lg font-medium text-red-700 mb-2">Failed to load Annotorious</p>
+                  <p className="text-sm text-red-600 mb-4">
+                    This might be due to network issues or CDN blocking.
+                  </p>
                   <button 
                     onClick={() => window.location.reload()} 
-                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded"
+                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
                   >
                     Reload Page
                   </button>
@@ -428,14 +483,11 @@ const AnnotoriousImplementation = () => {
                   alt="Product for inspection"
                   className="w-full rounded"
                   crossOrigin="anonymous"
-                  onLoad={() => {
-                    if (window.Annotorious && annotoriousRef.current === null) {
-                      // Re-initialize if needed
-                      setTimeout(() => {
-                        const event = new Event('annotorious-init');
-                        window.dispatchEvent(event);
-                      }, 100);
-                    }
+                  onLoad={handleImageLoad}
+                  onError={() => {
+                    console.error('Image load failed');
+                    setImageError(true);
+                    setIsLoading(false);
                   }}
                 />
               )}
@@ -478,7 +530,9 @@ const AnnotoriousImplementation = () => {
               <h3 className="text-sm font-medium mb-2">Detected Defects</h3>
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {annotations.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">No annotations yet</p>
+                  <p className="text-gray-500 text-center py-4">
+                    {isLoading ? 'Loading...' : 'No annotations yet'}
+                  </p>
                 ) : (
                   annotations.map((ann, index) => {
                     const label = ann.body?.find((b: any) => b.purpose === 'commenting')?.value || 'Unlabeled';
@@ -589,11 +643,13 @@ const AnnotoriousImplementation = () => {
           background: white !important;
           border: 1px solid #ddd !important;
           border-radius: 4px !important;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
         }
         
         .a9s-comment-widget textarea {
           font-size: 14px !important;
           padding: 8px !important;
+          min-height: 60px !important;
         }
         
         .a9s-tag-widget {

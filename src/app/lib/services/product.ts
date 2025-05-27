@@ -4,7 +4,7 @@ import type { Product, ParamSearch } from "@/app/types/product"
 const mockData: Product[] = Array.from({ length: 20 }, (_, i) => ({
   productId: `PROD${i+1}`,
   productName: i % 2 === 0 ? 'Grape' : 'Orange',
-  productType: 'Bottle',
+  productTypeName: i % 2 === 0 ? 'Bottle' : 'Box',
   serialNo: i % 2 === 0 ? '1234567890' : '0987654321',
   status: i % 2 === 0 ? 1 : 0,
   createdDate: new Date(),
@@ -22,7 +22,7 @@ export const search = async (param?: ParamSearch) => {
     return (
       (!param.productId || item.productId.toLowerCase().includes(param.productId.toLowerCase())) &&
       (!param.productName || item.productName.toLowerCase().includes(param.productName.toLowerCase())) &&
-      (!param.productType || item.productType.toLowerCase().includes(param.productType.toLowerCase())) &&
+      (!param.productTypeName || item.productTypeName.toLowerCase().includes(param.productTypeName.toLowerCase())) &&
       (!param.serialNo || item.serialNo.toLowerCase().includes(param.serialNo.toLowerCase())) &&
       (parsedStatus === undefined || item.status === parsedStatus)
     );

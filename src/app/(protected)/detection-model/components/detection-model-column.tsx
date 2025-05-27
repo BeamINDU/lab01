@@ -160,7 +160,7 @@ export default function DetectionModelColumns({
         <div className="flex items-center justify-center gap-2">
           <button 
             className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary"
-            onClick={() => openEditModal(row.original.modelId)}
+              onClick={() => openEditModal(row.original.modelId)}
           >
             {canEdit ? 'Edit' : 'Detail'}
             <SquarePen size={16} />
