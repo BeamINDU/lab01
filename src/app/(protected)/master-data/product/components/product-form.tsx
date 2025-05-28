@@ -12,7 +12,7 @@ import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 const ProductSchema = z.object({
   productId: z.string().min(1, "Production Id is required"),
   productName: z.string().min(1, "Product Name is required"),
-  productType: z.string().min(1, "Product Type is required"),
+  productTypeName: z.string().min(1, "Product Type is required"),
   serialNo: z.string().min(1, "Serial No is required"),
   status: z.number().min(1, "Status No is required"),
   isCreateMode: z.boolean(), 
@@ -40,7 +40,7 @@ export default function ProductFormModal({
   const defaultValues: ProductFormValues = {
     productId: '',
     productName: '',
-    productType: '',
+    productTypeName: '',
     serialNo: '',
     status: 1,
     isCreateMode: true,
@@ -129,9 +129,9 @@ export default function ProductFormModal({
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Product Type:</label>
-              <input {...register("productType")} className="border p-2 w-full mb-1" />
+              <input {...register("productTypeName")} className="border p-2 w-full mb-1" />
             </div>
-            {errors.productType && <p className="text-red-500 ml-160">{errors.productType.message}</p>}
+            {errors.productTypeName && <p className="text-red-500 ml-160">{errors.productTypeName.message}</p>}
           </div>
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">

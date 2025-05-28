@@ -13,14 +13,14 @@ export default function ProductFilterForm({ register, onSearch }: ProductFilterF
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Model ID */}
-        <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+        {/* <div className="grid grid-cols-[100px_1fr] items-center gap-2">
           <label className="font-semibold w-[120px]">Model ID</label>
           <input
             type="text"
             {...register("modelId")}
             className="rounded px-3 py-2 border border-gray-300 w-full"
           />
-        </div>
+        </div> */}
         {/* Model Name */}
         <div className="grid grid-cols-[100px_1fr] items-center gap-2">
           <label className="font-semibold w-[120px]">Model Name</label>
@@ -53,11 +53,20 @@ export default function ProductFilterForm({ register, onSearch }: ProductFilterF
         {/* Status */}
         <div className="grid grid-cols-[100px_1fr] items-center gap-2">
           <label className="font-semibold w-[120px]">Status</label>
-          <input
+          {/* <input
             type="text"
             {...register("status")}
             className="rounded px-3 py-2 border border-gray-300 w-full"
-          />
+          /> */}
+          <select
+            {...register("status")}
+            className="rounded px-3 py-2 border border-gray-300 w-full"
+          >
+            <option value="">All</option>
+            <option value="1">Using</option>
+            <option value="2">Processing</option>
+            <option value="3">Ready</option>
+          </select>
         </div>
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">

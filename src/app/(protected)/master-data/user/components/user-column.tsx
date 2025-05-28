@@ -81,7 +81,7 @@ export default function UserColumns({
     },
     {
       accessorKey: "userName",
-      header: "User Name",
+      header: "Username",
     },
     {
       accessorKey: "firstname",

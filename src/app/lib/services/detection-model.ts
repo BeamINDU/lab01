@@ -3,7 +3,7 @@ import type { DetectionModel, ParamSearch } from "@/app/types/detection-model"
 import { SelectOption } from "@/app/types/select-option";
 
 const mockData: DetectionModel[] = Array.from({ length: 20 }, (_, i) => ({
-  modelId: `M-${i+1}`,
+  modelId: i,
   modelName: `MD ${i+1}`,
   description: 'description description description',      
   version: i+1,
@@ -25,7 +25,7 @@ export const search = async (param?: ParamSearch) => {
 
   return mockData.filter(item => {
     return (
-      (!param.modelId || item.modelId.toLowerCase().includes(param.modelId.toLowerCase())) &&
+      // (!param.modelId || item.modelId.toLowerCase().includes(param.modelId.toLowerCase())) &&
       (!param.modelName || item.modelName.toLowerCase().includes(param.modelName.toLowerCase())) &&
       (!param.version || item.version === param.version) &&
       (!param.status || item.status?.toLowerCase().includes(param.status.toLowerCase())) &&
@@ -35,7 +35,7 @@ export const search = async (param?: ParamSearch) => {
   // const detectionModel = await api.get<DetectionModel[]>('/search')
 };
 
-export const detail = async (id: string) => {
+export const detail = async (id: number) => {
   return mockData.find(item => item.modelId === id);
   // return await apiClient<DetectionModel>(`${apiUrl}/detail/${id}`, "GET");
 };
@@ -50,7 +50,7 @@ export const update = async (param: Partial<DetectionModel>) => {
   // const updated = await api.put<DetectionModel>(`/update/${param.id}`, param)
 };
 
-export const remove = async (id: string) => {
+export const remove = async (id: number) => {
   return {};
   // await api.delete(`/remove/${id}`)
 };

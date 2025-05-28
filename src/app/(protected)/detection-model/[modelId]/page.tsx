@@ -6,9 +6,13 @@ import DetectionModelForm from '../components/detection-model-form';
 export default function DetectionModelStepPage() {
   const params = useParams();
 
-  const modelId = params?.modelId;
+  const rawModelId = params?.modelId;
+  const modelId =
+    typeof rawModelId === 'string' && !Array.isArray(rawModelId)
+      ? parseInt(rawModelId, 10)
+      : null;
 
-  if (!modelId || Array.isArray(modelId)) {
+  if (!modelId || isNaN(modelId)) {
     return <div>Error: Invalid model ID</div>;
   }
 
@@ -16,7 +20,7 @@ export default function DetectionModelStepPage() {
     <>
       <h2 className="text-2xl font-bold mb-2 ml-3">Detection Model: {modelId}</h2>
       <div className="p-3 mx-auto">
-          <DetectionModelForm modelId={modelId}/>
+        <DetectionModelForm modelId={modelId} />
       </div>
     </>
   );

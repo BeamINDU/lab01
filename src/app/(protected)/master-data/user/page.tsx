@@ -1,3 +1,4 @@
+// src/app/(protected)/master-data/user/page.tsx
 'use client'
 
 import { useState, useEffect } from "react";
@@ -17,32 +18,46 @@ import UserColumns from "./components/user-column";
 import UserFilterForm from './components/user-filter';
 import UserFormModal from "./components/user-form";
 
-
 export default function Page() {
   const { hasPermission } = usePermission();
-  const { register, getValues, setValue, reset } = useForm();
+  const { register, getValues, setValue, reset, watch } = useForm(); 
   const [data, setData] = useState<User[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingData, setEditingData] = useState<User | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
+  // Watch สำหรับ roleName เพื่อ debug
+  const watchedRoleName = watch("roleName");
+
   useEffect(() => {
     handleSearch();
   }, []);
 
+  // Debug: แสดงค่าที่ถูก watch
+  useEffect(() => {
+    console.log('Current roleName value:', watchedRoleName);
+  }, [watchedRoleName]);
+
   const handleSearch = async () => {
     try {
       const formValues = getValues();
+      console.log('User search with values:', formValues); 
+      
       const param: ParamSearch = {
         userId: formValues.userId || '',
         userName: formValues.userName || '',
         firstname: formValues.firstname || '',
         lastname: formValues.lastname || '',
-        roleName: formValues.RoleName || '',
+        roleName: formValues.roleName || '', 
         status: formValues.status !== undefined ? formValues.status : undefined,
       };
-      const products = await search(param);
-      setData(products);
+      
+      console.log('User search parameters:', param); 
+      
+      const users = await search(param);
+      setData(users);
+      
+      console.log('User search results:', users.length, 'items'); 
     } catch (error) {
       console.error("Error search user:", error);
       showError('Error search user');
@@ -53,7 +68,7 @@ export default function Page() {
   const handleExport = (type: ExportType) => {
     const headers = ["User ID", "User Name", "First Name","Last Name","Email", "Role Name", "Status", "Created Date", "Updated Date"];
     const keys: (keyof User)[] = ["userId", "userName", "firstname", "lastname", "email", "roleName", "status", "createdDate", "updatedDate"];
-    const fileName = "Product";
+    const fileName = "User";
   
     switch (type) {
       case ExportType.CSV:
@@ -94,7 +109,7 @@ export default function Page() {
   };
 
   const handleDelete = async () => {
-    const result = await showConfirm('Are you sure you want to delete these product user?')
+    const result = await showConfirm('Are you sure you want to delete these users?')
     if (result.isConfirmed) {
       try {
         for (const userId of selectedIds) {
@@ -128,17 +143,17 @@ export default function Page() {
       setIsFormModalOpen(false);
     }
   };
-  
 
   return (
     <>
       <h2 className="text-2xl font-bold mb-2 ml-3">User</h2>
       <div className="p-4 mx-auto">
-      <div className="mb-6 max-w-full text-sm">
+        <div className="mb-6 max-w-full text-sm">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Filters Form */}
             <UserFilterForm 
-              register={register} 
+              register={register}
+              setValue={setValue} // ⭐ ส่ง setValue
               onSearch={handleSearch} 
             />
             
@@ -182,12 +197,18 @@ export default function Page() {
           </div>
         </div>
 
+        {/* Debug Info  */}
+        <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+          <strong>Debug Info:</strong> Current Role Name = {watchedRoleName || 'empty'} | 
+          Total Users = {data.length} items
+        </div>
+
         {/* DataTable */}
         <DataTable
           columns={UserColumns({
             showCheckbox: hasPermission(Menu.User, Action.Delete),
             canEdit: hasPermission(Menu.User, Action.Edit),
-            openEditModal:handleAddEdit,
+            openEditModal: handleAddEdit,
             selectedIds,
             setSelectedIds,
             data,

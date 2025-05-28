@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
+import { formatNumber } from "@/app/utils/format";
+import { formatDate, formatTime } from "@/app/utils/date";
 import { LiveInspectionView } from "@/app/types/live"
 import { detail } from "@/app/lib/services/live";
 
@@ -13,8 +15,8 @@ const LiveInspectionViewPage = ({ camera }: { camera: string }) => {
   
     const fetchData = async () => {
       try {
-        const result = await detail(camera);
-        setData(result);
+        // const result = await detail(camera);
+        // setData(result);
       } catch (error) {
         console.error(error);
         showError('Failed to load inspection detail');
@@ -59,13 +61,13 @@ const LiveInspectionViewPage = ({ camera }: { camera: string }) => {
           </div>
 
           <div className="bg-gray-200 p-6 text-black space-y-2 text-xl leading-10 h-[392px]">
-            <p><b>ID</b> : {data?.id}</p>
             <p><b>Product ID</b> : {data?.productId}</p>
-            <p><b>Part</b> : {data?.part}</p>
-            <p><b>Serial No.</b> : {data?.serialNo}</p>
+            <p><b>Product Name</b> : {data?.productName}</p>
+            <p><b>Product Type</b> : {data?.productTypeName}</p>
+            <p><b>Serial No</b> : {data?.serialNo}</p>
             <p><b>Defect Type</b> : {data?.defectType}</p>
-            <p><b>Production Date</b> : {data?.productionDate}</p>
-            <p><b>Production Time</b> : {data?.productionTime}</p>
+            <p><b>Production Date</b> : {formatDate(data?.productionDateTime)}</p>
+            <p><b>Production Time</b> : {formatTime(data?.productionDateTime)}</p>
           </div>
         </div>
       </div>
@@ -73,9 +75,9 @@ const LiveInspectionViewPage = ({ camera }: { camera: string }) => {
       {/* Footer Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4">
         <SummaryBox label="Lot No." value={data?.lotNo} />
-        <SummaryBox label="Total NG" value={data?.totalNG} />
-        <SummaryBox label="Total Product" value={data?.totalProduct} />
-        <SummaryBox label="Actual" value={data?.actual} />
+        <SummaryBox label="Total NG Product" value={formatNumber(data?.totalNG)} />
+        <SummaryBox label="Total Planning Product" value={formatNumber(data?.totalPlanning)} />
+        <SummaryBox label="Actual Planning Product" value={formatNumber(data?.actualPlanning)} />
       </div>
     </div>
   );

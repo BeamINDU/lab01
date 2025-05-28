@@ -9,11 +9,11 @@ import { FormData, DetectionModel } from "@/app/types/detection-model";
 type Props = {
   next: (data: any) => void;
   formData: FormData;
-  modelId: string;
+  modelId: number;
 };
 
 export const step1Schema = z.object({
-  modelId: z.string(),
+  modelId: z.number(),
   functions: z.string().min(1, "functions is required"),
 });
 

@@ -88,6 +88,25 @@ export default function DefectTypeColumns({
       header: "Description",
     },
     {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ getValue }) => {
+        const value = getValue() as number;
+        const isActive = value === 1;
+        return (
+          <span
+            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium ${
+              isActive
+                ? 'bg-green-100 text-green-800'
+                : 'bg-red-100 text-red-800'
+            }`}
+          >
+            {isActive ? 'Active' : 'Inactive'}
+          </span>
+        );
+      },
+    },    
+    {
       accessorKey: "createdBy",
       header: "Created By",
     },

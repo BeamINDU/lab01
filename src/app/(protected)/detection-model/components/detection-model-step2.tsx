@@ -14,14 +14,14 @@ import AnnotationModal from "./annotation-modal";
 type Props = {
   next: (data: any) => void;
   prev: () => void;
-  modelId: string;
+  modelId: number;
   formData: FormData;
   // modelId: string;
   // functions: string | undefined;
 };
 
 export const step2Schema = z.object({
-  modelId: z.string(),
+  modelId: z.number(),
 });
 
 type Step2Data = z.infer<typeof step2Schema>;
@@ -161,7 +161,7 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
                 <h2 className="font-semibold text-blue-900">Picture List</h2>
                 <button 
                   onClick={handleAdd}
-                  className="bg-blue-500 text-white px-3 py-1 text-xs rounded hover:bg-blue-600 flex items-center gap-1">
+                  className="bg-blue-600 text-xs text-white px-2 py-1 rounded flex items-center gap-1 mr-2">
                   Add <Plus size={16} /> 
                 </button>
                 <input
@@ -185,6 +185,7 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
                         img.value === selectedPicture ? "bg-blue-50 font-semibold" : "hover:bg-gray-50"
                       }`}
                     >
+                      {/* <td className="px-4 py-2 text-sm">{index + 1}</td> */}
                       <td className="px-4 py-2 text-sm">{img.label}</td>
                       <td className="px-4 py-2 text-sm w-1/5">
                         <div className="flex gap-2 justify-start">

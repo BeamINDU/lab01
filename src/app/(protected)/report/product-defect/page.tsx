@@ -36,7 +36,7 @@ export default function Page() {
         dateTo: formValues.dateTo || '',
         productName: formValues.productName || '',
         defectType: formValues.defectType || '',
-        cameraId: formValues.cameraId || '',
+        cameraName: formValues.cameraName || '',
       };
       const products = await search(param);
       setData(products);
@@ -48,8 +48,8 @@ export default function Page() {
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["Datetime", "Product Name", "Status", "Defect Type", "Camera ID"];
-    const keys: (keyof ReportProduct)[] = ["datetime", "productName", "status", "defectType", "cameraId"];
+    const headers = ["Datetime", "Product Name", "Status", "Defect Type", "Camera Name"];
+    const keys: (keyof ReportProduct)[] = ["datetime", "productName", "status", "defectType", "cameraName"];
     const fileName = "Report_Product";
   
     switch (type) {

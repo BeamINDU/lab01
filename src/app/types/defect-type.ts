@@ -2,6 +2,7 @@ export type DefectType = {
   defectTypeId: string
   defectTypeName: string
   description: string
+  status: number
   createdDate?: Date
   createdBy?: string
   updatedDate?: Date | null
@@ -12,4 +13,5 @@ export type DefectType = {
 export type ParamSearch = {
   defectTypeId?: string
   defectTypeName?: string
+  status?: number
 }

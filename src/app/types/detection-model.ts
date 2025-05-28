@@ -1,5 +1,5 @@
 export type DetectionModel = {
-  modelId: string,
+  modelId?: number | null,
   modelName: string,
   description?: string ,    
   version?: number,     
@@ -18,7 +18,6 @@ export type DetectionModel = {
 }
 
 export type ParamSearch = {
-  modelId?: string,
   modelName?: string,               
   version?: number,          
   function?: string,
@@ -26,7 +25,7 @@ export type ParamSearch = {
 }
 
 export type FormData = {
-  modelId?: string | undefined;
+  modelId?: number | null;
   functions?: string | undefined;
   modelName: string | undefined,
   description: string | undefined,

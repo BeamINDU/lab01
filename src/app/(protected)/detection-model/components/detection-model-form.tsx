@@ -11,7 +11,7 @@ import DetectionModelStep2 from '../components/detection-model-step2';
 import DetectionModelStep3 from '../components/detection-model-step3';
 import DetectionModelStep4 from '../components/detection-model-step4';
 
-export default function DetectionModelSteps({ modelId }: { modelId: string }) {
+export default function DetectionModelSteps({ modelId }: { modelId: number }) {
   const MAX_STEP = 4;
   const { hasPermission } = usePermission();
   const [step, setStep] = useState(1);
@@ -38,7 +38,7 @@ export default function DetectionModelSteps({ modelId }: { modelId: string }) {
   ];
 
   useEffect(() => {
-    setFormData((prev) => ({ ...prev, modelId: modelId }));
+    // setFormData((prev) => ({ ...prev, modelId: modelId }));
   }, []);
 
   const handleNextStep = (nextStep: number) => {

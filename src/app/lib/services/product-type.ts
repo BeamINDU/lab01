@@ -1,5 +1,7 @@
+// src/app/lib/services/product-type.ts
 import { api } from '@/app/utils/api'
 import type { ProductType, ParamSearch } from "@/app/types/product-type"
+import { SelectOption } from "@/app/types/select-option";
 
 const mockData: ProductType[] = Array.from({ length: 20 }, (_, i) => ({
   productTypeId:  `PT-${i+1}`,
@@ -8,9 +10,25 @@ const mockData: ProductType[] = Array.from({ length: 20 }, (_, i) => ({
   status: i % 2 === 0 ? 1 : 0,
   createdDate: new Date(),
   createdBy: 'admin',
-  pdatedDate: null,
+  updatedDate: null,
   updatedBy: null,
 }))
+
+// เพิ่ม mock data สำหรับ Product Type Options
+const mockProductTypeOptions: SelectOption[] = [
+  { label: 'Bottle', value: 'bottle' },
+  { label: 'Box', value: 'box' },
+  { label: 'Can', value: 'can' },
+  { label: 'Plastic Container', value: 'plastic-container' },
+  { label: 'Glass Jar', value: 'glass-jar' },
+  { label: 'Paper Pack', value: 'paper-pack' },
+  { label: 'Metal Tin', value: 'metal-tin' },
+  { label: 'Pouch', value: 'pouch' },
+  { label: 'Aluminum Foil', value: 'aluminum-foil' },
+  { label: 'Cardboard', value: 'cardboard' },
+  { label: 'Vacuum Pack', value: 'vacuum-pack' },
+  { label: 'Stand-up Pouch', value: 'stand-up-pouch' },
+];
 
 export const search = async (param?: ParamSearch) => { 
   if (!param) return mockData;
@@ -24,34 +42,49 @@ export const search = async (param?: ParamSearch) => {
       (parsedStatus === undefined || item.status === parsedStatus)
     );
   });
-  // const productType = await api.get<ProductType[]>('/search')
 };
 
 export const detail = async (id: string) => {
   return mockData.find(item => item.productTypeId === id);
-  // return await apiClient<ProductType>(`${apiUrl}/detail/${id}`, "GET");
 };
 
 export const create = async (param: Partial<ProductType>) => {
   return param;
-  // const newData = await api.post<ProductType>('/create', param)
 };
 
 export const update = async (param: Partial<ProductType>) => {
   return param;
-  // const updated = await api.put<ProductType>(`/update/${param.id}`, param)
 };
 
 export const remove = async (id: string) => {
   return {};
-  // await api.delete(`/remove/${id}`)
 };
 
 export const upload = async (file: File) => {
   await new Promise(resolve => setTimeout(resolve, 3000));
   return {};
+};
 
-  // const formData = new FormData();
-  // formData.append('file', file);
-  // const response = await api.post<Camera>('/upload', formData)
+// ⭐ เพิ่ม function สำหรับดึงข้อมูล Product Type Options
+export const getProductTypeOptions = async (): Promise<SelectOption[]> => {
+  try {
+    // จำลองการเรียก API
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return mockProductTypeOptions;
+    
+    // ในการใช้งานจริง อาจจะดึงจาก mockData หรือ API:
+    // const productTypes = await search(); // ดึงข้อมูลทั้งหมด
+    // return productTypes
+    //   .filter(item => item.status === 1) // เฉพาะที่ active
+    //   .map(item => ({
+    //     label: item.productTypeName,
+    //     value: item.productTypeId
+    //   }));
+    
+    // หรือเรียก API โดยตรง:
+    // return await api.get<SelectOption[]>('/product-type-options');
+  } catch (error) {
+    console.error('Failed to fetch product type options:', error);
+    throw error;
+  }
 };

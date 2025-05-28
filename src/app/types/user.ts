@@ -19,5 +19,6 @@ export type ParamSearch = {
   firstname?: string
   lastname?: string
   roleName?: string
+  roleId?: string
   status?: number
 }

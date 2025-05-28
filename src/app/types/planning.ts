@@ -1,9 +1,9 @@
-// src/app/types/planning.ts
 export type Planning = {
   planId: string,
   productId: string,
   lotNo: string,
   lineId: string,
+  quantity: number,
   startDate: Date | string | number,
   endDate: Date | string | number,
   createdDate?: Date | string,

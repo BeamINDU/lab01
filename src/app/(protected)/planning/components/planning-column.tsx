@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { SquarePen } from "lucide-react";
 import { Planning } from "@/app/types/planning"
 import { formatDateTime } from "@/app/utils/date";
+import { formatNumber } from "@/app/utils/format";
 
 interface PlanningColumnProps {
   showCheckbox?: boolean;
@@ -91,6 +92,18 @@ export default function PlanningColumns({
       accessorKey: "lineId",
       header: "Line ID",
     },
+    {
+        accessorKey: "quantity",
+        header: "Quantity",
+        cell: ({ getValue }) => {
+          const value = getValue<number>();
+          return (
+            <div className="text-right">
+              {formatNumber(value)}
+            </div>
+          );
+        },
+      },
     {
       accessorKey: "startDate",
       header: "Start Date",

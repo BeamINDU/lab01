@@ -1,42 +1,82 @@
 import React, { useState } from "react";
-import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
+import { showConfirm, showSuccess, showError } from '@/app/utils/swal';
 import { X, Save, Trash2 } from 'lucide-react';
 import { ClassName } from "@/app/types/class-name";
+import { z } from "zod";
 
 interface ClassNameModalProps {
   onClose: () => void;
   onSave: (className: ClassName[]) => void;
-  data: ClassName[]
+  data: ClassName[];
 }
+
+const classNameSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1, "Class name is required"),
+  checked: z.boolean(),
+});
 
 export default function ClassNameModal({ onClose, onSave, data }: ClassNameModalProps) {
   const [className, setClassName] = useState<ClassName[]>(data);
+  const [errors, setErrors] = useState<string[]>([]);
 
   const handleChange = (index: number, value: string) => {
     const newLabels = [...className];
     newLabels[index] = { ...newLabels[index], name: value };
     setClassName(newLabels);
+
+    // Clear error when typing
+    const newErrors = [...errors];
+    newErrors[index] = '';
+    setErrors(newErrors);
   };
 
   const handleNew = () => {
     const newLabel: ClassName = {
-      id: crypto.randomUUID(),
+      id: '',
       name: '',
       checked: false,
     };
     setClassName([...className, newLabel]);
+    setErrors([...errors, '']);
   };
 
   const handleDelete = async (index: number) => {
-    const result = await showConfirm('Are you sure you want to delete this class name?')
+    const result = await showConfirm('Are you sure you want to delete this class name?');
     if (result.isConfirmed) {
       const newLabels = className.filter((_, i) => i !== index);
+      const newErrors = errors.filter((_, i) => i !== index);
       setClassName(newLabels);
+      setErrors(newErrors);
     }
   };
 
   const handleSave = () => {
+    const newErrors: string[] = [];
+    let hasError = false;
+
+    className.forEach((item, index) => {
+      try {
+        classNameSchema.parse(item);
+        newErrors[index] = '';
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          const message = error.errors[0]?.message || 'Invalid input';
+          newErrors[index] = message;
+          hasError = true;
+        }
+      }
+    });
+
+    if (hasError) {
+      setErrors(newErrors);
+      // showError('Please fix validation errors before saving.');
+      return;
+    }
+
+    setErrors([]);
     onSave(className);
+    showSuccess("Class names saved successfully");
   };
 
   return (
@@ -54,21 +94,27 @@ export default function ClassNameModal({ onClose, onSave, data }: ClassNameModal
         <h2 className="text-xl font-semibold text-center">Class Name</h2>
 
         <div className="mt-4 p-4 space-y-2 mb-4 max-h-[40vh] overflow-y-auto">
-          {className?.map((item, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <input
-                value={item.name}
-                onChange={(e) => handleChange(index, e.target.value)}
-                placeholder={`Label ${index + 1}`}
-                className="flex-1 px-3 py-2 rounded bg-blue-50 border border-blue-100 text-sm"
-              />
-              {/* <button
-                onClick={() => handleDeleteClass(index)}
-                className="text-red-500 text-sm hover:underline"
-              >
-                Delete
-              </button> */}
-              <Trash2 size={16} onClick={() => handleDelete(index)} className="text-red-500 cursor-pointer" />
+          {className.map((item, index) => (
+            <div key={index} className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                {/* ไม่ต้องใช้ register */}
+                <input
+                  value={item.name}
+                  onChange={(e) => handleChange(index, e.target.value)}
+                  placeholder={`Label ${index + 1}`}
+                  className={`flex-1 px-3 py-2 rounded bg-blue-50 border text-sm ${
+                    errors[index] ? 'border-red-500' : 'border-blue-100'
+                  }`}
+                />
+                <Trash2
+                  size={16}
+                  onClick={() => handleDelete(index)}
+                  className="text-red-500 cursor-pointer"
+                />
+              </div>
+              {errors[index] && (
+                <span className="text-xs text-red-500 pl-1">{errors[index]}</span>
+              )}
             </div>
           ))}
 
@@ -100,5 +146,4 @@ export default function ClassNameModal({ onClose, onSave, data }: ClassNameModal
       </div>
     </div>
   );
-};
-
+}

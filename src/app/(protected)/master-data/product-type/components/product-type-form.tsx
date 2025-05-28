@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect,useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useEffect, } from 'react';
+import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -35,7 +35,7 @@ export default function ProductTypeFormModal({
   canEdit
 }: ProductTypeModalProps) {
   const { data: session } = useSession();
-  const [isActive, setIsActive] = useState(true);
+
   const defaultValues: ProductTypeFormValues = {
     productTypeId: '',
     productTypeName: '',
@@ -46,6 +46,8 @@ export default function ProductTypeFormModal({
 
   const {
     register,
+    watch,
+    control,
     handleSubmit,
     reset,
     setValue,
@@ -58,19 +60,10 @@ export default function ProductTypeFormModal({
   useEffect(() => {
     if (editingData) {
       reset(editingData);
-      setIsActive(editingData.status === 1);
     } else {
       reset({...defaultValues, isCreateMode: true});
-      setIsActive(true);
     }
   }, [editingData, reset]);
-
-  const handleStatusToggle = (enabled: boolean) => {
-    setIsActive(enabled);
-    setValue("status", enabled ? 1 : 0);
-  };
-
-  if (!showModal) return null;
 
   const onSubmit: SubmitHandler<ProductTypeFormValues> = async (formData) => {
     const formWithMeta: ProductType = {
@@ -81,6 +74,10 @@ export default function ProductTypeFormModal({
     };
     onSave(formWithMeta);
   };
+
+  // const watchedStatus = watch("status");
+
+  if (!showModal) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -138,15 +135,28 @@ export default function ProductTypeFormModal({
             </div>
             {errors.description && <p className="text-red-500 ml-160">{errors.description.message?.toString()}</p>}
           </div>
-          
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Status:</label>
-              <ToggleSwitch 
-                enabled={isActive}
-                onChange={handleStatusToggle}
-                label={isActive ? "Active" : "Inactive"}
+              {/* <ToggleSwitch 
+                enabled={watchedStatus === 1}
+                onChange={(enabled: boolean) => {
+                  setValue("status", enabled ? 1 : 0);
+                }}
+                label={watchedStatus === 1 ? "Active" : "Inactive"}
                 disabled={!canEdit}
+              /> */}
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <ToggleSwitch
+                    enabled={field.value === 1}
+                    onChange={(enabled: boolean) => field.onChange(enabled ? 1 : 0)}
+                    label={field.value === 1 ? "Active" : "Inactive"}
+                    disabled={!canEdit}
+                  />
+                )}
               />
             </div>
             {errors.status && <p className="text-red-500 ml-110">{errors.status.message?.toString()}</p>}

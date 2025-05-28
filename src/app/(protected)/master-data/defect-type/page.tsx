@@ -29,21 +29,29 @@ export default function Page() {
     handleSearch();
   }, []);
 
-  const handleSearch = async () => {
-    try {
-      const formValues = getValues();
-      const param: ParamSearch = {
-        defectTypeId: formValues.defectTypeId || '',
-        defectTypeName: formValues.defectTypeName || '',
-      };
-      const products = await search(param);
-      setData(products);
-    } catch (error) {
-      console.error("Search operation failed:", error);
-      showError('Search failed');
-      setData([]);
-    }
-  };
+const handleSearch = async () => {
+  try {
+    const formValues = getValues();
+    console.log('Defect Type search with values:', formValues); 
+    
+    const param: ParamSearch = {
+      defectTypeId: formValues.defectTypeId || '',
+      defectTypeName: formValues.defectTypeName || '',
+      status: formValues.status !== undefined ? formValues.status : undefined, 
+    };
+    
+    console.log('Defect Type search parameters:', param); 
+    
+    const defectTypes = await search(param);
+    setData(defectTypes);
+    
+    console.log('Defect Type search results:', defectTypes.length, 'items'); 
+  } catch (error) {
+    console.error("Search operation failed:", error);
+    showError('Search failed');
+    setData([]);
+  }
+};
 
   const handleExport = (type: ExportType) => {
     const headers = ["Defect Type ID", "Defect Type Name", "Description"];

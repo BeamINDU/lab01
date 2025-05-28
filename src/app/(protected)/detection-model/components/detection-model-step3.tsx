@@ -10,11 +10,11 @@ type Props = {
   next: (data: any) => void;
   prev: () => void;
   formData: FormData;
-  modelId: string;
+  modelId: number;
 };
 
 export const step3Schema = z.object({
-  modelId: z.string(),
+  modelId: z.number(),
   modelName: z.string().min(1, "Model Name is required"),
   description: z.string(),
   trainDataset: z.number(), //.min(1, "Train Dataset Percentage is required"),

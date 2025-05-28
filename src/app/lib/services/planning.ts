@@ -16,6 +16,7 @@ const mockData: Planning[] = Array.from({ length: 20 }, (_, i) => {
     planId: `PLAN-${i+1}`,
     lotNo: `LOT-${i+1}`,
     lineId:`Line ${i+1}`,
+    quantity: i,
     startDate: startDate.toISOString(), 
     endDate: endDate.toISOString(),
     createdDate: new Date().toISOString(),

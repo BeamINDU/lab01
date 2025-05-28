@@ -8,7 +8,7 @@ const mockData: ReportProduct[] = Array.from({ length: 20 }, (_, i) => ({
   lotNo: `LOT${i+1}`,
   status: 'NG',
   defectType: i % 2 === 0 ? 'No sealed' : 'QuantityNG',
-  cameraId: i % 2 === 0 ? "1" : "2",
+  cameraName: i % 2 === 0 ? "CAM 1" : "CAM 2",
 }))
 
 const removeTime = (date: Date) => {
@@ -28,7 +28,7 @@ export const search = async (param?: ParamSearch) => {
       (parsedEndDate ? removeTime(item.datetime) <= parsedEndDate : true) &&
       (!param.productName || item.productName.toLowerCase().includes(param.productName.toLowerCase())) &&
       (!param.defectType || item.defectType.toLowerCase().includes(param.defectType.toLowerCase())) &&
-      (!param.cameraId || item.cameraId.toLowerCase().includes(param.cameraId.toLowerCase()))
+      (!param.cameraName || item.cameraName.toLowerCase().includes(param.cameraName.toLowerCase()))
       // (parsedStatus === undefined || item.status === parsedStatus)
     );
   });
@@ -45,6 +45,7 @@ export const detail = async (id: string) => {
     lotNo: `LOT${id}`,
     defectType: `DT${id}`,
     cameraId: `CAM${id}`,
+    cameraName: `CAM${id}`,
     history: [
       { date: '07/04/2025', time: '10:30:00', updatedBy: 'admin'},
       { date: '06/04/2025', time: '10:30:00', updatedBy: 'admin'},

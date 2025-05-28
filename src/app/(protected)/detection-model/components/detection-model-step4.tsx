@@ -12,11 +12,11 @@ type Props = {
   prev: () => void;
   next: (data: any) => void;
   formData: FormData;
-  modelId: string;
+  modelId: number;
 };
 
 export const step4Schema = z.object({
-  modelId: z.string(),
+  modelId: z.number(),
   cameraId: z.string().min(1, "Camera ID is required"),
   version: z.string().min(1, "Model Version is required"),
   isComplete: z.boolean(),
@@ -82,18 +82,17 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const result = await detail(formData.modelId ?? "");
-        if (result) {
-          reset({
-            modelId: modelId,
-            version: selectedVersion,
-            cameraId: selectedCamera,
-            isComplete: false,
-          });
-        } else {
-          reset(defaultValues);
-        }
-  
+        // const result = await detail(formData.modelId);
+        // if (result) {
+        //   reset({
+        //     modelId: modelId,
+        //     version: selectedVersion,
+        //     cameraId: selectedCamera,
+        //     isComplete: false,
+        //   });
+        // } else {
+        //   reset(defaultValues);
+        // }
       } catch (error) {
         console.error("Failed to load model:", error);
       }

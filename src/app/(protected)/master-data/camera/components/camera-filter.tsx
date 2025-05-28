@@ -21,23 +21,23 @@ export default function CameraFilterForm({ register, onSearch }: CameraFilterFor
             className="rounded px-3 py-2 border border-gray-300 w-full"
           />
         </div>
-        {/* Location */}
-        <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Location</label>
-          <input
-            type="text"
-            {...register("location")}
-            className="rounded px-3 py-2 border border-gray-300 w-full"
-          />
-        </div>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Camera Name */}
         <div className="grid grid-cols-[100px_1fr] items-center gap-2">
           <label className="font-semibold w-[120px]">Camera Name</label>
           <input
             type="text"
             {...register("cameraName")}
+            className="rounded px-3 py-2 border border-gray-300 w-full"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Location */}
+        <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+          <label className="font-semibold w-[120px]">Location</label>
+          <input
+            type="text"
+            {...register("location")}
             className="rounded px-3 py-2 border border-gray-300 w-full"
           />
         </div>

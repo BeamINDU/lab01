@@ -6,7 +6,7 @@ import { Action } from '@/app/lib/constants/menu';
 
 interface DetectionModelColumnProps {
   showCheckbox?: boolean;
-  openEditModal: (modelId: string) => void;
+  openEditModal: (modelId: number) => void;
   selectedIds: string[];
   setSelectedIds: (updater: (prevState: string[]) => string[]) => void; 
   data: DetectionModel[];
@@ -31,10 +31,11 @@ export default function DetectionModelColumns({
   const toggleSelectAll = () => {
     setSelectedIds((prev: string[]) =>
       prev.length === data.length
-        ? [] // If all items are selected, unselect all
+        ? []
         : data
-          .map((item) => item.modelId) // Map to ids
-          .filter((modelId): modelId is string => modelId !== undefined) // Filter out undefined values
+          .map((item) => item.modelId)
+          .filter((modelId): modelId is number => modelId !== undefined)
+          .map(String)
     );
   };
 
@@ -47,7 +48,11 @@ export default function DetectionModelColumns({
               <div className="flex justify-center items-center">
                 <input
                   type="checkbox"
-                  checked={selectedIds.length === data.length && data.every(item => selectedIds.includes(item.modelId ?? ""))}
+                  checked={
+                    data.length > 0 &&
+                    selectedIds.length === data.length &&
+                    data.every(item => selectedIds.includes(String(item.modelId)))
+                  }
                   onChange={toggleSelectAll}
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
                 />
@@ -75,10 +80,6 @@ export default function DetectionModelColumns({
       accessorKey: "no",
       header: "No",
       enableSorting: false,
-    },
-    {
-      accessorKey: "modelId",
-      header: "Model ID",
     },
     {
       accessorKey: "modelName",
@@ -160,7 +161,7 @@ export default function DetectionModelColumns({
         <div className="flex items-center justify-center gap-2">
           <button 
             className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary"
-              onClick={() => openEditModal(row.original.modelId)}
+            // onClick={() => openEditModal(row.original.modelId)}
           >
             {canEdit ? 'Edit' : 'Detail'}
             <SquarePen size={16} />

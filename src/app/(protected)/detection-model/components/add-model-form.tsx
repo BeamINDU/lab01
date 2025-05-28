@@ -7,10 +7,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DetectionModel } from "@/app/types/detection-model"
 import { useSession } from "next-auth/react";
-// import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 
 const AddModelFormSchema = z.object({
-  modelId: z.string().min(1, "Model Id is required"),
+  modelId: z.number().nullable(),
   modelName: z.string().min(1, "Model Name is required"),
   description: z.string(),
   isCreateMode: z.boolean(), 
@@ -36,7 +35,7 @@ export default function DetectionModelFormModal({
   const { data: session } = useSession();
 
   const defaultValues: AddModelFormValues = {
-    modelId: '',
+    modelId: null,
     modelName: '',
     description: '',
     isCreateMode: true,
@@ -46,6 +45,7 @@ export default function DetectionModelFormModal({
     register,
     handleSubmit,
     reset,
+    // control,
     // watch,
     // getValues,
     setValue,
@@ -68,7 +68,6 @@ export default function DetectionModelFormModal({
   const onSubmit: SubmitHandler<AddModelFormValues> = async (formData) => {
     const formWithMeta: DetectionModel = {
       ...formData,
-      modelId: formData.modelId ?? "",
       createdBy: session?.user?.userid,
       updatedBy: session?.user?.userid,
     };
@@ -100,13 +99,13 @@ export default function DetectionModelFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('isCreateMode')} />
-          <div className="mb-4">
+          {/* <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Model ID</label>
               <input {...register("modelId")} className="border p-2 w-full mb-1" />
             </div>
             {errors.modelId && <p className="text-red-500 ml-160">{errors.modelId.message}</p>}
-          </div>
+          </div> */}
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Model Name:</label>

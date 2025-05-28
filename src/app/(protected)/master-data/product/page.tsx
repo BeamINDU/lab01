@@ -19,28 +19,43 @@ import ProductFilterForm from './components/product-filter';
 
 export default function Page() {
   const { hasPermission } = usePermission();
-  const { register, getValues, setValue, reset } = useForm();
+  const { register, getValues, setValue, reset, watch } = useForm();
   const [data, setData] = useState<Product[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingData, setEditingData] = useState<Product | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
+  // Watch สำหรับ productType เพื่อ debug
+  const watchedProductType = watch("productType");
+
   useEffect(() => {
     handleSearch();
   }, []);
 
+
+  useEffect(() => {
+    console.log('Current productType value:', watchedProductType);
+  }, [watchedProductType]);
+
   const handleSearch = async () => {
     try {
       const formValues = getValues();
+      console.log('Search with form values:', formValues); 
+      
       const param: ParamSearch = {
         productId: formValues.productId || '',
         productName: formValues.productName || '',
-        productType: formValues.productType || '',
+        productTypeName: formValues.productType || '', 
         serialNo: formValues.serialNo || '',
         status: formValues.status !== undefined ? formValues.status : undefined,
       };
+      
+      console.log('Search parameters:', param); 
+      
       const products = await search(param);
       setData(products);
+      
+      console.log('Search results:', products); 
     } catch (error) {
       console.error("Search operation failed:", error);
       showError('Search failed');
@@ -50,7 +65,7 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     const headers = ["Product ID", "Product Name", "Product Type", "Serial No" ];
-    const keys: (keyof Product)[] = ["productId","productName", "productType", "serialNo" ];
+    const keys: (keyof Product)[] = ["productId","productName", "productTypeName", "serialNo" ];
     const fileName = "Product";
   
     switch (type) {
@@ -135,7 +150,8 @@ export default function Page() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Filters Form */}
             <ProductFilterForm 
-              register={register} 
+              register={register}
+              setValue={setValue}
               onSearch={handleSearch} 
             />
             
@@ -178,6 +194,7 @@ export default function Page() {
             </div>
           </div>
         </div>
+
 
         {/* DataTable */}
         <DataTable

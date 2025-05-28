@@ -18,6 +18,7 @@ const PlanningSchema = z.object({
   productId: z.string().min(1, "Product ID is required"),
   lotNo: z.string().min(1, "Lot No is required"),
   lineId: z.string().min(1, "Line ID is required"),
+  quantity: z.number(),
   startDate: z.string().min(1, "Start Date is required"),
   endDate: z.string().min(1, "End Date is required"),
   isCreateMode: z.boolean().optional(),
@@ -54,6 +55,7 @@ export default function PlanningFormModal({
     productId: '',
     lotNo: '',
     lineId: '',
+    quantity: 0,
     startDate: '',
     endDate: '',
     isCreateMode: true,
@@ -163,6 +165,17 @@ export default function PlanningFormModal({
               />
             </div>
             {errors.lineId && <p className="text-red-500 ml-160">{errors.lineId.message}</p>}
+          </div>
+
+          <div className="mb-4">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Quantity:</label>
+              <input 
+                {...register("quantity", { valueAsNumber: true })} 
+                className="border p-2 w-full mb-1 bg-white" 
+              />
+            </div>
+            {errors.quantity && <p className="text-red-500 ml-160">{errors.quantity.message}</p>}
           </div>
           
           <LocalizationProvider dateAdapter={AdapterDayjs}>

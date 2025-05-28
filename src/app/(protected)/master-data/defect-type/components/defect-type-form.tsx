@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DefectType } from "@/app/types/defect-type"
 import { useSession } from "next-auth/react";
+import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 
 const DefectTypeSchema = z.object({
   defectTypeId: z.string().min(1, "Defect Type Id is required"),
   defectTypeName: z.string().min(1, "Defect Type Name is required"),
   description: z.string(),
+  status: z.number(),
   isCreateMode: z.boolean().optional(),
 }); 
 
@@ -38,11 +40,13 @@ export default function DefectTypeFormModal({
     defectTypeId: '',
     defectTypeName: '',
     description: '',
+    status: 1,
     isCreateMode: true,
   };
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -126,6 +130,25 @@ export default function DefectTypeFormModal({
               />
             </div>
             {errors.description && <p className="text-red-500 ml-160">{errors.description.message}</p>}
+          </div>
+
+          <div className="mb-4">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Status:</label>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <ToggleSwitch
+                    enabled={field.value === 1}
+                    onChange={(enabled: boolean) => field.onChange(enabled ? 1 : 0)}
+                    label={field.value === 1 ? "Active" : "Inactive"}
+                    disabled={!canEdit}
+                  />
+                )}
+              />
+            </div>
+            {errors.status && <p className="text-red-500 ml-160">{errors.status.message?.toString()}</p>}
           </div>
 
           <div className="flex justify-end gap-2 mt-4">

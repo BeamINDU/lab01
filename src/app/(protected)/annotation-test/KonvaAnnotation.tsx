@@ -2,22 +2,38 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Konva from 'konva';
 import { Stage, Layer, Rect, Circle, Line, Text, Group } from 'react-konva';
 import { Save, Download, Trash2, Square, Circle as CircleIcon, Edit3, Type, Edit2, Check, X } from 'lucide-react';
 
+type Annotation = {
+  id: string;
+  type: string;
+  defectType: string;
+  color?: string;
+  points: number[];
+  startX: number;
+  startY: number;
+  width: number;
+  height: number;
+  radius: number;
+  label: string;
+  timestamp: string;
+};
+
 const KonvaInlineAnnotation = () => {
-  const [annotations, setAnnotations] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [tool, setTool] = useState('rect');
   const [isDrawing, setIsDrawing] = useState(false);
-  const [newAnnotation, setNewAnnotation] = useState(null);
+  const [newAnnotation, setNewAnnotation] = useState<Annotation | null>(null);
   const [defectType, setDefectType] = useState('defect');
-  const [editingId, setEditingId] = useState(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editingLabel, setEditingLabel] = useState('');
   const [autoLabelPrefix, setAutoLabelPrefix] = useState('');
   const [labelCounter, setLabelCounter] = useState(1);
-  const stageRef = useRef();
-  const [imageObj, setImageObj] = useState(null);
+  const stageRef = useRef<Konva.Stage | null>(null);
+  const [imageObj, setImageObj] = useState<HTMLImageElement | null>(null);
 
   // Defect categories for product inspection
   const defectCategories = [
@@ -63,7 +79,7 @@ const KonvaInlineAnnotation = () => {
       id: `annotation-${Date.now()}`,
       type: tool,
       defectType: defectType,
-      color: category.color,
+      color: category?.color,
       points: [pos.x, pos.y],
       startX: pos.x,
       startY: pos.y,
@@ -143,8 +159,8 @@ const KonvaInlineAnnotation = () => {
     }
   };
 
-  const handleStartEdit = (id) => {
-    const annotation = annotations.find(ann => ann.id === id);
+  const handleStartEdit = (id: string) => {
+    const annotation = annotations.find(ann => ann.id === id) as Annotation;
     if (annotation) {
       setEditingId(id);
       setEditingLabel(annotation.label);
@@ -244,7 +260,7 @@ const KonvaInlineAnnotation = () => {
                 startX: node.x(),
                 startY: node.y(),
               };
-              setAnnotations(annotations.map(a => a.id === ann.id ? updatedAnn : a));
+              setAnnotations(annotations?.map(a => a.id === ann.id ? updatedAnn : a));
             }}
           />
         )}
@@ -268,7 +284,7 @@ const KonvaInlineAnnotation = () => {
                 startX: node.x(),
                 startY: node.y(),
               };
-              setAnnotations(annotations.map(a => a.id === ann.id ? updatedAnn : a));
+              setAnnotations(annotations?.map(a => a.id === ann.id ? updatedAnn : a));
             }}
           />
         )}
@@ -417,9 +433,9 @@ const KonvaInlineAnnotation = () => {
             {/* Instructions */}
             <div className="mt-4 p-3 bg-blue-50 rounded">
               <p className="text-sm text-blue-800">
-                <strong>Instructions:</strong> Draw annotations and they'll be auto-labeled. 
+              <strong>Instructions:</strong> Draw annotations and they&apos;ll be auto-labeled. 
                 Click on a label in the list to edit it inline. 
-                Double-click on annotations to edit labels directly on canvas.
+                Double-click on annotations to edit labels directly on canvas. 
                 Press Enter to save, Escape to cancel.
               </p>
             </div>

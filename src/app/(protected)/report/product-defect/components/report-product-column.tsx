@@ -101,8 +101,8 @@ export default function productColumns({
       header: "Defect Type",
     },
     {
-      accessorKey: "cameraId",
-      header: "Camera ID",
+      accessorKey: "cameraName",
+      header: "Camera Name",
     },
     {
       accessorKey: "status",

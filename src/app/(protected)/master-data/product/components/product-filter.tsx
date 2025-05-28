@@ -1,34 +1,47 @@
+// src/app/(protected)/master-data/product/components/product-filter.tsx
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react'
-import { UseFormRegister } from "react-hook-form";
-import { useState, useEffect } from 'react';
-import GoogleStyleSearch, { SearchOption } from '@/app/components/common/GoogleStyleSearch';
+import { UseFormRegister, UseFormSetValue } from "react-hook-form";
+import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
+import { getProductTypeOptions } from '@/app/lib/services/product-type'; 
 
 interface ProductFilterFormProps {
   register: UseFormRegister<any>;
+  setValue: UseFormSetValue<any>;
   onSearch: () => void;
 }
 
-export default function ProductFilterForm({ register, onSearch }: ProductFilterFormProps) {
+export default function ProductFilterForm({ register, setValue, onSearch }: ProductFilterFormProps) {
   // State สำหรับ Product Type search
   const [selectedProductType, setSelectedProductType] = useState<string>('');
   const [productTypeOptions, setProductTypeOptions] = useState<SearchOption[]>([]);
+  const [isLoadingProductTypes, setIsLoadingProductTypes] = useState<boolean>(false);
 
-  // โหลดข้อมูล Product Type
+  // โหลดข้อมูล Product Type จาก product-type service
   useEffect(() => {
-    const mockProductTypes: SearchOption[] = [
-      { id: '1', label: 'Bottle', value: 'bottle' },
-      { id: '2', label: 'Box', value: 'box' },
-      { id: '3', label: 'Can', value: 'can' },
-      { id: '4', label: 'Plastic Container', value: 'plastic-container' },
-      { id: '5', label: 'Glass Jar', value: 'glass-jar' },
-      { id: '6', label: 'Paper Pack', value: 'paper-pack' },
-      { id: '7', label: 'Metal Tin', value: 'metal-tin' },
-      { id: '8', label: 'Pouch', value: 'pouch' },
-    ];
-    
-    setProductTypeOptions(mockProductTypes);
+    const loadProductTypes = async () => {
+      try {
+        setIsLoadingProductTypes(true);
+        const productTypes = await getProductTypeOptions();
+        const searchOptions: SearchOption[] = productTypes.map((item, index) => ({
+          id: (index + 1).toString(),
+          label: item.label,
+          value: item.value
+        }));
+        
+        setProductTypeOptions(searchOptions);
+      } catch (error) {
+        console.error('Failed to load product types:', error);
+        // ถ้าเกิด error ให้ใช้ข้อมูล fallback
+        setProductTypeOptions([]);
+      } finally {
+        setIsLoadingProductTypes(false);
+      }
+    };
+
+    loadProductTypes();
   }, []);
 
   // จัดการเมื่อเลือก Product Type
@@ -36,12 +49,23 @@ export default function ProductFilterForm({ register, onSearch }: ProductFilterF
     const value = option ? option.value : '';
     setSelectedProductType(value);
     
-    // ปรับปรุงค่าใน React Hook Form
-    const event = new Event('change', { bubbles: true });
-    const productTypeInput = document.querySelector('input[name="productType"]') as HTMLInputElement;
-    if (productTypeInput) {
-      productTypeInput.value = value;
-      productTypeInput.dispatchEvent(event);
+    // ใช้ setValue จาก React Hook Form เพื่ออัพเดทค่าโดยตรง
+    setValue("productType", value);
+    
+    console.log('Selected Product Type:', value); // Debug log
+  };
+
+  // จัดการเมื่อพิมพ์ใน Search Box
+  const handleProductTypeInputChange = (inputValue: string) => {
+    // ถ้าไม่มีการเลือกตัวเลือกใดๆ และกำลังพิมพ์ ให้เก็บค่าที่พิมพ์
+    const matchedOption = productTypeOptions.find(opt => 
+      opt.label.toLowerCase() === inputValue.toLowerCase()
+    );
+    
+    if (!matchedOption) {
+      setSelectedProductType(inputValue);
+      setValue("productType", inputValue);
+      console.log('Typed Product Type:', inputValue); // Debug log
     }
   };
 
@@ -68,27 +92,28 @@ export default function ProductFilterForm({ register, onSearch }: ProductFilterF
           />
         </div>
         
-        {/* Product Type - ใช้ Google Style Search Component */}
+        {/* Product Type - ใSearch Component */}
         <div className="grid grid-cols-[100px_1fr] items-center gap-2">
           <label className="font-semibold w-[120px]">Product Type</label>
           <div className="relative">
-            {/* Hidden input สำหรับ React Hook Form */}
+            {/* Register กับ React Hook Form */}
             <input
               type="hidden"
               {...register("productType")}
-              value={selectedProductType}
             />
             
-            {/* Google Style Search Component */}
+            {/* Search Component */}
             <GoogleStyleSearch
               options={productTypeOptions}
               value={selectedProductType}
-              // placeholder="Search product type..."
+              placeholder={isLoadingProductTypes ? "Loading..." : "Search product type..."}
               onSelect={handleProductTypeSelect}
+              onInputChange={handleProductTypeInputChange}
               allowClear={true}
               showDropdownIcon={true}
               minSearchLength={0}
               maxDisplayItems={8}
+              disabled={isLoadingProductTypes}
               className="w-full"
             />
           </div>

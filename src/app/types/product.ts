@@ -1,7 +1,7 @@
 export type Product = {
   productId: string
   productName: string
-  productTypeId: string
+  // productTypeId: string
   productTypeName: string
   serialNo: string
   status: number,

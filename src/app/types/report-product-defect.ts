@@ -5,7 +5,7 @@ export type ReportProduct = {
   lotNo: string
   status: string
   defectType: string
-  cameraId: string
+  cameraName: string
 }
 
 export type ProductDetail = {
@@ -17,6 +17,7 @@ export type ProductDetail = {
   lotNo: string
   defectType: string
   cameraId: string
+  cameraName: string
   history: History[]
   status: string
   comment: string
@@ -33,7 +34,7 @@ export type ParamSearch = {
   dateTo?: Date
   productName?: string
   defectType?: string
-  cameraId?: string
+  cameraName?: string
   status?: string
 }
 

@@ -22,7 +22,7 @@ export default function Page() {
   const { hasPermission } = usePermission();
   const { register, getValues, setValue, reset } = useForm();
   const [data, setData] = useState<DetectionModel[]>([]);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [editingData, setEditingData] = useState<DetectionModel | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
@@ -34,7 +34,6 @@ export default function Page() {
     try {
       const formValues = getValues();
       const param: ParamSearch = {
-        modelId: formValues.modelId || '',
         modelName: formValues.modelName || '',
         version: formValues.version || '',
         function: formValues.function || '',
@@ -50,8 +49,8 @@ export default function Page() {
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["Model ID", "Model Name", "Version", "Function", "Status" ];
-    const keys: (keyof DetectionModel)[] = ["modelId","modelName", "version", "function", "status" ];
+    const headers = ["Model Name", "Version", "Function", "Status" ];
+    const keys: (keyof DetectionModel)[] = ["modelName", "version", "function", "status" ];
     const fileName = "Detection Model";
   
     switch (type) {
@@ -75,7 +74,7 @@ export default function Page() {
     }
   };
   
-  const handleAdd = async (row?: DetectionModel) => {
+  const handleAdd = async (row?: DetectionModel | null) => {
     try {
       if (row) {
         setEditingData(row);
@@ -90,7 +89,7 @@ export default function Page() {
     }
   };
 
-  const handleEdit = async (modelId: string) => {
+  const handleEdit = async (modelId: number) => {
     try {
       router.push(`/detection-model/${modelId}`);
     } catch (error) {
@@ -106,7 +105,7 @@ export default function Page() {
         for (const modelId of selectedIds) {
           await remove(modelId);
         }
-        setData(prev => prev.filter(item => !selectedIds.includes(item.modelId ?? "")));
+        setData(prev => prev.filter(item => item.modelId === item.modelId));
         setSelectedIds([]);
         showSuccess(`Deleted successfully`)
       } catch (error) {
@@ -188,7 +187,7 @@ export default function Page() {
         </div>
 
         {/* DataTable */}
-        <DataTable
+        {/* <DataTable
           columns={DetectionModelColumns({
             showCheckbox: hasPermission(Menu.DetectionModel, Action.Delete),
             canEdit: hasPermission(Menu.DetectionModel, Action.Edit),
@@ -198,9 +197,9 @@ export default function Page() {
             data,
           })}
           data={data}
-          selectedIds={selectedIds}
-          defaultSorting={[{ id: "modelId", desc: false }]}
-        />
+          selectedIds={selectedIds.toString()}
+          defaultSorting={[{ id: "modelName", desc: false }]}
+        /> */}
 
         {/* Add Modal */}
         {isFormModalOpen && (
