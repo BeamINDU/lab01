@@ -32,8 +32,8 @@ export default function ReportProductFilterForm({ register, setValue, control, o
     <div className="md:col-span-2 space-y-4">
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Date From - Using MUI DateTimePicker (keep as is) */}
-          <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+          {/* Date From  */}
+          <div className="grid grid-cols-[110px_1fr] items-center gap-2">
             <label className="font-semibold w-[120px]">Date From</label>
             <Controller
               name="dateFrom"
@@ -61,8 +61,8 @@ export default function ReportProductFilterForm({ register, setValue, control, o
             />
           </div>
           
-          {/* Date To - Using MUI DateTimePicker (keep as is) */}
-          <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+          {/* Date To  */}
+          <div className="grid grid-cols-[110px_1fr] items-center gap-2">
             <label className="font-semibold w-[120px]">Date To</label>
             <Controller
               name="dateTo"
@@ -90,7 +90,7 @@ export default function ReportProductFilterForm({ register, setValue, control, o
             />
           </div>
           
-          {/* Camera Name - แปลงจาก input เป็น SearchField */}
+          {/* Camera Name */}
           <SearchField
             register={register}
             setValue={setValue}
@@ -106,7 +106,7 @@ export default function ReportProductFilterForm({ register, setValue, control, o
       </LocalizationProvider>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Product Name - แปลงจาก input เป็น SearchField */}
+        {/* Product Name */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -127,13 +127,11 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           label="Defect Type"
           placeholder="Search defect type..."
           dataLoader={async () => {
-            // ดึงจากทั้ง report data และ defect type master
             const [reportData, defectTypes] = await Promise.all([
               searchReportProducts(),
               searchDefectTypes()
             ]);
             
-            // รวม defect types จากทั้งสองแหล่ง
             const reportDefectTypes = reportData.map(r => ({ defectType: r.defectType }));
             const masterDefectTypes = defectTypes.map(d => ({ defectType: d.defectTypeName }));
             

@@ -1,4 +1,3 @@
-// src/app/(protected)/master-data/product/components/product-filter-simple.tsx
 'use client';
 
 import { Search } from 'lucide-react'
@@ -6,6 +5,7 @@ import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
 import { getProductTypeOptions } from '@/app/lib/services/product-type';
 import { search as searchProducts } from '@/app/lib/services/product';
+import { ActiveStatus } from '@/app/lib/constants/status';
 
 interface ProductFilterFormProps {
   register: UseFormRegister<any>;
@@ -58,7 +58,7 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Serial No - ✅ ใช้งานได้แล้ว */}
+        {/* Serial No */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -66,12 +66,12 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           label="Serial No"
           placeholder="Search or enter serial number..."
           dataLoader={searchProducts}
-          labelField="serialNo"     // แสดง serialNo
-          valueField="serialNo"     // เก็บ serialNo
+          labelField="serialNo"    
+          valueField="serialNo"  
           allowFreeText={true}
         />
         
-        {/* Status - ✅ ใช้งานได้แล้ว */}
+        {/* Status */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -79,8 +79,12 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           label="Status"
           placeholder="Select status..."
           options={[
-            { id: "1", label: "Active", value: "1" },
-            { id: "2", label: "Inactive", value: "0" }
+            { id: "all", label: "All", value: "" },
+            ...ActiveStatus.map(status => ({
+              id: status.value,
+              label: status.label,
+              value: status.value
+            }))
           ]}
           allowFreeText={false}
         />

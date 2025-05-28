@@ -1,10 +1,10 @@
-// src/app/(protected)/master-data/role/components/role-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
 import { search as searchRoles } from "@/app/lib/services/role";
+import { ActiveStatus } from '@/app/lib/constants/status';
 
 interface RoleFilterFormProps {
   register: UseFormRegister<any>;
@@ -16,7 +16,7 @@ export default function RoleFilterForm({ register, setValue, onSearch }: RoleFil
   return (
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Role ID - แปลงจาก input เป็น SearchField */}
+        {/* Role ID */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -29,7 +29,7 @@ export default function RoleFilterForm({ register, setValue, onSearch }: RoleFil
           allowFreeText={true}
         />
         
-        {/* Role Name - แปลงจาก input เป็น SearchField */}
+        {/* Role Name  */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -44,7 +44,7 @@ export default function RoleFilterForm({ register, setValue, onSearch }: RoleFil
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Status - แปลงจาก select เป็น SearchField */}
+        {/* Status */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -53,8 +53,11 @@ export default function RoleFilterForm({ register, setValue, onSearch }: RoleFil
           placeholder="Select status..."
           options={[
             { id: "all", label: "All", value: "" },
-            { id: "1", label: "Active", value: "1" },
-            { id: "2", label: "Inactive", value: "0" }
+            ...ActiveStatus.map(status => ({
+              id: status.value,
+              label: status.label,
+              value: status.value
+            }))
           ]}
           allowFreeText={false}
         />

@@ -6,6 +6,7 @@ import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
 import { getRoleOptions } from '@/app/lib/services/role';
 import { search as searchUsers } from '@/app/lib/services/user';
+import { ActiveStatus } from '@/app/lib/constants/status';
 
 interface UserFilterFormProps {
   register: UseFormRegister<any>;
@@ -61,7 +62,7 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
           allowFreeText={true}
         />
         
-        {/* Status - แปลงจาก select เป็น SearchField */}
+        {/* Status */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -70,8 +71,11 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
           placeholder="Select status..."
           options={[
             { id: "all", label: "All", value: "" },
-            { id: "1", label: "Active", value: "1" },
-            { id: "2", label: "Inactive", value: "0" }
+            ...ActiveStatus.map(status => ({
+              id: status.value,
+              label: status.label,
+              value: status.value
+            }))
           ]}
           allowFreeText={false}
         />

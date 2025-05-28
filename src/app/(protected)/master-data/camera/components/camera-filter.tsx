@@ -1,10 +1,10 @@
-// src/app/(protected)/master-data/camera/components/camera-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
 import { search as searchCameras } from "@/app/lib/services/camera";
+import { ActiveStatus } from '@/app/lib/constants/status';
 
 interface CameraFilterFormProps {
   register: UseFormRegister<any>;
@@ -57,7 +57,7 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
           allowFreeText={true}
         />
         
-        {/* Status - SearchField with static options */}
+        {/* Status */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -65,8 +65,12 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
           label="Status"
           placeholder="Select status..."
           options={[
-            { id: "1", label: "Active", value: "1" },
-            { id: "2", label: "Inactive", value: "0" }
+            { id: "all", label: "All", value: "" },
+            ...ActiveStatus.map(status => ({
+              id: status.value,
+              label: status.label,
+              value: status.value
+            }))
           ]}
           allowFreeText={false}
         />

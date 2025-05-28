@@ -30,8 +30,8 @@ export default function TransactionFilterForm({ register, setValue, control, onS
     <div className="md:col-span-2 space-y-4">
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Date From - Using MUI DateTimePicker (keep as is) */}
-          <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+          {/* Date From */}
+          <div className="grid grid-cols-[110px_1fr] items-center gap-2">
             <label className="font-semibold w-[120px]">Date From</label>
             <Controller
               name="dateFrom"
@@ -59,8 +59,8 @@ export default function TransactionFilterForm({ register, setValue, control, onS
             />
           </div>
           
-          {/* Date To - Using MUI DateTimePicker (keep as is) */}
-          <div className="grid grid-cols-[100px_1fr] items-center gap-2">
+          {/* Date To  */}
+          <div className="grid grid-cols-[110px_1fr] items-center gap-2">
             <label className="font-semibold w-[120px]">Date To</label>
             <Controller
               name="dateTo"
@@ -91,7 +91,7 @@ export default function TransactionFilterForm({ register, setValue, control, onS
       </LocalizationProvider>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Lot No - แปลงจาก input เป็น SearchField */}
+        {/* Lot No  */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -104,7 +104,7 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           allowFreeText={true}
         />
         
-        {/* Product ID - แปลงจาก input เป็น SearchField */}
+        {/* Product ID  */}
         <SearchField
           register={register}
           setValue={setValue}

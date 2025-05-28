@@ -19,43 +19,51 @@ import ProductFilterForm from './components/product-filter';
 
 export default function Page() {
   const { hasPermission } = usePermission();
-  const { register, getValues, setValue, reset, watch } = useForm();
+  const { register, getValues, setValue, reset, watch } = useForm({
+    defaultValues: {
+      productId: '',
+      productName: '',
+      productTypeName: '', // ✅ เปลี่ยนจาก productType เป็น productTypeName
+      serialNo: '',
+      status: ''
+    }
+  });
+  
   const [data, setData] = useState<Product[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingData, setEditingData] = useState<Product | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
-  // Watch สำหรับ productType เพื่อ debug
-  const watchedProductType = watch("productType");
+  // Watch สำหรับ debug
+  const watchedProductTypeName = watch("productTypeName");
 
   useEffect(() => {
     handleSearch();
   }, []);
 
-
   useEffect(() => {
-    console.log('Current productType value:', watchedProductType);
-  }, [watchedProductType]);
+    console.log('Current productTypeName value:', watchedProductTypeName);
+  }, [watchedProductTypeName]);
 
   const handleSearch = async () => {
     try {
       const formValues = getValues();
-      console.log('Search with form values:', formValues); 
+      console.log('Search with form values:', formValues);
       
       const param: ParamSearch = {
         productId: formValues.productId || '',
         productName: formValues.productName || '',
         productTypeName: formValues.productType || '', 
         serialNo: formValues.serialNo || '',
-        status: formValues.status !== undefined ? formValues.status : undefined,
+        status: formValues.status !== undefined && formValues.status !== '' ? formValues.status : undefined,
       };
       
-      console.log('Search parameters:', param); 
+      console.log('Search parameters:', param);
       
       const products = await search(param);
       setData(products);
       
-      console.log('Search results:', products); 
+      console.log('Search results:', products.length, 'items');
     } catch (error) {
       console.error("Search operation failed:", error);
       showError('Search failed');
@@ -64,8 +72,8 @@ export default function Page() {
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["Product ID", "Product Name", "Product Type", "Serial No" ];
-    const keys: (keyof Product)[] = ["productId","productName", "productTypeName", "serialNo" ];
+    const headers = ["Product ID", "Product Name", "Product Type", "Serial No", "Status"];
+    const keys: (keyof Product)[] = ["productId", "productName", "productTypeName", "serialNo", "status"];
     const fileName = "Product";
   
     switch (type) {
@@ -82,6 +90,7 @@ export default function Page() {
     try {
       await upload(file);
       showSuccess(`Uploaded: ${file.name}`);
+      handleSearch(); // ✅ Refresh data after upload
     } catch (error) {
       console.error("Upload operation failed:", error);
       showError("Upload failed");
@@ -96,8 +105,14 @@ export default function Page() {
         const updatedRow = { ...result, isCreateMode: !row.productId };
         setEditingData(updatedRow);
       } else {
-        reset();
-        setEditingData(null);
+        setEditingData({
+          productId: '',
+          productName: '',
+          productTypeName: '',
+          serialNo: '',
+          status: 1,
+          isCreateMode: true
+        });
       }
       setIsFormModalOpen(true);
     } catch (error) {
@@ -107,7 +122,7 @@ export default function Page() {
   };
 
   const handleDelete = async () => {
-    const result = await showConfirm('Are you sure you want to delete these product type?')
+    const result = await showConfirm('Are you sure you want to delete these products?')
     if (result.isConfirmed) {
       try {
         for (const productId of selectedIds) {
@@ -127,17 +142,17 @@ export default function Page() {
     try {
       if (formData.isCreateMode) {
         const newData = await create(formData) as Product;
-        setData(prev => [...prev, newData]);
+        setData(prev => [...prev, { ...newData, isCreateMode: false }]);
       } else {
         const updatedData = await update(formData) as Product;
         setData(prev => prev.map(item => (item.productId === formData.productId ? updatedData : item)));
       }
       showSuccess(`Saved successfully`)
+      handleSearch(); // ✅ Refresh data after save
     } catch (error) {
       console.error('Save operation failed:', error);
       showError('Save failed')
     } finally {
-      reset();
       setIsFormModalOpen(false);
     }
   };
@@ -195,13 +210,12 @@ export default function Page() {
           </div>
         </div>
 
-
         {/* DataTable */}
         <DataTable
           columns={ProductColumns({
             showCheckbox: hasPermission(Menu.Product, Action.Delete),
             canEdit: hasPermission(Menu.Product, Action.Edit),
-            openEditModal:handleAddEdit,
+            openEditModal: handleAddEdit,
             selectedIds,
             setSelectedIds,
             data,
@@ -221,7 +235,6 @@ export default function Page() {
             canEdit={hasPermission(Menu.Product, Action.Edit)}
           />
         )}
-
       </div>
     </>
   )

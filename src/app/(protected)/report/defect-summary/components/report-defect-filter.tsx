@@ -18,7 +18,7 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
   return (
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Lot No - แปลงจาก input เป็น SearchField */}
+        {/* Lot No */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -31,7 +31,7 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
           allowFreeText={true}
         />
         
-        {/* Product Type - แปลงจาก input เป็น SearchField */}
+        {/* Product Type */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -39,13 +39,12 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
           label="Product Type"
           placeholder="Search or enter product type..."
           dataLoader={async () => {
-            // ดึงจากทั้ง report data และ product type master
+
             const [reportData, productTypes] = await Promise.all([
               searchReportDefects(),
               searchProductTypes()
             ]);
             
-            // รวม product types จากทั้งสองแหล่ง
             const reportProductTypes = reportData.map(r => ({ productType: r.productType }));
             const masterProductTypes = productTypes.map(p => ({ productType: p.productTypeName }));
             
@@ -66,13 +65,11 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
           label="Defect Type"
           placeholder="Search or enter defect type..."
           dataLoader={async () => {
-            // ดึงจากทั้ง report data และ defect type master
             const [reportData, defectTypes] = await Promise.all([
               searchReportDefects(),
               searchDefectTypes()
             ]);
             
-            // รวม defect types จากทั้งสองแหล่ง
             const reportDefectTypes = reportData.map(r => ({ defectType: r.defectType }));
             const masterDefectTypes = defectTypes.map(d => ({ defectType: d.defectTypeName }));
             

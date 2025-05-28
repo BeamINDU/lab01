@@ -30,7 +30,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
     <div className="md:col-span-2 space-y-4">
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Date From - Using MUI DateTimePicker (keep as is) */}
+          {/* Date From */}
           <div className="grid grid-cols-[110px_1fr] items-center gap-2">
             <label className="font-semibold w-[120px]">Date From</label>
             <Controller
@@ -59,7 +59,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
             />
           </div>
           
-          {/* Date To - Using MUI DateTimePicker (keep as is) */}
+          {/* Date To */}
           <div className="grid grid-cols-[110px_1fr] items-center gap-2">
             <label className="font-semibold w-[120px]">Date To</label>
             <Controller
@@ -91,7 +91,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
       </LocalizationProvider>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Plan ID - แปลงจาก input เป็น SearchField */}
+        {/* Plan ID */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -104,7 +104,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           allowFreeText={true}
         />
         
-        {/* Product ID - แปลงจาก input เป็น SearchField */}
+        {/* Product ID */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -119,7 +119,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Lot No - แปลงจาก input เป็น SearchField */}
+        {/* Lot No */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -132,7 +132,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           allowFreeText={true}
         />
           
-        {/* Line ID - แปลงจาก input เป็น SearchField */}
+        {/* Line ID  */}
         <SearchField
           register={register}
           setValue={setValue}
