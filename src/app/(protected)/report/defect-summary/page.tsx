@@ -81,6 +81,7 @@ export default function Page() {
             {/* Filters Form */}
             <ReportDefectFilterForm 
               register={register} 
+              setValue={setValue}
               onSearch={handleSearch} 
             />
             

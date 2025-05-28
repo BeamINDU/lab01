@@ -9,7 +9,7 @@ const mockData: ProductType[] = Array.from({ length: 20 }, (_, i) => ({
   description: 'description description description description description',
   status: i % 2 === 0 ? 1 : 0,
   createdDate: new Date(),
-  createdBy: 'admin',
+  createdBy: 'Admin',
   updatedDate: null,
   updatedBy: null,
 }))

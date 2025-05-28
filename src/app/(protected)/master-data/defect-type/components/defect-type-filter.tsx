@@ -1,52 +1,68 @@
+// src/app/(protected)/master-data/defect-type/components/defect-type-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
-import { UseFormRegister } from "react-hook-form";
+import { UseFormRegister, UseFormSetValue } from "react-hook-form";
+import SearchField from '@/app/components/common/SearchField';
+import { search as searchDefectTypes } from "@/app/lib/services/defect-type";
 
 interface DefectTypeFilterFormProps {
   register: UseFormRegister<any>;
+  setValue: UseFormSetValue<any>;
   onSearch: () => void;
 }
 
-export default function DefectTypeFilterForm({ register, onSearch }: DefectTypeFilterFormProps) {
+export default function DefectTypeFilterForm({ register, setValue, onSearch }: DefectTypeFilterFormProps) {
   return (
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Defect Type ID */}
-        <div className="grid grid-cols-[120px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Defect Type ID</label>
-          <input
-            type="text"
-            {...register("defectTypeId")}
-            className="rounded px-3 py-2 border border-gray-300 w-full"
-          />
-        </div>
-        {/* Defect Type Name */}
-        <div className="grid grid-cols-[120px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Defect Type Name</label>
-          <input
-            type="text"
-            {...register("defectTypeName")}
-            className="rounded px-3 py-2 border border-gray-300 w-full"
-          />
-        </div>
+        {/* Defect Type ID - แปลงจาก input เป็น SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="defectTypeId"
+          label="Defect Type ID"
+          placeholder="Search or enter defect type ID..."
+          dataLoader={searchDefectTypes}
+          labelField="defectTypeId"
+          valueField="defectTypeId"
+          allowFreeText={true}
+        />
+        
+        {/* Defect Type Name - แปลงจาก input เป็น SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="defectTypeName"
+          label="Defect Type Name"
+          placeholder="Search or enter defect type name..."
+          dataLoader={searchDefectTypes}
+          labelField="defectTypeName"
+          valueField="defectTypeName"
+          allowFreeText={true}
+        />
       </div>
+      
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Status */}
-        <div className="grid grid-cols-[120px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Status</label>
-          <select
-            {...register("status", { valueAsNumber: true })}
-            className="rounded px-3 py-2 border border-gray-300 w-full"
-          >
-            <option value="">All</option>
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
-          </select>
-        </div>
+        {/* Status - แปลงจาก select เป็น SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="status"
+          label="Status"
+          placeholder="Select status..."
+          options={[
+            { id: "all", label: "All", value: "" },
+            { id: "1", label: "Active", value: "1" },
+            { id: "2", label: "Inactive", value: "0" }
+          ]}
+          allowFreeText={false}
+        />
+        
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
           <button
+            type="button"
             className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900"
             onClick={onSearch}
           >

@@ -1,20 +1,24 @@
+// src/app/(protected)/report/transaction/components/transaction-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
-import { UseFormRegister, Controller, Control } from "react-hook-form";
+import { UseFormRegister, Controller, Control, UseFormSetValue } from "react-hook-form";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import 'dayjs/locale/th';
+import SearchField from '@/app/components/common/SearchField';
+import { search as searchTransactions } from "@/app/lib/services/transaction";
 
 interface TransactionFilterFormProps {
   register: UseFormRegister<any>;
+  setValue: UseFormSetValue<any>;
   control: Control<any>;
   onSearch: () => void;
 }
 
-export default function TransactionFilterForm({ register, control, onSearch }: TransactionFilterFormProps) {
+export default function TransactionFilterForm({ register, setValue, control, onSearch }: TransactionFilterFormProps) {
   const dateFormat = 'YYYY-MM-DD HH:mm';
   
   const inputStyle = {
@@ -26,7 +30,7 @@ export default function TransactionFilterForm({ register, control, onSearch }: T
     <div className="md:col-span-2 space-y-4">
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Date From - Using MUI DateTimePicker with white background */}
+          {/* Date From - Using MUI DateTimePicker (keep as is) */}
           <div className="grid grid-cols-[100px_1fr] items-center gap-2">
             <label className="font-semibold w-[120px]">Date From</label>
             <Controller
@@ -55,7 +59,7 @@ export default function TransactionFilterForm({ register, control, onSearch }: T
             />
           </div>
           
-          {/* Date To - Using MUI DateTimePicker with white background */}
+          {/* Date To - Using MUI DateTimePicker (keep as is) */}
           <div className="grid grid-cols-[100px_1fr] items-center gap-2">
             <label className="font-semibold w-[120px]">Date To</label>
             <Controller
@@ -87,27 +91,36 @@ export default function TransactionFilterForm({ register, control, onSearch }: T
       </LocalizationProvider>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Lot No */}
-        <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Lot No</label>
-          <input
-            type="text"
-            {...register("lotNo")}
-            className="rounded px-3 py-2 border border-gray-300 w-full bg-white" 
-          />
-        </div>
-        {/* Product ID */}
-        <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Product ID</label>
-          <input
-            type="text"
-            {...register("productId")}
-            className="rounded px-3 py-2 border border-gray-300 w-full bg-white" 
-          />
-        </div>
+        {/* Lot No - แปลงจาก input เป็น SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="lotNo"
+          label="Lot No"
+          placeholder="Search lot number..."
+          dataLoader={searchTransactions}
+          labelField="lotNo"
+          valueField="lotNo"
+          allowFreeText={true}
+        />
+        
+        {/* Product ID - แปลงจาก input เป็น SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="productId"
+          label="Product ID"
+          placeholder="Search product ID..."
+          dataLoader={searchTransactions}
+          labelField="productId"
+          valueField="productId"
+          allowFreeText={true}
+        />
+        
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
           <button
+            type="button"
             className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900"
             onClick={onSearch}
           >

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Trash2 } from 'lucide-react'
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-// import { toastSuccess, toastError } from '@/app/utils/toast';
 import { exportText, exportExcel, exportWord, exportCSV } from "@/app/lib/export";
 import { ExportType } from '@/app/lib/constants/export-type';
 import { Camera, ParamSearch } from "@/app/types/camera"
@@ -20,6 +19,7 @@ import CameraFormModal from "./components/camera-form";
 
 export default function Page() {
   const { hasPermission } = usePermission();
+  // ⭐ เพิ่ม setValue ใน useForm
   const { register, getValues, setValue, reset } = useForm();
   const [data, setData] = useState<Camera[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -39,19 +39,19 @@ export default function Page() {
         location: formValues.location || '',
         status: formValues.status !== undefined ? formValues.status : undefined,
       };
-      const products = await search(param);
-      setData(products);
+      const cameras = await search(param);
+      setData(cameras);
     } catch (error) {
-      console.error("Error search product threshold:", error);
-      showError('Error search product threshold');
+      console.error("Error search camera:", error);
+      showError('Error search camera');
       setData([]);
     }
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["Threshold ID", "Camera Name", "Location", "Status", "Created Date"];
+    const headers = ["Camera ID", "Camera Name", "Location", "Status", "Created Date"];
     const keys: (keyof Camera)[] = ["cameraId", "cameraName", "location", "status", "createdDate"];
-    const fileName = "Product";
+    const fileName = "Camera";
 
     switch (type) {
       case ExportType.CSV:
@@ -95,8 +95,8 @@ export default function Page() {
     const result = await showConfirm('Are you sure you want to delete these camera?')
     if (result.isConfirmed) {
       try {
-        for (const productTypeId of selectedIds) {
-          await remove(productTypeId);
+        for (const cameraId of selectedIds) {
+          await remove(cameraId);
         }
         setData(prev => prev.filter(item => !selectedIds.includes(item.cameraId ?? "")));
         setSelectedIds([]);
@@ -134,9 +134,10 @@ export default function Page() {
       <div className="p-4 mx-auto">
         <div className="mb-6 max-w-full text-sm">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Filters Form */}
+            {/* ⭐ ส่ง setValue ไปให้ CameraFilterForm */}
             <CameraFilterForm
               register={register}
+              setValue={setValue}
               onSearch={handleSearch}
             />
 

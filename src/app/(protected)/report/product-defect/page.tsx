@@ -106,6 +106,7 @@ export default function Page() {
             <ReportProductFilterForm 
               register={register}
               control={control} 
+              setValue={setValue}
               onSearch={handleSearch} 
             />
             

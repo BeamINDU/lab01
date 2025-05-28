@@ -152,6 +152,7 @@ export default function Page() {
             {/* Filters Form */}
             <RoleFilterForm 
               register={register} 
+              setValue={setValue}
               onSearch={handleSearch} 
             />
             

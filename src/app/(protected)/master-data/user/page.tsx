@@ -153,7 +153,7 @@ export default function Page() {
             {/* Filters Form */}
             <UserFilterForm 
               register={register}
-              setValue={setValue} // ⭐ ส่ง setValue
+              setValue={setValue} 
               onSearch={handleSearch} 
             />
             
@@ -195,12 +195,6 @@ export default function Page() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Debug Info  */}
-        <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
-          <strong>Debug Info:</strong> Current Role Name = {watchedRoleName || 'empty'} | 
-          Total Users = {data.length} items
         </div>
 
         {/* DataTable */}

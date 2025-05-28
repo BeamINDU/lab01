@@ -14,7 +14,7 @@ const mockData: User[] = Array.from({ length: 20 }, (_, i) => ({
            i % 3 === 1 ? 'User' :             // ทุก 3 คน = User  
            'Administrator',                   // ที่เหลือ = Administrator
   createdDate: new Date(),
-  createdBy: 'admin',
+  createdBy: 'Admin',
   updatedDate: null,
   updatedBy: null,
 }))

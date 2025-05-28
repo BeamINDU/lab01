@@ -135,6 +135,7 @@ export default function Page() {
             {/* Filters Form */}
             <ProductTypeFilterForm 
               register={register} 
+              setValue={setValue}
               onSearch={handleSearch} 
             />
             

@@ -1,50 +1,68 @@
+// src/app/(protected)/master-data/role/components/role-filter.tsx
+'use client';
+
 import { Search } from 'lucide-react'
-import { UseFormRegister } from "react-hook-form";
+import { UseFormRegister, UseFormSetValue } from "react-hook-form";
+import SearchField from '@/app/components/common/SearchField';
+import { search as searchRoles } from "@/app/lib/services/role";
 
 interface RoleFilterFormProps {
   register: UseFormRegister<any>;
+  setValue: UseFormSetValue<any>;
   onSearch: () => void;
 }
 
-export default function RoleFilterForm({ register, onSearch }: RoleFilterFormProps) {
+export default function RoleFilterForm({ register, setValue, onSearch }: RoleFilterFormProps) {
   return (
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Role ID */}
-        <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Role ID</label>
-          <input
-            type="text"
-            {...register("roleId")}
-            className="rounded px-3 py-2 border border-gray-300 w-full"
-          />
-        </div>
-        {/* Role Name */}
-        <div className="grid grid-cols-[130px_1fr] items-center gap-2">
-          <label className="font-semibold w-[150px]">Role Name</label>
-          <input
-            type="text"
-            {...register("roleName")}
-            className="rounded px-3 py-2 border border-gray-300 w-full"
-          />
-        </div>
+        {/* Role ID - แปลงจาก input เป็น SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="roleId"
+          label="Role ID"
+          placeholder="Search or enter role ID..."
+          dataLoader={searchRoles}
+          labelField="roleId"
+          valueField="roleId"
+          allowFreeText={true}
+        />
+        
+        {/* Role Name - แปลงจาก input เป็น SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="roleName"
+          label="Role Name"
+          placeholder="Search or enter role name..."
+          dataLoader={searchRoles}
+          labelField="roleName"
+          valueField="roleName"
+          allowFreeText={true}
+        />
       </div>
+      
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Status  */}
-        <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Status</label>
-          <select
-            {...register("status", { valueAsNumber: true })}
-            className="rounded px-3 py-2 border border-gray-300 w-full"
-          >
-            <option value="">All</option>
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
-          </select>
-        </div>
+        {/* Status - แปลงจาก select เป็น SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="status"
+          label="Status"
+          placeholder="Select status..."
+          options={[
+            { id: "all", label: "All", value: "" },
+            { id: "1", label: "Active", value: "1" },
+            { id: "2", label: "Inactive", value: "0" }
+          ]}
+          allowFreeText={false}
+        />
+        
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
           <button
+            type="button"
             className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900"
             onClick={onSearch}
           >

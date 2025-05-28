@@ -1,23 +1,28 @@
+// src/app/(protected)/report/product-defect/components/report-product-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
-import { UseFormRegister, Controller, Control } from "react-hook-form";
+import { UseFormRegister, Controller, Control, UseFormSetValue } from "react-hook-form";
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import 'dayjs/locale/th';
+import SearchField from '@/app/components/common/SearchField';
+import { search as searchReportProducts } from "@/app/lib/services/report-product-defect";
+import { search as searchDefectTypes } from "@/app/lib/services/defect-type";
+import { search as searchCameras } from "@/app/lib/services/camera";
 
 interface ReportProductFilterFormProps {
   register: UseFormRegister<any>;
+  setValue: UseFormSetValue<any>;
   control: Control<any>;
   onSearch: () => void;
 }
 
-export default function ReportProductFilterForm({ register, control, onSearch }: ReportProductFilterFormProps) {
+export default function ReportProductFilterForm({ register, setValue, control, onSearch }: ReportProductFilterFormProps) {
   const dateFormat = 'YYYY-MM-DD HH:mm';
   
-
   const inputStyle = {
     backgroundColor: 'white',
     borderRadius: '0.375rem',  
@@ -27,7 +32,7 @@ export default function ReportProductFilterForm({ register, control, onSearch }:
     <div className="md:col-span-2 space-y-4">
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Date From - Using MUI DateTimePicker with white background */}
+          {/* Date From - Using MUI DateTimePicker (keep as is) */}
           <div className="grid grid-cols-[100px_1fr] items-center gap-2">
             <label className="font-semibold w-[120px]">Date From</label>
             <Controller
@@ -56,7 +61,7 @@ export default function ReportProductFilterForm({ register, control, onSearch }:
             />
           </div>
           
-          {/* Date To - Using MUI DateTimePicker with white background */}
+          {/* Date To - Using MUI DateTimePicker (keep as is) */}
           <div className="grid grid-cols-[100px_1fr] items-center gap-2">
             <label className="font-semibold w-[120px]">Date To</label>
             <Controller
@@ -84,40 +89,65 @@ export default function ReportProductFilterForm({ register, control, onSearch }:
               )}
             />
           </div>
-          {/* Camera Name */}
-          <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-            <label className="font-semibold w-[120px]">Camera Name</label>
-            <input
-              type="text"
-              {...register("cameraName")}
-              className="rounded px-3 py-2 border border-gray-300 w-full bg-white" 
-            />
-          </div>
+          
+          {/* Camera Name - แปลงจาก input เป็น SearchField */}
+          <SearchField
+            register={register}
+            setValue={setValue}
+            fieldName="cameraName"
+            label="Camera Name"
+            placeholder="Search camera name..."
+            dataLoader={searchCameras}
+            labelField="cameraName"
+            valueField="cameraName"
+            allowFreeText={true}
+          />
         </div>
       </LocalizationProvider>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Product Name */}
-        <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Product Name</label>
-          <input
-            type="text"
-            {...register("productName")}
-            className="rounded px-3 py-2 border border-gray-300 w-full bg-white" 
-          />
-        </div>
-        {/* Defect Type */}
-        <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Defect Type</label>
-          <input
-            type="text"
-            {...register("defectType")}
-            className="rounded px-3 py-2 border border-gray-300 w-full bg-white" 
-          />
-        </div>
+        {/* Product Name - แปลงจาก input เป็น SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="productName"
+          label="Product Name"
+          placeholder="Search product name..."
+          dataLoader={searchReportProducts}
+          labelField="productName"
+          valueField="productName"
+          allowFreeText={true}
+        />
+        
+        {/* Defect Type - แปลงจาก input เป็น SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="defectType"
+          label="Defect Type"
+          placeholder="Search defect type..."
+          dataLoader={async () => {
+            // ดึงจากทั้ง report data และ defect type master
+            const [reportData, defectTypes] = await Promise.all([
+              searchReportProducts(),
+              searchDefectTypes()
+            ]);
+            
+            // รวม defect types จากทั้งสองแหล่ง
+            const reportDefectTypes = reportData.map(r => ({ defectType: r.defectType }));
+            const masterDefectTypes = defectTypes.map(d => ({ defectType: d.defectTypeName }));
+            
+            return [...reportDefectTypes, ...masterDefectTypes];
+          }}
+          labelField="defectType"
+          valueField="defectType"
+          allowFreeText={true}
+        />
+        
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
           <button
+            type="button"
             className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900"
             onClick={onSearch}
           >

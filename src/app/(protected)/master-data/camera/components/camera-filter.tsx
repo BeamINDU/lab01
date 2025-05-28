@@ -1,61 +1,80 @@
+// src/app/(protected)/master-data/camera/components/camera-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
-import { UseFormRegister } from "react-hook-form";
+import { UseFormRegister, UseFormSetValue } from "react-hook-form";
+import SearchField from '@/app/components/common/SearchField';
+import { search as searchCameras } from "@/app/lib/services/camera";
 
 interface CameraFilterFormProps {
   register: UseFormRegister<any>;
+  setValue: UseFormSetValue<any>;
   onSearch: () => void;
 }
 
-export default function CameraFilterForm({ register, onSearch }: CameraFilterFormProps) {
+export default function CameraFilterForm({ register, setValue, onSearch }: CameraFilterFormProps) {
   return (
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Camera ID */}
-        <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Camera ID</label>
-          <input
-            type="text"
-            {...register("cameraId")}
-            className="rounded px-3 py-2 border border-gray-300 w-full"
-          />
-        </div>
-        {/* Camera Name */}
-        <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Camera Name</label>
-          <input
-            type="text"
-            {...register("cameraName")}
-            className="rounded px-3 py-2 border border-gray-300 w-full"
-          />
-        </div>
+        {/* Camera ID - SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="cameraId"
+          label="Camera ID"
+          placeholder="Search or enter camera ID..."
+          dataLoader={searchCameras}
+          labelField="cameraId"
+          valueField="cameraId"
+          allowFreeText={true}
+        />
+        
+        {/* Camera Name - SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="cameraName"
+          label="Camera Name"
+          placeholder="Search or enter camera name..."
+          dataLoader={searchCameras}
+          labelField="cameraName"
+          valueField="cameraName"
+          allowFreeText={true}
+        />
       </div>
+      
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Location */}
-        <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Location</label>
-          <input
-            type="text"
-            {...register("location")}
-            className="rounded px-3 py-2 border border-gray-300 w-full"
-          />
-        </div>
-        {/* Status */}
-        <div className="grid grid-cols-[100px_1fr] items-center gap-2">
-          <label className="font-semibold w-[120px]">Status</label>
-          <select
-            {...register("status", { valueAsNumber: true })}
-            className="rounded px-3 py-2 border border-gray-300 w-full"
-          >
-            <option value="">All</option>
-            <option value="1">Active</option>
-            <option value="0">Inactive</option>
-          </select>
-        </div>
+        {/* Location - SearchField */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="location"
+          label="Location"
+          placeholder="Search or enter location..."
+          dataLoader={searchCameras}
+          labelField="location"
+          valueField="location"
+          allowFreeText={true}
+        />
+        
+        {/* Status - SearchField with static options */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="status"
+          label="Status"
+          placeholder="Select status..."
+          options={[
+            { id: "1", label: "Active", value: "1" },
+            { id: "2", label: "Inactive", value: "0" }
+          ]}
+          allowFreeText={false}
+        />
+        
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
           <button
+            type="button"
             className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900"
             onClick={onSearch}
           >

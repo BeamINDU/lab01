@@ -147,6 +147,7 @@ export default function Page() {
             <PlanningFilterForm 
               register={register} 
               control={control}
+              setValue={setValue}
               onSearch={handleSearch} 
             />
             

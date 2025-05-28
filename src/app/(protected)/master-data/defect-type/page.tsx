@@ -142,6 +142,7 @@ const handleSearch = async () => {
             {/* Filters Form */}
             <DefectTypeFilterForm 
               register={register} 
+              setValue={setValue}
               onSearch={handleSearch} 
             />
             

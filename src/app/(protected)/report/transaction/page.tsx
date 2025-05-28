@@ -68,6 +68,7 @@ export default function Page() {
             <TransactionFilterForm 
               register={register} 
               control={control}
+              setValue={setValue}
               onSearch={handleSearch} 
             />
             
