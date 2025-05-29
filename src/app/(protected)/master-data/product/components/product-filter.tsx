@@ -1,12 +1,12 @@
+// src/app/(protected)/master-data/product/components/product-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
-import { getProductTypeOptions } from '@/app/lib/services/product-type';
+import { getProductTypes } from '@/app/lib/services/product';
 import { search as searchProducts } from '@/app/lib/services/product';
 import { ActiveStatus } from '@/app/lib/constants/status';
-
 interface ProductFilterFormProps {
   register: UseFormRegister<any>;
   setValue: UseFormSetValue<any>;
@@ -17,7 +17,7 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
   return (
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Product ID - ✅ ใช้งานได้แล้ว */}
+        {/* Product ID */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -25,12 +25,12 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           label="Product ID"
           placeholder="Search or enter product ID..."
           dataLoader={searchProducts}
-          labelField="productId"    // SearchField รู้จะเอา field ไหนมาแสดง
-          valueField="productId"    // และเก็บค่าอะไร
+          labelField="productId"
+          valueField="productId"
           allowFreeText={true}
         />
         
-        {/* Product Name - ✅ ใช้งานได้แล้ว */}
+        {/* Product Name */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -38,20 +38,20 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           label="Product Name"
           placeholder="Search or enter product name..."
           dataLoader={searchProducts}
-          labelField="productName"  // แสดง productName
-          valueField="productName"  // เก็บ productName
+          labelField="productName"
+          valueField="productName"
           allowFreeText={true}
         />
         
-        {/* Product Type - ✅ ใช้งานได้แล้ว */}
+        {/* Product Type  */}
         <SearchField
           register={register}
           setValue={setValue}
-          fieldName="productType"
+          fieldName="productTypeName"
           label="Product Type"
           placeholder="Search product type..."
-          dataLoader={getProductTypeOptions}
-          labelField="label"        // getProductTypeOptions ส่ง { label, value }
+          dataLoader={getProductTypes}
+          labelField="label"
           valueField="value"
           allowFreeText={true}
         />
@@ -66,8 +66,8 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           label="Serial No"
           placeholder="Search or enter serial number..."
           dataLoader={searchProducts}
-          labelField="serialNo"    
-          valueField="serialNo"  
+          labelField="serialNo"
+          valueField="serialNo"
           allowFreeText={true}
         />
         
@@ -83,10 +83,13 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
             ...ActiveStatus.map(status => ({
               id: status.value,
               label: status.label,
-              value: status.value
+              value: status.value 
             }))
           ]}
           allowFreeText={false}
+          onSelectionChange={(value) => {
+            console.log('Status selected:', value, typeof value);
+          }}
         />
         
         {/* Search Button */}

@@ -23,7 +23,7 @@ export default function Page() {
     defaultValues: {
       productId: '',
       productName: '',
-      productTypeName: '', // ✅ เปลี่ยนจาก productType เป็น productTypeName
+      productTypeName: '', 
       serialNo: '',
       status: ''
     }
@@ -53,9 +53,9 @@ export default function Page() {
       const param: ParamSearch = {
         productId: formValues.productId || '',
         productName: formValues.productName || '',
-        productTypeName: formValues.productType || '', 
+        productTypeName: formValues.productTypeName || '', 
         serialNo: formValues.serialNo || '',
-        status: formValues.status !== undefined && formValues.status !== '' ? formValues.status : undefined,
+        status: formValues.status !== undefined ? formValues.status : undefined,
       };
       
       console.log('Search parameters:', param);
@@ -90,7 +90,7 @@ export default function Page() {
     try {
       await upload(file);
       showSuccess(`Uploaded: ${file.name}`);
-      handleSearch(); // ✅ Refresh data after upload
+      handleSearch(); 
     } catch (error) {
       console.error("Upload operation failed:", error);
       showError("Upload failed");
@@ -101,18 +101,26 @@ export default function Page() {
   const handleAddEdit = async (row?: Product) => {
     try {
       if (row) {
+
         const result = (await detail(row.productId ?? "")) ?? (row as Product);
-        const updatedRow = { ...result, isCreateMode: !row.productId };
+        const updatedRow = { 
+          ...result, 
+          isCreateMode: false 
+        };
+        console.log('Edit mode data:', updatedRow); // Debug log
         setEditingData(updatedRow);
       } else {
-        setEditingData({
+        // Add mode
+        const newData = {
           productId: '',
           productName: '',
           productTypeName: '',
           serialNo: '',
           status: 1,
           isCreateMode: true
-        });
+        };
+        console.log('Add mode data:', newData); // Debug log
+        setEditingData(newData);
       }
       setIsFormModalOpen(true);
     } catch (error) {
@@ -139,21 +147,34 @@ export default function Page() {
   };
 
   const handleSave = async (formData: Product) => {
+    console.log('=== handleSave STARTED ==='); // Debug log
+    console.log('handleSave called with:', formData); // Debug log
+    console.log('Is create mode:', formData.isCreateMode); // Debug log
+    
     try {
       if (formData.isCreateMode) {
+        console.log('Creating new product...'); // Debug log
         const newData = await create(formData) as Product;
+        console.log('New product created:', newData); // Debug log
         setData(prev => [...prev, { ...newData, isCreateMode: false }]);
+        showSuccess('Product created successfully');
       } else {
+        console.log('Updating existing product...'); // Debug log
         const updatedData = await update(formData) as Product;
-        setData(prev => prev.map(item => (item.productId === formData.productId ? updatedData : item)));
+        console.log('Product updated:', updatedData); // Debug log
+        setData(prev => prev.map(item => 
+          item.productId === formData.productId ? { ...updatedData, isCreateMode: false } : item
+        ));
+        showSuccess('Product updated successfully');
       }
-      showSuccess(`Saved successfully`)
-      handleSearch(); // ✅ Refresh data after save
-    } catch (error) {
-      console.error('Save operation failed:', error);
-      showError('Save failed')
-    } finally {
+      
+      console.log('Closing modal...'); // Debug log
       setIsFormModalOpen(false);
+      console.log('=== handleSave COMPLETED ==='); // Debug log
+      
+    } catch (error) {
+      console.error('=== handleSave ERROR ===', error);
+      showError('Save failed: ' + (error as Error).message);
     }
   };
 

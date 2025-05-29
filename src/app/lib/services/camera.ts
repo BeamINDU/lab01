@@ -1,107 +1,196 @@
+// src/app/lib/services/camera.ts - Realistic Mock Data
 import { api } from '@/app/utils/api'
 import type { Camera, ParamSearch } from "@/app/types/camera"
 import { SelectOption } from "@/app/types/select-option";
 
-
-const LOCATIONS = [
-  'Production Line A', 'Production Line B', 'Production Line C',
-  'Warehouse North', 'Warehouse South', 'Warehouse East', 'Warehouse West',
-  'Loading Dock', 'Inspection Zone', 'Quality Control',
-  'Maintenance Shop', 'Conference Room', 'Reception Area',
-  'Packaging Area', 'Storage Room', 'Security Gate'
+// ⭐ ข้อมูลกล้องจริงในโรงงาน
+const CAMERA_LOCATIONS = [
+  // Production Lines
+  { area: 'Production Line A', zone: 'Input Station', purpose: 'Product Identification' },
+  { area: 'Production Line A', zone: 'Quality Check Point 1', purpose: 'Surface Inspection' },
+  { area: 'Production Line A', zone: 'Quality Check Point 2', purpose: 'Dimension Check' },
+  { area: 'Production Line A', zone: 'Final Inspection', purpose: 'Complete Product Check' },
+  { area: 'Production Line A', zone: 'Packaging Station', purpose: 'Label Verification' },
+  
+  { area: 'Production Line B', zone: 'Input Station', purpose: 'Product Identification' },
+  { area: 'Production Line B', zone: 'Quality Check Point 1', purpose: 'Color Inspection' },
+  { area: 'Production Line B', zone: 'Quality Check Point 2', purpose: 'Defect Detection' },
+  { area: 'Production Line B', zone: 'Final Inspection', purpose: 'Complete Product Check' },
+  { area: 'Production Line B', zone: 'Packaging Station', purpose: 'Barcode Verification' },
+  
+  { area: 'Production Line C', zone: 'Input Station', purpose: 'Product Identification' },
+  { area: 'Production Line C', zone: 'Assembly Check', purpose: 'Component Verification' },
+  { area: 'Production Line C', zone: 'Quality Check Point', purpose: 'Surface Defect Detection' },
+  { area: 'Production Line C', zone: 'Final Inspection', purpose: 'Complete Product Check' },
+  
+  // Warehouse & Storage
+  { area: 'Warehouse A', zone: 'Receiving Dock', purpose: 'Incoming Inspection' },
+  { area: 'Warehouse A', zone: 'Storage Area', purpose: 'Inventory Monitoring' },
+  { area: 'Warehouse B', zone: 'Shipping Dock', purpose: 'Outgoing Verification' },
+  { area: 'Warehouse B', zone: 'Loading Bay', purpose: 'Loading Verification' },
+  
+  // Special Areas
+  { area: 'Quality Control Lab', zone: 'Sample Testing', purpose: 'Sample Verification' },
+  { area: 'Maintenance Workshop', zone: 'Tool Inspection', purpose: 'Tool Condition Check' },
+  { area: 'Raw Material Storage', zone: 'Incoming Area', purpose: 'Material Inspection' },
 ];
 
-const CAMERA_NAMES = [
-  'Camera A1', 'Camera A2', 'Camera B1', 'Camera B2',
-  'Camera C1', 'Camera C2', 'Camera D1', 'Camera D2',
-  'Camera E1', 'Camera E2', 'Camera F1', 'Camera F2',
-  'Camera G1', 'Camera G2', 'Camera H1', 'Camera H2',
-  'Camera I1', 'Camera I2', 'Camera J1', 'Camera J2'
-];
+// ⭐ สร้าง Mock Data
+const mockData: Camera[] = CAMERA_LOCATIONS.map((loc, i) => {
+  const currentDate = new Date();
+  const createdDate = new Date(currentDate.getTime() - (Math.random() * 365 * 24 * 60 * 60 * 1000)); // สุ่มในปีที่แล้ว
+  const hasUpdate = Math.random() > 0.6; // 40% โอกาสที่จะมีการอัพเดท
+  const updatedDate = hasUpdate ? new Date(createdDate.getTime() + (Math.random() * 180 * 24 * 60 * 60 * 1000)) : null;
 
-
-const mockData: Camera[] = Array.from({ length: 20 }, (_, i) => {
-  const createdDate = new Date(Date.now() - (i * 24 * 60 * 60 * 1000));
-  const hasUpdate = Math.random() > 0.3; 
-  const updateDate = hasUpdate 
-    ? new Date(createdDate.getTime() + (Math.random() * 10 * 24 * 60 * 60 * 1000)) 
-    : null;
+  // สร้าง Camera ID ตาม pattern จริง
+  const areaCode = loc.area.includes('Line A') ? 'LA' : 
+                   loc.area.includes('Line B') ? 'LB' : 
+                   loc.area.includes('Line C') ? 'LC' :
+                   loc.area.includes('Warehouse A') ? 'WA' :
+                   loc.area.includes('Warehouse B') ? 'WB' :
+                   loc.area.includes('Quality') ? 'QC' :
+                   loc.area.includes('Maintenance') ? 'MT' : 'RM';
+  
+  const zoneNumber = String(i + 1).padStart(2, '0');
 
   return {
-    cameraId: `CAM${String(i+1).padStart(3, '0')}`, 
-    cameraName: CAMERA_NAMES[i % CAMERA_NAMES.length],
-    location: LOCATIONS[i % LOCATIONS.length],
-    status: i % 5 === 0 ? 0 : 1, 
+    cameraId: `CAM-${areaCode}-${zoneNumber}`,
+    cameraName: `Camera ${areaCode}${zoneNumber} - ${loc.zone}`,
+    location: `${loc.area} - ${loc.zone}`,
+    status: Math.random() > 0.08 ? 1 : 0, // 92% Active, 8% Inactive (realistic for industrial equipment)
     createdDate: createdDate,
-    createdBy: ['admin', 'system', 'manager'][i % 3],
-    updatedDate: updateDate,
-    updatedBy: hasUpdate ? ['admin', 'system', 'manager', 'technician'][i % 4] : null,
+    createdBy: ['admin', 'system', 'technician'][Math.floor(Math.random() * 3)],
+    updatedDate: updatedDate,
+    updatedBy: hasUpdate ? ['admin', 'technician', 'maintenance'][Math.floor(Math.random() * 3)] : null,
   };
 });
 
+// ⭐ API-Ready Functions
 export const search = async (param?: ParamSearch) => { 
-  console.log('Camera service received params:', param);
+  console.log('=== CAMERA SERVICE DEBUG ===');
+  console.log('Received params:', param);
+  console.log('Mock data total count:', mockData.length);
+  console.log('Active cameras:', mockData.filter(c => c.status === 1).length);
+  console.log('Inactive cameras:', mockData.filter(c => c.status === 0).length);
   
-  if (!param) return mockData;
+  // TODO: Replace with actual API call
+  // const response = await api.get<Camera[]>('/cameras', { params: param });
+  // return response;
+  
+  if (!param) {
+    console.log('No parameters provided, returning all cameras');
+    return mockData;
+  }
+
+  console.log('Filtering with parameters...');
+  const parsedStatus = param.status && param.status.trim() !== '' ? parseInt(param.status, 10) : undefined;
+  console.log('Parsed status:', parsedStatus, 'Type:', typeof parsedStatus);
 
   const filteredData = mockData.filter(item => {
     const cameraIdMatch = !param.cameraId || item.cameraId.toLowerCase().includes(param.cameraId.toLowerCase());
     const cameraNameMatch = !param.cameraName || item.cameraName.toLowerCase().includes(param.cameraName.toLowerCase());
     const locationMatch = !param.location || item.location.toLowerCase().includes(param.location.toLowerCase());
+    const statusMatch = parsedStatus === undefined || item.status === parsedStatus;
     
-
-    let statusMatch = true;
-    if (param.status !== undefined && param.status !== null && param.status !== '') {
-      const searchStatus = typeof param.status === 'string' ? parseInt(param.status, 10) : param.status;
-      if (!isNaN(searchStatus)) {
-        statusMatch = item.status === searchStatus;
-      }
-    }
-    
-    console.log(`Camera ${item.cameraId} matches:`, {
+    console.log(`Camera ${item.cameraId}:`, {
       cameraIdMatch,
       cameraNameMatch,
       locationMatch,
       statusMatch,
-      searchStatus: param.status,
-      itemStatus: item.status
+      itemStatus: item.status,
+      searchStatus: parsedStatus
     });
     
     return cameraIdMatch && cameraNameMatch && locationMatch && statusMatch;
   });
   
-  console.log('Camera filtered results:', filteredData.length, 'items');
+  console.log('Filtered results:', filteredData.length, 'items');
   return filteredData;
 };
 
 export const detail = async (id: string) => {
+  // TODO: Replace with actual API call
+  // return await api.get<Camera>(`/cameras/${id}`);
+  
   return mockData.find(item => item.cameraId === id);
 };
 
 export const create = async (param: Partial<Camera>) => {
-  return {
+  // TODO: Replace with actual API call
+  // return await api.post<Camera>('/cameras', param);
+  
+  console.log('Creating camera:', param);
+  const newCamera = {
     ...param,
-    cameraId: param.cameraId || `CAM${String(mockData.length + 1).padStart(3, '0')}`,
+    cameraId: param.cameraId || `CAM-NEW-${String(mockData.length + 1).padStart(2, '0')}`,
+    status: param.status ?? 1,
     createdDate: new Date(),
-    createdBy: 'admin',
-    status: param.status ?? 1
+    createdBy: param.createdBy || 'admin',
+    updatedDate: null,
+    updatedBy: null,
   };
+  
+  mockData.push(newCamera as Camera);
+  return newCamera;
 };
 
 export const update = async (param: Partial<Camera>) => {
+  // TODO: Replace with actual API call
+  // return await api.put<Camera>(`/cameras/${param.cameraId}`, param);
+  
+  console.log('Updating camera:', param);
+  const index = mockData.findIndex(item => item.cameraId === param.cameraId);
+  if (index !== -1) {
+    mockData[index] = {
+      ...mockData[index],
+      ...param,
+      updatedDate: new Date(),
+      updatedBy: param.updatedBy || 'admin'
+    };
+    return mockData[index];
+  }
+  
   return {
     ...param,
     updatedDate: new Date(),
-    updatedBy: 'admin'
+    updatedBy: param.updatedBy || 'admin'
   };
 };
 
 export const remove = async (id: string) => {
+  // TODO: Replace with actual API call
+  // return await api.delete(`/cameras/${id}`);
+  
+  console.log('Deleting camera:', id);
+  const index = mockData.findIndex(item => item.cameraId === id);
+  if (index !== -1) {
+    mockData.splice(index, 1);
+  }
   return {};
 };
 
 export const upload = async (file: File) => {
-  await new Promise(resolve => setTimeout(resolve, 3000));
-  return {};
+  // TODO: Replace with actual API call
+  // const formData = new FormData();
+  // formData.append('file', file);
+  // return await api.post('/cameras/upload', formData);
+  
+  console.log('Uploading camera file:', file.name);
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  return { message: 'Camera file uploaded successfully' };
 };
 
+// ⭐ Camera Options สำหรับ SearchField
+export const getCameraOptions = async (): Promise<SelectOption[]> => {
+  // TODO: Replace with actual API call
+  // return await api.get<SelectOption[]>('/cameras/options');
+  
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  return mockData
+    .filter(item => item.status === 1) // เฉพาะที่ active
+    .map(item => ({
+      label: `${item.cameraName} - ${item.location}`,
+      value: item.cameraId
+    }));
+};

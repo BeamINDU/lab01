@@ -13,5 +13,5 @@ export type DefectType = {
 export type ParamSearch = {
   defectTypeId?: string
   defectTypeName?: string
-  status?: number
+  status?: string
 }

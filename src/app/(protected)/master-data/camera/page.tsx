@@ -19,8 +19,15 @@ import CameraFormModal from "./components/camera-form";
 
 export default function Page() {
   const { hasPermission } = usePermission();
-  // ⭐ เพิ่ม setValue ใน useForm
-  const { register, getValues, setValue, reset } = useForm();
+
+  const { register, getValues, setValue, reset } = useForm({
+    defaultValues: {
+      cameraId: '',
+      cameraName: '',
+      location: '',
+      status: '' 
+    }
+  });
   const [data, setData] = useState<Camera[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingData, setEditingData] = useState<Camera | null>(null);

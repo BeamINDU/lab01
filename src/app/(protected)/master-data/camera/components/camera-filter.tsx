@@ -69,10 +69,13 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
             ...ActiveStatus.map(status => ({
               id: status.value,
               label: status.label,
-              value: status.value
+              value: status.value 
             }))
           ]}
           allowFreeText={false}
+          onSelectionChange={(value) => {
+            console.log('Status selected:', value, typeof value);
+          }}
         />
         
         {/* Search Button */}

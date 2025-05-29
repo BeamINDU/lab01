@@ -1,21 +1,23 @@
 "use client";
 
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Product } from "@/app/types/product"
+import { Product } from "@/app/types/product";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
+import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
+import { getProductTypes } from '@/app/lib/services/product';
 
 const ProductSchema = z.object({
-  productId: z.string().min(1, "Production Id is required"),
+  productId: z.string().min(1, "Product ID is required"),
   productName: z.string().min(1, "Product Name is required"),
   productTypeName: z.string().min(1, "Product Type is required"),
   serialNo: z.string().min(1, "Serial No is required"),
-  status: z.number().min(1, "Status No is required"),
-  isCreateMode: z.boolean(), 
+  status: z.number().min(0, "Status is required"),
+  isCreateMode: z.boolean().optional(),
 }); 
 
 type ProductFormValues = z.infer<typeof ProductSchema>;
@@ -25,7 +27,7 @@ interface ProductModalProps {
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
   editingData: Product | null;
   onSave: (formData: Product) => void;
-  canEdit: boolean
+  canEdit: boolean;
 }
 
 export default function ProductFormModal({
@@ -37,6 +39,12 @@ export default function ProductFormModal({
 }: ProductModalProps) {
   const { data: session } = useSession();
   const [isActive, setIsActive] = useState(true);
+  
+  // State สำหรับ Product Type
+  const [selectedProductType, setSelectedProductType] = useState<string>('');
+  const [productTypeOptions, setProductTypeOptions] = useState<SearchOption[]>([]);
+  const [isLoadingProductTypes, setIsLoadingProductTypes] = useState<boolean>(false);
+  
   const defaultValues: ProductFormValues = {
     productId: '',
     productName: '',
@@ -50,8 +58,6 @@ export default function ProductFormModal({
     register,
     handleSubmit,
     reset,
-    // watch,
-    // getValues,
     setValue,
     formState: { errors },
   } = useForm<ProductFormValues>({
@@ -59,13 +65,40 @@ export default function ProductFormModal({
     defaultValues,
   });
 
+  // โหลดข้อมูล Product Types
+  useEffect(() => {
+    const loadProductTypes = async () => {
+      try {
+        setIsLoadingProductTypes(true);
+        const types = await getProductTypes();
+        
+        const searchOptions: SearchOption[] = types.map((item, index) => ({
+          id: (index + 1).toString(),
+          label: item.label,
+          value: item.value
+        }));
+        
+        setProductTypeOptions(searchOptions);
+      } catch (error) {
+        console.error('Failed to load product types:', error);
+        setProductTypeOptions([]);
+      } finally {
+        setIsLoadingProductTypes(false);
+      }
+    };
+
+    loadProductTypes();
+  }, []);
+
   useEffect(() => {
     if (editingData) {
       reset(editingData);
       setIsActive(editingData.status === 1);
+      setSelectedProductType(editingData.productTypeName || '');
     } else {
       reset({...defaultValues, isCreateMode: true});
       setIsActive(true);
+      setSelectedProductType('');
     }
   }, [editingData, reset]);
 
@@ -74,13 +107,32 @@ export default function ProductFormModal({
     setValue("status", enabled ? 1 : 0);
   };
 
+  // จัดการเมื่อเลือก Product Type
+  const handleProductTypeSelect = (option: SearchOption | null) => {
+    const value = option ? option.value : '';
+    setSelectedProductType(value);
+    setValue("productTypeName", value);
+  };
+
+  // จัดการเมื่อพิมพ์ใน Product Type Search Box
+  const handleProductTypeInputChange = (inputValue: string) => {
+    const matchedOption = productTypeOptions.find(opt => 
+      opt.label.toLowerCase() === inputValue.toLowerCase()
+    );
+    
+    if (!matchedOption) {
+      setSelectedProductType(inputValue);
+      setValue("productTypeName", inputValue);
+    }
+  };
+
   if (!showModal) return null;
 
   const onSubmit: SubmitHandler<ProductFormValues> = async (formData) => {
     const formWithMeta: Product = {
       ...formData,
-      productId: formData.productId ?? "",
-      createdBy: session?.user?.userid,
+      productId: formData.productId,
+      createdBy: formData.isCreateMode ? session?.user?.userid : undefined,
       updatedBy: session?.user?.userid,
     };
     onSave(formWithMeta);
@@ -111,10 +163,15 @@ export default function ProductFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('isCreateMode')} />
+          
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">Production ID</label>
-              <input {...register("productId")} className="border p-2 w-full mb-1" />
+              <label className="font-normal w-32">Product ID:</label>
+              <input 
+                {...register("productId")} 
+                className="border p-2 w-full mb-1"
+                readOnly={editingData && !editingData.isCreateMode ? true : undefined}
+              />
             </div>
             {errors.productId && <p className="text-red-500 ml-160">{errors.productId.message}</p>}
           </div>
@@ -126,32 +183,62 @@ export default function ProductFormModal({
             </div>
             {errors.productName && <p className="text-red-500 ml-160">{errors.productName.message}</p>}
           </div>
+
+          {/* Product Type - ใช้ Google Style Search Component */}
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Product Type:</label>
-              <input {...register("productTypeName")} className="border p-2 w-full mb-1" />
+              <div className="relative">
+                {/* Register กับ React Hook Form */}
+                <input
+                  type="hidden"
+                  {...register("productTypeName")}
+                />
+                
+                {/* Google Style Search Component */}
+                <GoogleStyleSearch
+                  options={productTypeOptions}
+                  value={selectedProductType}
+                  placeholder={isLoadingProductTypes ? "Loading product types..." : "Select product type..."}
+                  onSelect={handleProductTypeSelect}
+                  onInputChange={handleProductTypeInputChange}
+                  allowClear={true}
+                  showDropdownIcon={true}
+                  minSearchLength={0}
+                  maxDisplayItems={8}
+                  disabled={isLoadingProductTypes || !canEdit}
+                  className="w-full"
+                />
+              </div>
             </div>
             {errors.productTypeName && <p className="text-red-500 ml-160">{errors.productTypeName.message}</p>}
           </div>
+          
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Serial No:</label>
-              <input {...register("serialNo")} className="border p-2 w-full mb-1" autoComplete="new-password" />
+              <input 
+                {...register("serialNo")} 
+                className="border p-2 w-full mb-1" 
+                autoComplete="new-password" 
+              />
             </div>
             {errors.serialNo && <p className="text-red-500 ml-160">{errors.serialNo.message}</p>}
           </div>
+          
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">Status</label>
-                <ToggleSwitch 
+              <label className="font-normal w-32">Status:</label>
+              <ToggleSwitch 
                 enabled={isActive}
                 onChange={handleStatusToggle}
                 label={isActive ? "Active" : "Inactive"}
                 disabled={!canEdit}
               />
             </div>
-            {errors.status && <p className="text-red-500 ml-110">{errors.status.message}</p>}
+            {errors.status && <p className="text-red-500 ml-160">{errors.status.message}</p>}
           </div>
+
           <div className="flex justify-end gap-2 mt-4">
             {/* Save Button */}
             {canEdit && (
