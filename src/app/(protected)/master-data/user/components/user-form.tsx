@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler,Controller } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,8 +41,6 @@ export default function UserFormModal({
   canEdit
 }: UserModalProps) {
   const { data: session } = useSession();
-  const [isActive, setIsActive] = useState(true);
-  
   // State สำหรับ Role
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [roleOptions, setRoleOptions] = useState<SearchOption[]>([]);
@@ -63,6 +61,7 @@ export default function UserFormModal({
     register,
     handleSubmit,
     reset,
+    control,
     setValue,
     watch,
     formState: { errors },
@@ -99,19 +98,12 @@ export default function UserFormModal({
   useEffect(() => {
     if (editingData) {
       reset(editingData);
-      setIsActive(editingData.status === 1);
-      setSelectedRole(editingData.roleName || '');
     } else {
       reset({...defaultValues, isCreateMode: true});
-      setIsActive(true);
-      setSelectedRole('');
     }
   }, [editingData, reset]);
 
-  const handleStatusToggle = (enabled: boolean) => {
-    setIsActive(enabled);
-    setValue("status", enabled ? 1 : 0);
-  };
+
 
   // จัดการเมื่อเลือก Role
   const handleRoleSelect = (option: SearchOption | null) => {
@@ -258,11 +250,17 @@ export default function UserFormModal({
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Status:</label>
-              <ToggleSwitch 
-                enabled={isActive}
-                onChange={handleStatusToggle}
-                label={isActive ? "Active" : "Inactive"}
-                disabled={!canEdit}
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <ToggleSwitch
+                    enabled={field.value === 1}
+                    onChange={(enabled: boolean) => field.onChange(enabled ? 1 : 0)}
+                    label={field.value === 1 ? "Active" : "Inactive"}
+                    disabled={!canEdit}
+                  />
+                )}
               />
             </div>
           </div>

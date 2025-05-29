@@ -141,7 +141,7 @@ export default function Page() {
       <div className="p-4 mx-auto">
         <div className="mb-6 max-w-full text-sm">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* ⭐ ส่ง setValue ไปให้ CameraFilterForm */}
+            {/* CameraFilterForm */}
             <CameraFilterForm
               register={register}
               setValue={setValue}

@@ -1,90 +1,244 @@
-// src/app/lib/services/product-type.ts
+// src/app/lib/services/product-type.ts - Complete Realistic Mock Data
 import { api } from '@/app/utils/api'
 import type { ProductType, ParamSearch } from "@/app/types/product-type"
 import { SelectOption } from "@/app/types/select-option";
 
-const mockData: ProductType[] = Array.from({ length: 20 }, (_, i) => ({
-  productTypeId:  `PT-${i+1}`,
-  productTypeName: `PT-Name${i+1}`,
-  description: 'description description description description description',
-  status: i % 2 === 0 ? 1 : 0,
-  createdDate: new Date(),
-  createdBy: 'Admin',
-  updatedDate: null,
-  updatedBy: null,
-}))
-
-// เพิ่ม mock data สำหรับ Product Type Options
-const mockProductTypeOptions: SelectOption[] = [
-  { label: 'Bottle', value: 'bottle' },
-  { label: 'Box', value: 'box' },
-  { label: 'Can', value: 'can' },
-  { label: 'Plastic Container', value: 'plastic-container' },
-  { label: 'Glass Jar', value: 'glass-jar' },
-  { label: 'Paper Pack', value: 'paper-pack' },
-  { label: 'Metal Tin', value: 'metal-tin' },
-  { label: 'Pouch', value: 'pouch' },
-  { label: 'Aluminum Foil', value: 'aluminum-foil' },
-  { label: 'Cardboard', value: 'cardboard' },
-  { label: 'Vacuum Pack', value: 'vacuum-pack' },
-  { label: 'Stand-up Pouch', value: 'stand-up-pouch' },
+// ⭐ ข้อมูล ProductType จริงที่ใช้ในโรงงาน
+const PRODUCT_TYPE_DATA = [
+  {
+    id: 'BTL001',
+    name: 'Bottle',
+    description: 'Various types of bottles for beverages, medicines, and cosmetics',
+    category: 'Container',
+    applications: ['Beverage', 'Medicine', 'Cosmetic']
+  },
+  {
+    id: 'BOX001', 
+    name: 'Box',
+    description: 'Cardboard and plastic boxes for packaging various products',
+    category: 'Packaging',
+    applications: ['Electronics', 'Food', 'General']
+  },
+  {
+    id: 'CAN001',
+    name: 'Can',
+    description: 'Metal and aluminum cans for beverages and food products',
+    category: 'Container',
+    applications: ['Beverage', 'Food']
+  },
+  {
+    id: 'PLC001',
+    name: 'Plastic Container',
+    description: 'Plastic containers and tubs for food and chemical products',
+    category: 'Container',
+    applications: ['Food', 'Chemical', 'Industrial']
+  },
+  {
+    id: 'GLS001',
+    name: 'Glass Jar',
+    description: 'Glass jars for premium food products and cosmetics',
+    category: 'Container',
+    applications: ['Food', 'Cosmetic', 'Pharmaceutical']
+  },
+  {
+    id: 'PPR001',
+    name: 'Paper Pack',
+    description: 'Paper-based packaging for food and beverage products',
+    category: 'Packaging',
+    applications: ['Food', 'Beverage']
+  },
+  {
+    id: 'MTL001',
+    name: 'Metal Tin',
+    description: 'Metal tins and containers for food and industrial products',
+    category: 'Container',
+    applications: ['Food', 'Industrial', 'Chemical']
+  },
+  {
+    id: 'PCH001',
+    name: 'Pouch',
+    description: 'Flexible pouches for snacks and liquid products',
+    category: 'Flexible Packaging',
+    applications: ['Snack', 'Beverage', 'Food']
+  },
+  {
+    id: 'TUB001',
+    name: 'Tub',
+    description: 'Wide-mouth containers for dairy and food products',
+    category: 'Container',
+    applications: ['Dairy', 'Food']
+  },
+  {
+    id: 'SPR001',
+    name: 'Spray Bottle',
+    description: 'Bottles with spray mechanisms for cosmetics and cleaners',
+    category: 'Specialized Container',
+    applications: ['Cosmetic', 'Cleaning', 'Personal Care']
+  },
+  {
+    id: 'AMP001',
+    name: 'Ampoule',
+    description: 'Small sealed vials for pharmaceuticals and cosmetics',
+    category: 'Medical Container',
+    applications: ['Pharmaceutical', 'Cosmetic']
+  },
+  {
+    id: 'BLI001',
+    name: 'Blister Pack',
+    description: 'Pre-formed plastic packaging for tablets and small items',
+    category: 'Medical Packaging',
+    applications: ['Pharmaceutical', 'Electronics']
+  }
 ];
 
+// ⭐ สร้าง Mock Data
+const mockData: ProductType[] = PRODUCT_TYPE_DATA.map((type, i) => {
+  const currentDate = new Date();
+  const createdDate = new Date(currentDate.getTime() - (Math.random() * 1095 * 24 * 60 * 60 * 1000)); // สุ่ม 3 ปีย้อนหลัง
+  const hasUpdate = Math.random() > 0.7; // 30% โอกาสที่จะมีการอัพเดท
+  const updatedDate = hasUpdate ? new Date(createdDate.getTime() + (Math.random() * 365 * 24 * 60 * 60 * 1000)) : null;
+
+  return {
+    productTypeId: type.id,
+    productTypeName: type.name,
+    description: type.description,
+    status: Math.random() > 0.08 ? 1 : 0, // 92% Active, 8% Inactive
+    createdDate: createdDate,
+    createdBy: i < 3 ? 'system' : ['admin', 'product_manager', 'engineer'][Math.floor(Math.random() * 3)],
+    updatedDate: updatedDate,
+    updatedBy: hasUpdate ? ['admin', 'product_manager', 'engineer'][Math.floor(Math.random() * 3)] : null,
+  };
+});
+
+// ⭐ API-Ready Functions
 export const search = async (param?: ParamSearch) => { 
+  console.log('ProductType service received params:', param);
+  
+  // TODO: Replace with actual API call
+  // const response = await api.get<ProductType[]>('/product-types', { params: param });
+  // return response;
+  
   if (!param) return mockData;
 
-  const parsedStatus = isNaN(Number(param.status)) ? undefined  : Number(param.status);
+  // ✅ จัดการ status parameter ให้ปลอดภัย
+  let parsedStatus: number | undefined = undefined;
+  if (param.status !== undefined && param.status !== null && param.status.toString().trim() !== '') {
+    const statusNum = Number(param.status);
+    if (!isNaN(statusNum)) {
+      parsedStatus = statusNum;
+    }
+  }
 
-  return mockData.filter(item => {
-    return (
-      (!param.productTypeId || item.productTypeId.includes(param.productTypeId)) &&
-      (!param.productTypeName || item.productTypeName.includes(param.productTypeName)) &&
-      (parsedStatus === undefined || item.status === parsedStatus)
-    );
+  const filteredData = mockData.filter(item => {
+    const productTypeIdMatch = !param.productTypeId || item.productTypeId.toLowerCase().includes(param.productTypeId.toLowerCase());
+    const productTypeNameMatch = !param.productTypeName || item.productTypeName.toLowerCase().includes(param.productTypeName.toLowerCase());
+    const statusMatch = parsedStatus === undefined || item.status === parsedStatus;
+    
+    return productTypeIdMatch && productTypeNameMatch && statusMatch;
   });
+  
+  console.log('ProductType filtered results:', filteredData.length, 'items');
+  return filteredData;
 };
 
 export const detail = async (id: string) => {
+  // TODO: Replace with actual API call
+  // return await api.get<ProductType>(`/product-types/${id}`);
+  
   return mockData.find(item => item.productTypeId === id);
 };
 
 export const create = async (param: Partial<ProductType>) => {
-  return param;
+  // TODO: Replace with actual API call
+  // return await api.post<ProductType>('/product-types', param);
+  
+  console.log('Creating product type:', param);
+  const newProductType = {
+    ...param,
+    productTypeId: param.productTypeId || `PT${String(mockData.length + 1).padStart(3, '0')}`,
+    status: param.status ?? 1,
+    createdDate: new Date(),
+    createdBy: param.createdBy || 'admin',
+    updatedDate: null,
+    updatedBy: null,
+  };
+  
+  mockData.push(newProductType as ProductType);
+  return newProductType;
 };
 
 export const update = async (param: Partial<ProductType>) => {
-  return param;
+  // TODO: Replace with actual API call
+  // return await api.put<ProductType>(`/product-types/${param.productTypeId}`, param);
+  
+  console.log('Updating product type:', param);
+  const index = mockData.findIndex(item => item.productTypeId === param.productTypeId);
+  if (index !== -1) {
+    mockData[index] = {
+      ...mockData[index],
+      ...param,
+      updatedDate: new Date(),
+      updatedBy: param.updatedBy || 'admin'
+    };
+    return mockData[index];
+  }
+  
+  return {
+    ...param,
+    updatedDate: new Date(),
+    updatedBy: param.updatedBy || 'admin'
+  };
 };
 
 export const remove = async (id: string) => {
+  // TODO: Replace with actual API call
+  // return await api.delete(`/product-types/${id}`);
+  
+  console.log('Deleting product type:', id);
+  const index = mockData.findIndex(item => item.productTypeId === id);
+  if (index !== -1) {
+    mockData.splice(index, 1);
+  }
   return {};
 };
 
 export const upload = async (file: File) => {
-  await new Promise(resolve => setTimeout(resolve, 3000));
-  return {};
+  // TODO: Replace with actual API call
+  // const formData = new FormData();
+  // formData.append('file', file);
+  // return await api.post('/product-types/upload', formData);
+  
+  console.log('Uploading product type file:', file.name);
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  return { message: 'Product type file uploaded successfully' };
 };
 
-// ⭐ เพิ่ม function สำหรับดึงข้อมูล Product Type Options
+
 export const getProductTypeOptions = async (): Promise<SelectOption[]> => {
-  try {
-    // จำลองการเรียก API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return mockProductTypeOptions;
-    
-    // ในการใช้งานจริง อาจจะดึงจาก mockData หรือ API:
-    // const productTypes = await search(); // ดึงข้อมูลทั้งหมด
-    // return productTypes
-    //   .filter(item => item.status === 1) // เฉพาะที่ active
-    //   .map(item => ({
-    //     label: item.productTypeName,
-    //     value: item.productTypeId
-    //   }));
-    
-    // หรือเรียก API โดยตรง:
-    // return await api.get<SelectOption[]>('/product-type-options');
-  } catch (error) {
-    console.error('Failed to fetch product type options:', error);
-    throw error;
-  }
+
+  console.log('Loading ProductType options...');
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+
+  const activeProductTypes = mockData.filter(item => item.status === 1);
+  
+  const options = activeProductTypes.map(item => ({
+    label: item.productTypeName,
+    value: item.productTypeName 
+  }));
+  
+  console.log('ProductType options loaded:', options.length, 'items');
+  return options;
+};
+
+// function สำหรับดึงข้อมูล ProductType สำหรับ SearchField ในหน้า ProductType เอง
+export const getProductTypeSearchOptions = async (): Promise<SelectOption[]> => {
+
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+
+  return mockData.map(item => ({
+    label: `${item.productTypeName} (${item.productTypeId})`,
+    value: item.productTypeName
+  }));
 };

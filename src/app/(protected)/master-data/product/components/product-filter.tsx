@@ -4,9 +4,10 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
-import { getProductTypes } from '@/app/lib/services/product';
+import { getProductTypeOptions } from '@/app/lib/services/product-type'; 
 import { search as searchProducts } from '@/app/lib/services/product';
-import { ActiveStatus } from '@/app/lib/constants/status';
+import { ActiveStatus } from '@/app/lib/constants/status'; // 
+
 interface ProductFilterFormProps {
   register: UseFormRegister<any>;
   setValue: UseFormSetValue<any>;
@@ -43,14 +44,14 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           allowFreeText={true}
         />
         
-        {/* Product Type  */}
+        {/* Product Type */}
         <SearchField
           register={register}
           setValue={setValue}
           fieldName="productTypeName"
           label="Product Type"
           placeholder="Search product type..."
-          dataLoader={getProductTypes}
+          dataLoader={getProductTypeOptions}
           labelField="label"
           valueField="value"
           allowFreeText={true}
@@ -83,13 +84,10 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
             ...ActiveStatus.map(status => ({
               id: status.value,
               label: status.label,
-              value: status.value 
+              value: status.value
             }))
           ]}
           allowFreeText={false}
-          onSelectionChange={(value) => {
-            console.log('Status selected:', value, typeof value);
-          }}
         />
         
         {/* Search Button */}

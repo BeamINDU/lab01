@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, Controller, SubmitHandler } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,12 +34,12 @@ export default function CameraFormModal({
   canEdit,
 }: CameraModalProps) {
   const { data: session } = useSession();
-  const [isActive, setIsActive] = useState(true);
+
   const defaultValues: CameraFormValues = {
     cameraId: '',
     cameraName: '',
     location: '',
-    status: 1, // 1 = Active, 0 = Inactive
+    status: 1,
     isCreateMode: true,
   };
 
@@ -47,6 +47,7 @@ export default function CameraFormModal({
     register,
     handleSubmit,
     reset,
+    control,
     setValue,
     formState: { errors },
   } = useForm<CameraFormValues>({
@@ -57,17 +58,12 @@ export default function CameraFormModal({
   useEffect(() => {
     if (editingData) {
       reset(editingData);
-      setIsActive(editingData.status === 1);
     } else {
       reset({...defaultValues, isCreateMode: true});
-      setIsActive(true);
     }
   }, [editingData, reset]);
 
-  const handleStatusToggle = (enabled: boolean) => {
-    setIsActive(enabled);
-    setValue("status", enabled ? 1 : 0);
-  };
+
 
   if (!showModal) return null;
 
@@ -141,11 +137,17 @@ export default function CameraFormModal({
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Status:</label>
-              <ToggleSwitch 
-                enabled={isActive}
-                onChange={handleStatusToggle}
-                label={isActive ? "Active" : "Inactive"}
-                disabled={!canEdit}
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <ToggleSwitch
+                    enabled={field.value === 1}
+                    onChange={(enabled: boolean) => field.onChange(enabled ? 1 : 0)}
+                    label={field.value === 1 ? "Active" : "Inactive"}
+                    disabled={!canEdit}
+                  />
+                )}
               />
             </div>
             {errors.status && <p className="text-red-500 ml-160">{errors.status.message}</p>}

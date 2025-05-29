@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler,Controller } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,14 +9,14 @@ import { Product } from "@/app/types/product";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
-import { getProductTypes } from '@/app/lib/services/product';
+import { getProductTypeOptions } from '@/app/lib/services/product-type'; 
 
 const ProductSchema = z.object({
   productId: z.string().min(1, "Product ID is required"),
   productName: z.string().min(1, "Product Name is required"),
   productTypeName: z.string().min(1, "Product Type is required"),
   serialNo: z.string().min(1, "Serial No is required"),
-  status: z.number().min(0, "Status is required"),
+  status: z.number().min(0).max(1, "Status must be 0 or 1"), 
   isCreateMode: z.boolean().optional(),
 }); 
 
@@ -38,7 +38,7 @@ export default function ProductFormModal({
   canEdit
 }: ProductModalProps) {
   const { data: session } = useSession();
-  const [isActive, setIsActive] = useState(true);
+
   
   // State สำหรับ Product Type
   const [selectedProductType, setSelectedProductType] = useState<string>('');
@@ -58,6 +58,7 @@ export default function ProductFormModal({
     register,
     handleSubmit,
     reset,
+    control,
     setValue,
     formState: { errors },
   } = useForm<ProductFormValues>({
@@ -70,7 +71,7 @@ export default function ProductFormModal({
     const loadProductTypes = async () => {
       try {
         setIsLoadingProductTypes(true);
-        const types = await getProductTypes();
+        const types = await getProductTypeOptions(); 
         
         const searchOptions: SearchOption[] = types.map((item, index) => ({
           id: (index + 1).toString(),
@@ -92,20 +93,17 @@ export default function ProductFormModal({
 
   useEffect(() => {
     if (editingData) {
+      console.log('Form received editingData:', editingData); 
       reset(editingData);
-      setIsActive(editingData.status === 1);
       setSelectedProductType(editingData.productTypeName || '');
     } else {
+      console.log('Form reset to default values'); 
       reset({...defaultValues, isCreateMode: true});
-      setIsActive(true);
       setSelectedProductType('');
     }
   }, [editingData, reset]);
 
-  const handleStatusToggle = (enabled: boolean) => {
-    setIsActive(enabled);
-    setValue("status", enabled ? 1 : 0);
-  };
+
 
   // จัดการเมื่อเลือก Product Type
   const handleProductTypeSelect = (option: SearchOption | null) => {
@@ -129,13 +127,28 @@ export default function ProductFormModal({
   if (!showModal) return null;
 
   const onSubmit: SubmitHandler<ProductFormValues> = async (formData) => {
-    const formWithMeta: Product = {
-      ...formData,
-      productId: formData.productId,
-      createdBy: formData.isCreateMode ? session?.user?.userid : undefined,
-      updatedBy: session?.user?.userid,
-    };
-    onSave(formWithMeta);
+    try {
+      console.log('Form submitted with data:', formData); // Debug log
+      console.log('Is create mode:', formData.isCreateMode); // Debug log
+      
+      const formWithMeta: Product = {
+        ...formData,
+        productId: formData.productId,
+        createdBy: formData.isCreateMode ? session?.user?.userid : undefined,
+        updatedBy: session?.user?.userid,
+      };
+      
+      console.log('Sending to onSave:', formWithMeta); // Debug log
+      console.log('Calling onSave function...'); // Debug log
+      
+      await onSave(formWithMeta); // ✅ เพิ่ม await เพื่อจับ error
+      
+      console.log('onSave completed successfully'); // Debug log
+    } catch (error) {
+      console.error('Error in form submission:', error);
+      // แสดง error ให้ user เห็น
+      alert('Error saving product: ' + (error as Error).message);
+    }
   };
 
   return (
@@ -163,6 +176,8 @@ export default function ProductFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('isCreateMode')} />
+          
+
           
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
@@ -229,11 +244,17 @@ export default function ProductFormModal({
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Status:</label>
-              <ToggleSwitch 
-                enabled={isActive}
-                onChange={handleStatusToggle}
-                label={isActive ? "Active" : "Inactive"}
-                disabled={!canEdit}
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <ToggleSwitch
+                    enabled={field.value === 1}
+                    onChange={(enabled: boolean) => field.onChange(enabled ? 1 : 0)}
+                    label={field.value === 1 ? "Active" : "Inactive"}
+                    disabled={!canEdit}
+                  />
+                )}
               />
             </div>
             {errors.status && <p className="text-red-500 ml-160">{errors.status.message}</p>}

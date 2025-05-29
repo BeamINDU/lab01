@@ -3,51 +3,41 @@ import { api } from '@/app/utils/api'
 import type { Product, ParamSearch } from "@/app/types/product"
 import { SelectOption } from "@/app/types/select-option";
 
-// ⭐ ข้อมูลจริงที่หลากหลาย
-const PRODUCT_TYPES = [
-  { label: 'Beverage Bottle', value: 'Beverage Bottle' },
-  { label: 'Food Container', value: 'Food Container' },
-  { label: 'Medicine Bottle', value: 'Medicine Bottle' },
-  { label: 'Cosmetic Jar', value: 'Cosmetic Jar' },
-  { label: 'Chemical Container', value: 'Chemical Container' },
-  { label: 'Electronics Box', value: 'Electronics Box' },
-  { label: 'Automotive Parts', value: 'Automotive Parts' },
-  { label: 'Textile Product', value: 'Textile Product' },
-];
+
 
 const PRODUCT_DATA = [
   // Beverages
-  { name: 'Coca Cola Classic 330ml', type: 'Beverage Bottle', category: 'Beverage' },
-  { name: 'Pepsi Cola 500ml', type: 'Beverage Bottle', category: 'Beverage' },
-  { name: 'Sprite Lemon 350ml', type: 'Beverage Bottle', category: 'Beverage' },
-  { name: 'Fanta Orange 500ml', type: 'Beverage Bottle', category: 'Beverage' },
-  { name: 'Red Bull Energy Drink', type: 'Beverage Bottle', category: 'Energy Drink' },
+  { name: 'Coca Cola Classic 330ml', type: 'Bottle', category: 'Beverage' },
+  { name: 'Pepsi Cola 500ml', type: 'Bottle', category: 'Beverage' },
+  { name: 'Sprite Lemon 350ml', type: 'Bottle', category: 'Beverage' },
+  { name: 'Fanta Orange 500ml', type: 'Bottle', category: 'Beverage' },
+  { name: 'Red Bull Energy Drink', type: 'Can', category: 'Energy Drink' },
   
   // Food Containers
-  { name: 'Instant Noodle Cup', type: 'Food Container', category: 'Food' },
-  { name: 'Yogurt Container 200ml', type: 'Food Container', category: 'Dairy' },
-  { name: 'Peanut Butter Jar 340g', type: 'Food Container', category: 'Condiment' },
-  { name: 'Olive Oil Bottle 500ml', type: 'Food Container', category: 'Oil' },
-  { name: 'Honey Jar 250g', type: 'Food Container', category: 'Natural' },
+  { name: 'Instant Noodle Cup', type: 'Paper Pack', category: 'Food' },
+  { name: 'Yogurt Container 200ml', type: 'Plastic Container', category: 'Dairy' },
+  { name: 'Peanut Butter Jar 340g', type: 'Glass Jar', category: 'Condiment' },
+  { name: 'Olive Oil Bottle 500ml', type: 'Bottle', category: 'Oil' },
+  { name: 'Honey Jar 250g', type: 'Glass Jar', category: 'Natural' },
   
   // Medicine
-  { name: 'Paracetamol 500mg', type: 'Medicine Bottle', category: 'Medicine' },
-  { name: 'Vitamin C Tablets', type: 'Medicine Bottle', category: 'Supplement' },
-  { name: 'Cough Syrup 100ml', type: 'Medicine Bottle', category: 'Medicine' },
+  { name: 'Paracetamol 500mg', type: 'Bottle', category: 'Medicine' },
+  { name: 'Vitamin C Tablets', type: 'Bottle', category: 'Supplement' },
+  { name: 'Cough Syrup 100ml', type: 'Bottle', category: 'Medicine' },
   
   // Cosmetics
-  { name: 'Face Cream Jar 50ml', type: 'Cosmetic Jar', category: 'Skincare' },
-  { name: 'Foundation Bottle 30ml', type: 'Cosmetic Jar', category: 'Makeup' },
-  { name: 'Shampoo Bottle 400ml', type: 'Cosmetic Jar', category: 'Haircare' },
+  { name: 'Face Cream Jar 50ml', type: 'Glass Jar', category: 'Skincare' },
+  { name: 'Foundation Bottle 30ml', type: 'Bottle', category: 'Makeup' },
+  { name: 'Shampoo Bottle 400ml', type: 'Bottle', category: 'Haircare' },
   
   // Electronics
-  { name: 'Smartphone Case', type: 'Electronics Box', category: 'Mobile' },
-  { name: 'USB Cable Package', type: 'Electronics Box', category: 'Accessory' },
-  { name: 'Bluetooth Earphone', type: 'Electronics Box', category: 'Audio' },
+  { name: 'Smartphone Case', type: 'Box', category: 'Mobile' },
+  { name: 'USB Cable Package', type: 'Box', category: 'Accessory' },
+  { name: 'Bluetooth Earphone', type: 'Box', category: 'Audio' },
   
-  // Automotive
-  { name: 'Engine Oil Filter', type: 'Automotive Parts', category: 'Filter' },
-  { name: 'Brake Pad Set', type: 'Automotive Parts', category: 'Brake' },
+  // Others
+  { name: 'Snack Pack', type: 'Pouch', category: 'Snack' },
+  { name: 'Coffee Powder', type: 'Metal Tin', category: 'Beverage' },
 ];
 
 // ⭐ สร้าง Mock Data ที่เหมือนจริง
@@ -58,7 +48,7 @@ const mockData: Product[] = PRODUCT_DATA.map((item, i) => {
   const updatedDate = hasUpdate ? new Date(createdDate.getTime() + (Math.random() * 30 * 24 * 60 * 60 * 1000)) : null;
 
   return {
-    productId: `PROD${String(i + 1).padStart(4, '0')}`, // PROD0001, PROD0002, etc.
+    productId: `PROD${String(i + 1).padStart(4, '0')}`, 
     productName: item.name,
     productTypeName: item.type,
     serialNo: `${item.category.substring(0, 2).toUpperCase()}${Date.now() + i}${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
@@ -70,7 +60,7 @@ const mockData: Product[] = PRODUCT_DATA.map((item, i) => {
   };
 });
 
-// ⭐ เพิ่มข้อมูลเพื่อให้ครบ 50 รายการ
+
 while (mockData.length < 50) {
   const randomProduct = PRODUCT_DATA[Math.floor(Math.random() * PRODUCT_DATA.length)];
   const i = mockData.length;
@@ -198,18 +188,10 @@ export const upload = async (file: File) => {
   return { message: 'File uploaded successfully' };
 };
 
-// ⭐ Options for SearchField
-export const getProductTypes = async (): Promise<SelectOption[]> => {
-  // TODO: Replace with actual API call
-  // return await api.get<SelectOption[]>('/products/types');
-  
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return PRODUCT_TYPES;
-};
 
-export const getProductNames = async (): Promise<SelectOption[]> => {
+export const getProductOptions = async (): Promise<SelectOption[]> => {
   // TODO: Replace with actual API call
-  // return await api.get<SelectOption[]>('/products/names');
+  // return await api.get<SelectOption[]>('/products/options');
   
   await new Promise(resolve => setTimeout(resolve, 500));
   const uniqueNames = [...new Set(mockData.map(item => item.productName))];

@@ -1,4 +1,4 @@
-// src/app/lib/services/camera.ts - Realistic Mock Data
+// src/app/lib/services/camera.ts - แทนที่เนื้อหาเดิมทั้งหมด
 import { api } from '@/app/utils/api'
 import type { Camera, ParamSearch } from "@/app/types/camera"
 import { SelectOption } from "@/app/types/select-option";
@@ -57,7 +57,7 @@ const mockData: Camera[] = CAMERA_LOCATIONS.map((loc, i) => {
     cameraId: `CAM-${areaCode}-${zoneNumber}`,
     cameraName: `Camera ${areaCode}${zoneNumber} - ${loc.zone}`,
     location: `${loc.area} - ${loc.zone}`,
-    status: Math.random() > 0.08 ? 1 : 0, // 92% Active, 8% Inactive (realistic for industrial equipment)
+    status: Math.random() > 0.2 ? 1 : 0, // ✅ เปลี่ยนเป็น 80% Active, 20% Inactive
     createdDate: createdDate,
     createdBy: ['admin', 'system', 'technician'][Math.floor(Math.random() * 3)],
     updatedDate: updatedDate,
@@ -83,7 +83,16 @@ export const search = async (param?: ParamSearch) => {
   }
 
   console.log('Filtering with parameters...');
-  const parsedStatus = param.status && param.status.trim() !== '' ? parseInt(param.status, 10) : undefined;
+  
+  // ✅ แก้ไข: จัดการ status parameter ให้ปลอดภัย
+  let parsedStatus: number | undefined = undefined;
+  if (param.status !== undefined && param.status !== null && param.status.toString().trim() !== '') {
+    const statusNum = Number(param.status);
+    if (!isNaN(statusNum)) {
+      parsedStatus = statusNum;
+    }
+  }
+  
   console.log('Parsed status:', parsedStatus, 'Type:', typeof parsedStatus);
 
   const filteredData = mockData.filter(item => {
@@ -92,19 +101,12 @@ export const search = async (param?: ParamSearch) => {
     const locationMatch = !param.location || item.location.toLowerCase().includes(param.location.toLowerCase());
     const statusMatch = parsedStatus === undefined || item.status === parsedStatus;
     
-    console.log(`Camera ${item.cameraId}:`, {
-      cameraIdMatch,
-      cameraNameMatch,
-      locationMatch,
-      statusMatch,
-      itemStatus: item.status,
-      searchStatus: parsedStatus
-    });
-    
     return cameraIdMatch && cameraNameMatch && locationMatch && statusMatch;
   });
   
   console.log('Filtered results:', filteredData.length, 'items');
+  console.log('Sample results:', filteredData.slice(0, 3).map(c => ({id: c.cameraId, status: c.status})));
+  
   return filteredData;
 };
 

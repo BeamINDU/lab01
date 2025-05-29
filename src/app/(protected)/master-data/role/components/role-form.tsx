@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect,useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler ,Controller} from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -48,6 +48,7 @@ export default function RoleFormModal({
     register,
     handleSubmit,
     setValue,
+    control,
     reset,
     formState: { errors },
   } = useForm<RoleFormValues>({
@@ -58,17 +59,11 @@ export default function RoleFormModal({
   useEffect(() => {
     if (editingData) {
       reset(editingData);
-      setIsActive(editingData.status === 1);
     } else {
       reset({...defaultValues, isCreateMode: true});
-      setIsActive(true);
     }
   }, [editingData, reset]);
 
-  const handleStatusToggle = (enabled: boolean) => {
-    setIsActive(enabled);
-    setValue("status", enabled ? 1 : 0);
-  };
 
   if (!showModal) return null;
 
@@ -143,11 +138,17 @@ export default function RoleFormModal({
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Status:</label>
-              <ToggleSwitch 
-                enabled={isActive}
-                onChange={handleStatusToggle}
-                label={isActive ? "Active" : "Inactive"}
-                disabled={!canEdit}
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <ToggleSwitch
+                    enabled={field.value === 1}
+                    onChange={(enabled: boolean) => field.onChange(enabled ? 1 : 0)}
+                    label={field.value === 1 ? "Active" : "Inactive"}
+                    disabled={!canEdit}
+                  />
+                )}
               />
             </div>
             {errors.status && <p className="text-red-500 ml-110">{errors.status.message}</p>}
