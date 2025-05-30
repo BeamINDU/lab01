@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSession } from "next-auth/react";
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DetectionModel } from "@/app/types/detection-model"
-import { useSession } from "next-auth/react";
+import { ModelStatus } from "@/app/constants/status"
 
 const AddModelFormSchema = z.object({
   modelId: z.number().nullable(),
@@ -68,6 +69,8 @@ export default function DetectionModelFormModal({
   const onSubmit: SubmitHandler<AddModelFormValues> = async (formData) => {
     const formWithMeta: DetectionModel = {
       ...formData,
+      // currentVersion: 0,
+      statusId: ModelStatus.Processing,
       createdBy: session?.user?.userid,
       updatedBy: session?.user?.userid,
     };
@@ -87,13 +90,7 @@ export default function DetectionModelFormModal({
         </button>
 
         <h2 className="text-2xl font-semibold text-center mb-6">
-          {editingData
-            ? editingData.isCreateMode
-              ? 'Add Model'
-              : canEdit
-                ? 'Edit Model'
-                : 'Detail Model'
-            : 'Add Model'}
+          Add Model
         </h2>
 
         {/* Form */}

@@ -68,14 +68,14 @@ export default function SearchField({
             if (typeof data[0] === 'string') {
               // กรณีเป็น array of strings
               transformedOptions = data.map((item, index) => ({
-                id: (index + 1).toString(),
+                id: `string-${index}-${item}`, // ✅ สร้าง unique id
                 label: item,
                 value: item
               }));
             } else if (typeof data[0] === 'object') {
               // กรณีเป็น array of objects
               transformedOptions = data.map((item, index) => ({
-                id: item.id || item[valueField] || (index + 1).toString(),
+                id: item.id || `obj-${index}-${item[valueField] || item.value || item.id || item[labelField]}`, // ✅ สร้าง unique id
                 label: item[labelField] || item.label || item.name || String(item),
                 value: item[valueField] || item.value || item.id || item[labelField]
               }));
@@ -98,7 +98,12 @@ export default function SearchField({
   // Update options when options prop changes
   useEffect(() => {
     if (options.length > 0) {
-      setSearchOptions(options);
+      // ✅ แก้ไข: ตรวจสอบและเพิ่ม unique id ถ้าจำเป็น
+      const optionsWithUniqueIds = options.map((opt, index) => ({
+        ...opt,
+        id: opt.id || `opt-${index}-${opt.value}` // ✅ สร้าง unique id ถ้าไม่มี
+      }));
+      setSearchOptions(optionsWithUniqueIds);
     }
   }, [options]);
 

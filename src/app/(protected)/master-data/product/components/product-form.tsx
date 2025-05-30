@@ -9,7 +9,7 @@ import { Product } from "@/app/types/product";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
-import { getProductTypeOptions } from '@/app/lib/services/product-type'; 
+import { getProductTypeOptions } from '@/app/libs/services/product-type'; 
 
 const ProductSchema = z.object({
   productId: z.string().min(1, "Product ID is required"),

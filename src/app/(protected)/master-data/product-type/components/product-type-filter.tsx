@@ -1,11 +1,10 @@
-// src/app/(protected)/master-data/product-type/components/product-type-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
-import { search as searchProductTypes } from "@/app/lib/services/product-type";
-import { ActiveStatus } from '@/app/lib/constants/status';
+import { search as searchProductTypes } from "@/app/libs/services/product-type";
+import { ActiveStatus } from '@/app/constants/status';
 
 interface ProductTypeFilterFormProps {
   register: UseFormRegister<any>;
@@ -66,8 +65,8 @@ export default function ProductTypeFilterForm({ register, setValue, onSearch }: 
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
           <button
-            type="button"
-            className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900"
+            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900"
+
             onClick={onSearch}
           >
             Search

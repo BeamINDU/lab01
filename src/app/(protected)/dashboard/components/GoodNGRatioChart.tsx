@@ -21,34 +21,36 @@ export default function GoodNGRatioChart({ data }: GoodNGRatioChartProps) {
       <h2 className="text-xl font-semibold text-center mb-1"> 
         Good / NG Ratio
       </h2>
-      <ResponsiveContainer width="100%" height={150}>
-        <PieChart>
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            innerRadius={40}
-            outerRadius={60}
-            dataKey="value"
-            label={({ value, percent }) =>
-              `${value}, ${(percent * 100).toFixed(0)}%`
-            }
-          >
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={colors[index]} />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend
-            verticalAlign="bottom"
-            iconType="circle"
-            wrapperStyle={{ 
-              bottom: -5,
-              fontSize: '0.75rem' 
-            }}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+      <div style={{ height: 150 }}>
+        <ResponsiveContainer width="100%" height="100%" >
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              innerRadius={40}
+              outerRadius={60}
+              dataKey="value"
+              label={({ value, percent }) =>
+                `${value}, ${(percent * 100).toFixed(0)}%`
+              }
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={colors[index]} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend
+              verticalAlign="bottom"
+              iconType="circle"
+              wrapperStyle={{ 
+                bottom: -5,
+                fontSize: '0.75rem' 
+              }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

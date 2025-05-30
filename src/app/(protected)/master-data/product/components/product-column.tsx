@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { SquarePen } from "lucide-react";
 import { Product } from "@/app/types/product"
 import { formatDateTime } from "@/app/utils/date";
-import { Action } from '@/app/lib/constants/menu';
+import { Action } from '@/app/constants/menu';
 
 interface ProductColumnProps {
   showCheckbox?: boolean;

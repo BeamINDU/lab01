@@ -2,13 +2,13 @@ import { ColumnDef } from "@tanstack/react-table";
 import { SquarePen } from "lucide-react";
 import { DetectionModel } from "@/app/types/detection-model"
 import { formatDateTime } from "@/app/utils/date";
-import { Action } from '@/app/lib/constants/menu';
+import { ModelStatus } from '@/app/constants/status';
 
 interface DetectionModelColumnProps {
   showCheckbox?: boolean;
   openEditModal: (modelId: number) => void;
-  selectedIds: string[];
-  setSelectedIds: (updater: (prevState: string[]) => string[]) => void; 
+  selectedIds: number[];
+  setSelectedIds: (updater: (prevState: number[]) => number[]) => void;
   data: DetectionModel[];
   canEdit: boolean
 }
@@ -22,22 +22,24 @@ export default function DetectionModelColumns({
   canEdit,
 }: DetectionModelColumnProps): ColumnDef<DetectionModel>[] {
 
-  const toggleSelect = (modelId: string) => {
+  const toggleSelect = (modelId: number) => {
     setSelectedIds((prev) =>
-      prev.includes(modelId) ? prev.filter((selectedId) => selectedId !== modelId) : [...prev, modelId]
+      prev.includes(modelId)
+        ? prev.filter((selectedId) => selectedId !== modelId)
+        : [...prev, modelId]
     );
   };
-
+  
   const toggleSelectAll = () => {
-    setSelectedIds((prev: string[]) =>
+    setSelectedIds((prev) =>
       prev.length === data.length
         ? []
         : data
-          .map((item) => item.modelId)
-          .filter((modelId): modelId is number => modelId !== undefined)
-          .map(String)
+            .map((item) => item.modelId)
+            .filter((id): id is number => typeof id === "number")
     );
   };
+  
 
   return [
     ...(showCheckbox
@@ -51,7 +53,7 @@ export default function DetectionModelColumns({
                   checked={
                     data.length > 0 &&
                     selectedIds.length === data.length &&
-                    data.every(item => selectedIds.includes(String(item.modelId)))
+                    data.every((item) => typeof item.modelId === "number" && selectedIds.includes(item.modelId))
                   }
                   onChange={toggleSelectAll}
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
@@ -62,7 +64,7 @@ export default function DetectionModelColumns({
               <div className="flex items-center justify-center">
                 <input
                   type="checkbox"
-                  checked={selectedIds.includes(row.original.modelId)} 
+                  checked={selectedIds.includes(row.original.modelId)}
                   onChange={() => toggleSelect(row.original.modelId)} 
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
                 />
@@ -86,7 +88,7 @@ export default function DetectionModelColumns({
       header: "Model Name",
     },
     {
-      accessorKey: "version",
+      accessorKey: "currentVersion",
       header: "Version",
     },
     {
@@ -94,40 +96,29 @@ export default function DetectionModelColumns({
       header: "Function",
     },
     {
-      accessorKey: "status",
+      accessorKey: "statusId",
       header: "Status",
-    },
-    // {
-    //   accessorKey: "status",
-    //   header: "Status",
-    //   cell: ({ getValue }) => {
-    //     const value = getValue() as number;
-    //     const isActive = value === 1;
-    //     return (
-    //       <span
-    //         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium ${
-    //           isActive
-    //             ? 'bg-green-100 text-green-800'
-    //             : 'bg-red-100 text-red-800'
-    //         }`}
-    //       >
-    //         {isActive ? 'Active' : 'Inactive'}
-    //       </span>
-    //     );
-    //   },
-    // },    
-    // {
-    //   accessorKey: "quantity",
-    //   header: "Quantity",
-    //   cell: ({ getValue }) => {
-    //     const value = getValue<number>();
-    //     return (
-    //       <div className="text-right">
-    //         {formatNumber(value)}
-    //       </div>
-    //     );
-    //   },
-    // },
+      cell: ({ getValue }) => {
+        const rawValue = getValue();
+        const value = typeof rawValue === "string" ? rawValue : String(rawValue);
+    
+        const statusMap: Record<string, { label: string; className: string }> = {
+          Using: { label: "Using", className: "bg-green-100 text-green-800" },
+          Processing: { label: "Processing", className: "bg-yellow-100 text-yellow-800" },
+          Ready: { label: "Ready", className: "bg-blue-100 text-blue-800" },
+        };
+    
+        const status = statusMap[value] || { label: "Unknown", className: "bg-gray-100 text-gray-800" };
+    
+        return (
+          <span
+            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium ${status.className}`}
+          >
+            {status.label}
+          </span>
+        );
+      },
+    },    
     {
       accessorKey: "createdBy",
       header: "Created By",
@@ -161,7 +152,12 @@ export default function DetectionModelColumns({
         <div className="flex items-center justify-center gap-2">
           <button 
             className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary"
-            // onClick={() => openEditModal(row.original.modelId)}
+            onClick={() => {
+              const id = row.original.modelId;
+              if (typeof id === "number") {
+                openEditModal(id);
+              }
+            }}
           >
             {canEdit ? 'Edit' : 'Detail'}
             <SquarePen size={16} />

@@ -3,8 +3,8 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
-import { search as searchRoles } from "@/app/lib/services/role";
-import { ActiveStatus } from '@/app/lib/constants/status';
+import { search as searchRoles } from "@/app/libs/services/role";
+import { ActiveStatus } from '@/app/constants/status';
 
 interface RoleFilterFormProps {
   register: UseFormRegister<any>;
@@ -65,8 +65,7 @@ export default function RoleFilterForm({ register, setValue, onSearch }: RoleFil
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
           <button
-            type="button"
-            className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900"
+            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900"
             onClick={onSearch}
           >
             Search

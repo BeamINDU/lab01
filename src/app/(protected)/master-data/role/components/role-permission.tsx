@@ -8,8 +8,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import { Role } from "@/app/types/role";
 import { UserPermission } from "@/app/types/user-permissions";
-import { Menu, Action } from '@/app/lib/constants/menu';
-import { getAllMenus, getRolePermissions, saveRolePermissions } from "@/app/lib/services/role-permission";
+import { Menu, Action } from '@/app/constants/menu';
+import { getAllMenus, getRolePermissions, saveRolePermissions } from "@/app/libs/services/role-permission";
 
 // Schema for the form
 const RolePermissionSchema = z.object({

@@ -4,9 +4,9 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
-import { search as searchReportDefects } from "@/app/lib/services/report-defect-summary";
-import { search as searchProductTypes } from "@/app/lib/services/product-type";
-import { search as searchDefectTypes } from "@/app/lib/services/defect-type";
+import { getProductTypeOptions } from "@/app/libs/services/product-type";
+import { getDefectTypeOptions } from "@/app/libs/services/defect-type";
+import { search as searchReportDefects } from "@/app/libs/services/report-defect-summary";
 
 interface ReportDefectFilterFormProps {
   register: UseFormRegister<any>;
@@ -18,37 +18,35 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
   return (
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Lot No */}
+        {/* Lot No - ใช้ข้อมูลจาก report service */}
         <SearchField
           register={register}
           setValue={setValue}
           fieldName="lotNo"
           label="Lot No"
           placeholder="Search or enter lot number..."
-          dataLoader={searchReportDefects}
+          dataLoader={async () => {
+            const reportData = await searchReportDefects();
+            return reportData.map(r => ({ lotNo: r.lotNo }));
+          }}
           labelField="lotNo"
           valueField="lotNo"
           allowFreeText={true}
         />
         
-        {/* Product Type */}
+        {/* Product Type - ใช้ Product Type Options */}
         <SearchField
           register={register}
           setValue={setValue}
           fieldName="productType"
           label="Product Type"
-          placeholder="Search or enter product type..."
+          placeholder="Search product type..."
           dataLoader={async () => {
-
-            const [reportData, productTypes] = await Promise.all([
-              searchReportDefects(),
-              searchProductTypes()
-            ]);
-            
-            const reportProductTypes = reportData.map(r => ({ productType: r.productType }));
-            const masterProductTypes = productTypes.map(p => ({ productType: p.productTypeName }));
-            
-            return [...reportProductTypes, ...masterProductTypes];
+            const options = await getProductTypeOptions();
+            // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
+            return options.map(opt => ({
+              productType: opt.label
+            }));
           }}
           labelField="productType"
           valueField="productType"
@@ -57,23 +55,19 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Defect Type - แปลงจาก input เป็น SearchField */}
+        {/* Defect Type - ใช้ Defect Type Options */}
         <SearchField
           register={register}
           setValue={setValue}
           fieldName="defectType"
           label="Defect Type"
-          placeholder="Search or enter defect type..."
+          placeholder="Search defect type..."
           dataLoader={async () => {
-            const [reportData, defectTypes] = await Promise.all([
-              searchReportDefects(),
-              searchDefectTypes()
-            ]);
-            
-            const reportDefectTypes = reportData.map(r => ({ defectType: r.defectType }));
-            const masterDefectTypes = defectTypes.map(d => ({ defectType: d.defectTypeName }));
-            
-            return [...reportDefectTypes, ...masterDefectTypes];
+            const options = await getDefectTypeOptions();
+            // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
+            return options.map(opt => ({
+              defectType: opt.label
+            }));
           }}
           labelField="defectType"
           valueField="defectType"

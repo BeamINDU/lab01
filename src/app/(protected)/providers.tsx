@@ -3,18 +3,19 @@
 import { SessionProvider } from "next-auth/react";
 import { ReactNode } from "react";
 import { PermissionProvider } from '@/app/contexts/permission-context';
-// import { Provider } from "react-redux";
-// import { store } from '@/app/store/store';
+import { PopupTrainingProvider } from '@/app/contexts/popup-training-context';
+// import { WebSocketProvider } from '@/app/contexts/websocket-context';
 
-export default function Providers({ children }: { children: ReactNode }) {
+export default function LayoutProviders({ children }: { children: ReactNode }) {
   return (
     <SessionProvider>
       <PermissionProvider>
-        {/* <Provider store={store}> */}
-          {children}
-        {/* </Provider> */}
+        <PopupTrainingProvider>
+          {/* <WebSocketProvider> */}
+            {children}
+          {/* </WebSocketProvider> */}
+        </PopupTrainingProvider>
       </PermissionProvider>
     </SessionProvider> 
   )
 }
-

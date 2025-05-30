@@ -11,7 +11,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
-
+import { getProductIdOptions, getLineIdOptions } from '@/app/libs/services/planning';
+import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
 
 const PlanningSchema = z.object({
   planId: z.string().min(1, "Plan ID is required"),
@@ -44,6 +45,15 @@ export default function PlanningFormModal({
   const { data: session } = useSession();
   const dateFormat = 'YYYY-MM-DD HH:mm';
   
+  // ⭐ State สำหรับ dropdown options
+  const [productIdOptions, setProductIdOptions] = useState<SearchOption[]>([]);
+  const [lineIdOptions, setLineIdOptions] = useState<SearchOption[]>([]);
+  const [isLoadingProducts, setIsLoadingProducts] = useState<boolean>(false);
+  const [isLoadingLines, setIsLoadingLines] = useState<boolean>(false);
+  
+  // ⭐ State สำหรับ selected values
+  const [selectedProductId, setSelectedProductId] = useState<string>('');
+  const [selectedLineId, setSelectedLineId] = useState<string>('');
 
   const inputStyle = {
     backgroundColor: 'white',
@@ -66,11 +76,39 @@ export default function PlanningFormModal({
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<PlanningFormValues>({
     resolver: zodResolver(PlanningSchema),
     defaultValues,
   });
+
+  // ⭐ โหลดข้อมูล dropdown options
+  useEffect(() => {
+    const loadOptions = async () => {
+      try {
+        // โหลด Product ID options
+        setIsLoadingProducts(true);
+        const products = await getProductIdOptions();
+        setProductIdOptions(products);
+        
+        // โหลด Line ID options
+        setIsLoadingLines(true);
+        const lines = await getLineIdOptions();
+        setLineIdOptions(lines);
+        
+      } catch (error) {
+        console.error('Failed to load dropdown options:', error);
+      } finally {
+        setIsLoadingProducts(false);
+        setIsLoadingLines(false);
+      }
+    };
+
+    if (showModal) {
+      loadOptions();
+    }
+  }, [showModal]);
 
   useEffect(() => {
     if (editingData) {
@@ -92,12 +130,31 @@ export default function PlanningFormModal({
         endDate: endDateString,
         isCreateMode: !editingData.productId
       });
+      
+      // ⭐ Set selected values สำหรับ dropdown
+      setSelectedProductId(editingData.productId || '');
+      setSelectedLineId(editingData.lineId || '');
     } else {
       reset(defaultValues);
+      setSelectedProductId('');
+      setSelectedLineId('');
     }
   }, [editingData, reset]);
 
   if (!showModal) return null;
+
+  // ⭐ Handle dropdown selections
+  const handleProductIdSelect = (option: SearchOption | null) => {
+    const value = option ? option.value : '';
+    setSelectedProductId(value);
+    setValue("productId", value);
+  };
+
+  const handleLineIdSelect = (option: SearchOption | null) => {
+    const value = option ? option.value : '';
+    setSelectedLineId(value);
+    setValue("lineId", value);
+  };
 
   const onSubmit: SubmitHandler<PlanningFormValues> = async (formData) => {
     const formWithMeta: Planning = {
@@ -127,23 +184,38 @@ export default function PlanningFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('isCreateMode')} />
-            <div className="mb-4">
+          
+          <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Plan ID:</label>
               <input 
                 {...register("planId")} 
                 className="border p-2 w-full mb-1 bg-white"
+                readOnly={editingData && !editingData.isCreateMode ? true : undefined}
               />
             </div>
-            {errors.productId && <p className="text-red-500 ml-160">{errors.productId.message}</p>}
+            {errors.planId && <p className="text-red-500 ml-160">{errors.planId.message}</p>}
           </div>
+          
+          {/* ⭐ Product ID - ใช้ GoogleStyleSearch */}
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Product ID:</label>
-              <input 
-                {...register("productId")} 
-                className="border p-2 w-full mb-1 bg-white"
-              />
+              <div className="relative">
+                <input type="hidden" {...register("productId")} />
+                <GoogleStyleSearch
+                  options={productIdOptions}
+                  value={selectedProductId}
+                  placeholder={isLoadingProducts ? "Loading products..." : "Select product ID..."}
+                  onSelect={handleProductIdSelect}
+                  allowClear={true}
+                  showDropdownIcon={true}
+                  minSearchLength={0}
+                  maxDisplayItems={8}
+                  disabled={isLoadingProducts || !canEdit}
+                  className="w-full"
+                />
+              </div>
             </div>
             {errors.productId && <p className="text-red-500 ml-160">{errors.productId.message}</p>}
           </div>
@@ -156,13 +228,25 @@ export default function PlanningFormModal({
             {errors.lotNo && <p className="text-red-500 ml-160">{errors.lotNo.message}</p>}
           </div>
           
+          {/* ⭐ Line ID - ใช้ GoogleStyleSearch */}
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Line ID:</label>
-              <input 
-                {...register("lineId")} 
-                className="border p-2 w-full mb-1 bg-white" 
-              />
+              <div className="relative">
+                <input type="hidden" {...register("lineId")} />
+                <GoogleStyleSearch
+                  options={lineIdOptions}
+                  value={selectedLineId}
+                  placeholder={isLoadingLines ? "Loading lines..." : "Select line ID..."}
+                  onSelect={handleLineIdSelect}
+                  allowClear={true}
+                  showDropdownIcon={true}
+                  minSearchLength={0}
+                  maxDisplayItems={8}
+                  disabled={isLoadingLines || !canEdit}
+                  className="w-full"
+                />
+              </div>
             </div>
             {errors.lineId && <p className="text-red-500 ml-160">{errors.lineId.message}</p>}
           </div>
@@ -173,6 +257,7 @@ export default function PlanningFormModal({
               <input 
                 {...register("quantity", { valueAsNumber: true })} 
                 className="border p-2 w-full mb-1 bg-white" 
+                type="number"
               />
             </div>
             {errors.quantity && <p className="text-red-500 ml-160">{errors.quantity.message}</p>}

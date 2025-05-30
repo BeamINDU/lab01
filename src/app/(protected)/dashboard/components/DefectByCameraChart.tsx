@@ -20,7 +20,7 @@ export default function DefectByCameraChart({ data }: DefectByCameraChartProps) 
       <h2 className="text-xl font-semibold text-center mb-4">
         Defects by Camera
       </h2>
-      <div className="h-60">
+      <div style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" />

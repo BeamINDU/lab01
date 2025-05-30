@@ -9,9 +9,9 @@ export type LiveInspectionView = {
   productTypeName: string
   serialNo: string
   defectType: string
-  productionDateTime: string
+  productDateTime: Date | string
   lotNo: string
-  totalNG: number
-  totalPlanning: number
-  actualPlanning : number
+  totalNG: number | string
+  totalPlanning: number | string
+  actualPlanning : number | string
 }

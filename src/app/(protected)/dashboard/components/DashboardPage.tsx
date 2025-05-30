@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import { showError, showSuccess } from '@/app/utils/swal';
-import { getDashboardData } from '@/app/lib/services/dashboard';
+import { getDashboardData } from '@/app/libs/services/dashboard';
 import { DashboardData, DashboardFilters } from '@/app/types/dashboard';
 import HeaderFilters from './HeaderFilters';
 import TotalProductsCard from './TotalProductsCard';

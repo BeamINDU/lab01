@@ -9,7 +9,8 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import 'dayjs/locale/th';
 import SearchField from '@/app/components/common/SearchField';
-import { search as searchTransactions } from "@/app/lib/services/transaction";
+// ⭐ เปลี่ยนจาก search function เป็น options functions
+import { getTransactionLotOptions, getTransactionProductOptions } from "@/app/libs/services/transaction";
 
 interface TransactionFilterFormProps {
   register: UseFormRegister<any>;
@@ -91,27 +92,27 @@ export default function TransactionFilterForm({ register, setValue, control, onS
       </LocalizationProvider>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Lot No  */}
+        {/* Lot No - ใช้ข้อมูลจาก Transaction ที่ดึง Lot No จาก Report Defect Summary */}
         <SearchField
           register={register}
           setValue={setValue}
           fieldName="lotNo"
           label="Lot No"
           placeholder="Search lot number..."
-          dataLoader={searchTransactions}
+          dataLoader={getTransactionLotOptions}
           labelField="lotNo"
           valueField="lotNo"
           allowFreeText={true}
         />
         
-        {/* Product ID  */}
+        {/* Product ID - ใช้ข้อมูลจาก Transaction */}
         <SearchField
           register={register}
           setValue={setValue}
           fieldName="productId"
           label="Product ID"
           placeholder="Search product ID..."
-          dataLoader={searchTransactions}
+          dataLoader={getTransactionProductOptions}
           labelField="productId"
           valueField="productId"
           allowFreeText={true}

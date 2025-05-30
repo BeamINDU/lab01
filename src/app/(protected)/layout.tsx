@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import type { Metadata } from 'next'
-import Providers from "./providers";
 import Layout from "@/app/components/layout/Layout";
+import Providers from "@/app/(protected)/providers";
 
 export const metadata: Metadata = {
   title: 'Product Inspection',

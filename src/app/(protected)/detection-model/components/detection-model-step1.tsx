@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { getFunctions } from "@/app/lib/services/detection-model";
+import { detail, updateStep1 } from "@/app/libs/services/detection-model";
+import { getFunctions } from "@/app/libs/services/detection-model";
 import { SelectOption } from "@/app/types/select-option";
-import { FormData, DetectionModel } from "@/app/types/detection-model";
+import { FormData } from "@/app/types/detection-model";
+// import { useWebSocket } from '@/app/contexts/websocket-context';
 
 type Props = {
   next: (data: any) => void;
@@ -14,32 +16,31 @@ type Props = {
 
 export const step1Schema = z.object({
   modelId: z.number(),
-  functions: z.string().min(1, "functions is required"),
+  functions: z.array(z.number()).min(1, "Please select at least one function"),
 });
 
 type Step1Data = z.infer<typeof step1Schema>;
 
 export default function DetectionModelStep1({ next, modelId, formData }: Props) {
-  console.log("formData:", formData);
   const [functions, setFunctions] = useState<SelectOption[]>([]);
-  const [selected, setSelected] = useState("");
+  const [selected, setSelected] = useState<number[]>([]);
 
   const defaultValues: Step1Data = {
     modelId: modelId,
-    functions: '',
+    functions: [],
   };
 
   const {
-    register, 
+    register,
+    setValue,
     getValues,
-    setValue, 
     reset,
-    handleSubmit,
     clearErrors,
+    handleSubmit,
     formState: { errors },
   } = useForm<Step1Data>({
     resolver: zodResolver(step1Schema),
-    defaultValues
+    defaultValues,
   });
 
   useEffect(() => {
@@ -56,16 +57,46 @@ export default function DetectionModelStep1({ next, modelId, formData }: Props) 
 
   useEffect(() => {
     if (functions.length > 0) {
+      const initial = formData.functions?.length ? formData.functions : [];
+      setSelected(initial);
       reset({
         modelId: modelId,
-        functions: functions[0].value,
+        functions: initial,
       });
-      setSelected(functions[0].value);
     }
   }, [functions, reset]);
+
+
+  const toggleSelection = (value: number) => {
+    const current = getValues("functions").map(Number);
+    let updated: number[];
   
+    if (current.includes(value)) {
+      updated = current.filter((v) => v !== value); // unselect
+    } else {
+      updated = [...current, value]; // select
+    }
+  
+    setSelected(updated);
+    setValue("functions", updated);
+    clearErrors("functions");
+  };
+  
+
+  const onSubmitHandler = async (data: Step1Data) => {
+    console.log("Submit data1:", data);
+    await updateStep1(data);
+
+    const updatedFormData: FormData = {
+      ...formData,
+      currentStep: 1,
+      functions: data.functions,
+    };
+    next(updatedFormData);
+  }
+
   return (
-    <form onSubmit={handleSubmit(next)}>
+    <form onSubmit={handleSubmit(onSubmitHandler)}>
       <div className="bg-gray-100">
         <div className="bg-white rounded-md shadow-md h-[63vh]">
           <div className="bg-[#cce0ff] px-6 py-3 rounded-t-md">
@@ -73,7 +104,8 @@ export default function DetectionModelStep1({ next, modelId, formData }: Props) 
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-x-[80px] gap-y-12 p-12">
-            <input type="hidden" {...register('modelId')} />
+            <input type="hidden" {...register("modelId")} />
+            
             <input type="hidden" {...register("functions")} />
 
             {functions.map((func) => (
@@ -81,15 +113,11 @@ export default function DetectionModelStep1({ next, modelId, formData }: Props) 
                 type="button"
                 key={func.value}
                 className={`h-20 w-full px-8 py-6 rounded-md text-sm font-medium text-center break-words shadow-sm ${
-                  selected === func.value
+                  selected.includes(parseInt(func.value))
                     ? "bg-violet-600 text-white"
                     : "bg-gray-300 text-black"
                 }`}
-                onClick={() => {
-                  setSelected(func.value);
-                  setValue("functions", func.value);
-                  clearErrors("functions");
-                }}
+                onClick={() => toggleSelection(parseInt(func.value))}
               >
                 {func.label}
               </button>
@@ -111,7 +139,6 @@ export default function DetectionModelStep1({ next, modelId, formData }: Props) 
             Next
           </button>
         </div>
-
       </div>
     </form>
   );

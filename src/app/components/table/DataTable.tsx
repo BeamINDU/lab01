@@ -8,7 +8,7 @@ import { ColumnDef, useReactTable, getCoreRowModel, getSortedRowModel, SortingSt
 interface DataTableProps {
   columns: ColumnDef<any>[];
   data: any[];
-  selectedIds: string[];
+  selectedIds: string[] | number[];
   defaultSorting: any[];
   // page: number;
   // setPage: (page: number) => void;

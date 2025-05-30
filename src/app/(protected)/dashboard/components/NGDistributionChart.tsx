@@ -19,53 +19,55 @@ export default function NGDistributionChart({ data }: NGDistributionChartProps) 
       <h2 className="text-xl font-semibold text-center mb-6">
         Distribution of NG Found per Hour by Product
       </h2>
-      <ResponsiveContainer width="100%" height={270}>
-        <BarChart
-          data={chartData}
-          margin={{ top: 0, right: 20, left: 20, bottom: 40 }}
-          barCategoryGap="20%"
-          barSize={25}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis
-            dataKey="time"
-            label={{
-              value: "Time",
-              position: "insideBottom",
-              offset: -10,
-              style: { fill: "#555",fontSize: 12 },
-            }}
-            tick={{ fontSize: 12 }}
-          />
-          <YAxis
-            label={{
-              value: "NG Product Quantity",
-              angle: -90,
-              offset: 5,
-              style: { fill: "#555", fontSize: 12  },
-            }}
-            tick={{ fontSize: 12 }}
-          />
-          <Tooltip />
-          <Legend
-            verticalAlign="top"
-            wrapperStyle={{
-              position: "absolute",
-              bottom: -20,
-              left: 0,
-              right: 0,
-              textAlign: "center",
-              fontSize: '0.75rem'
-            }}
-            iconType="circle" 
-            height={40}
-          />
-          <Bar dataKey="A" stackId="a" fill="#bae6fd" name="Product A" />
-          <Bar dataKey="B" stackId="a" fill="#60a5fa" name="Product B" />
-          <Bar dataKey="C" stackId="a" fill="#3b82f6" name="Product C" />
-          <Bar dataKey="D" stackId="a" fill="#1e3a8a" name="Product D" />
-        </BarChart>
-      </ResponsiveContainer>
+      <div style={{ height: 260 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={chartData}
+            margin={{ top: 0, right: 20, left: 20, bottom: 40 }}
+            barCategoryGap="20%"
+            barSize={25}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="time"
+              label={{
+                value: "Time",
+                position: "insideBottom",
+                offset: -10,
+                style: { fill: "#555",fontSize: 12 },
+              }}
+              tick={{ fontSize: 12 }}
+            />
+            <YAxis
+              label={{
+                value: "NG Product Quantity",
+                angle: -90,
+                offset: 5,
+                style: { fill: "#555", fontSize: 12  },
+              }}
+              tick={{ fontSize: 12 }}
+            />
+            <Tooltip />
+            <Legend
+              verticalAlign="top"
+              wrapperStyle={{
+                position: "absolute",
+                bottom: -20,
+                left: 0,
+                right: 0,
+                textAlign: "center",
+                fontSize: '0.75rem'
+              }}
+              iconType="circle" 
+              height={40}
+            />
+            <Bar dataKey="A" stackId="a" fill="#bae6fd" name="Product A" />
+            <Bar dataKey="B" stackId="a" fill="#60a5fa" name="Product B" />
+            <Bar dataKey="C" stackId="a" fill="#3b82f6" name="Product C" />
+            <Bar dataKey="D" stackId="a" fill="#1e3a8a" name="Product D" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

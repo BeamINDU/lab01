@@ -10,7 +10,7 @@ import { User } from "@/app/types/user";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
-import { getRoleOptions } from '@/app/lib/services/role';
+import { getRoleOptions } from '@/app/libs/services/role';
 
 const UserSchema = z.object({
   userId: z.string().min(1, "User ID is required"),

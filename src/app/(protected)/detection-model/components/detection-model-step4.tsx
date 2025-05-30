@@ -4,13 +4,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import SelectField from "@/app/components/common/SelectField";
-import { detail, getCamera, getModelVersion } from "@/app/lib/services/detection-model";
 import { FormData, DetectionModel } from "@/app/types/detection-model";
 import { SelectOption } from "@/app/types/select-option";
+import { ModelStatus } from "@/app/constants/status"
+import { getCamera, detail, updateStep4 } from "@/app/libs/services/detection-model";
+import { usePopupTraining } from '@/app/contexts/popup-training-context';
+import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
 
 type Props = {
   prev: () => void;
   next: (data: any) => void;
+  startTraining: () => Promise<boolean>;
   formData: FormData;
   modelId: number;
 };
@@ -18,25 +22,61 @@ type Props = {
 export const step4Schema = z.object({
   modelId: z.number(),
   cameraId: z.string().min(1, "Camera ID is required"),
-  version: z.string().min(1, "Model Version is required"),
-  isComplete: z.boolean(),
+  version: z.number().min(1, "Model Version is required"),
 });
 
 type Step4Data = z.infer<typeof step4Schema>;
 
-export default function DetectionModelStep4Page({ prev, next, modelId, formData }: Props) {
-  console.log("formData:", formData);
+export default function DetectionModelStep4Page({ prev, next, modelId, formData, startTraining }: Props) {
+  // console.log("formData3:", formData);
+  const { isTraining } = useTrainingSocketStore();
+  const { displayProcessing, displaySuccess, displayError, hidePopup } = usePopupTraining();
+
   const [cameraOptions, setCameraOptions] = useState<SelectOption[]>([]);
   const [versionOptions, setVersionOptions] = useState<SelectOption[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<string>("");
-  const [selectedVersion, setSelectedVersion] = useState<string>("");
-  const [isTraining, setIsTraining] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<number>(0);
+  // const [isTraining, setIsTraining] = useState(false);
+
+
+  //--------------------------------------------------------------------------------------------
   
+  useEffect(() => {
+    if(!isTraining) {
+      handleStartTraining();
+    }
+  }, []);
+
+  const handleStartTraining = async () => {
+    // const result = await showConfirm('Are you sure you want to begin the training process?')
+    // if (result.isConfirmed) {
+        // setIsTraining(true);
+        
+        try {
+          console.info("isTraining", isTraining)
+          displayProcessing(`Detection model ${formData.modelName} training...`);
+
+          await startTraining();
+
+          // if(success) {
+          //   setIsTraining(false);
+          // }
+          // await new Promise((resolve) => setTimeout(resolve, 1000));
+          // showSuccess(`Model training completed.`)
+          // setIsTraining(false);
+        } catch (error) {
+          console.error('Model training failed:', error);
+          // showError('Model training failed.')
+        } 
+    // }
+  };
+
+  //-------------------------------------------------------------------------------------------
+
   const defaultValues: Step4Data = {
     modelId: modelId,
     cameraId: '',
-    version: '',
-    isComplete: false,
+    version: 0,
   };
 
   const {
@@ -49,18 +89,23 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData 
     formState: { errors },
   } = useForm<Step4Data>({
     resolver: zodResolver(step4Schema),
+    defaultValues
   });
 
-  useEffect(() => {
-    const simulateTraining = async () => {
-      // if(!formData?.isComplete) {
-        setIsTraining(true);
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-        setIsTraining(false);
-      // }
-    };
-    simulateTraining();
-  }, []);
+  const getModelVersion = async () => {
+    const baseVersion = (formData.statusId === ModelStatus.Processing && formData.currentVersion != null) 
+      ? 0 
+      : formData.currentVersion ?? 0;
+  
+    const maxVersion = baseVersion + 1;
+  
+    const versions = Array.from({ length: maxVersion }, (_, i) => {
+      const version = maxVersion - i;
+      return { label: `${version}`, value: `${version}` };
+    });
+  
+    return versions as SelectOption[];
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -82,17 +127,17 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const result = await detail(formData.modelId);
-        // if (result) {
-        //   reset({
-        //     modelId: modelId,
-        //     version: selectedVersion,
-        //     cameraId: selectedCamera,
-        //     isComplete: false,
-        //   });
-        // } else {
-        //   reset(defaultValues);
-        // }
+        const result = await detail(modelId);
+        if (result) {
+          reset({
+            modelId: modelId,
+            version: selectedVersion,
+            cameraId: selectedCamera,
+          });
+        } 
+        reset({
+          modelId: modelId,
+        });
       } catch (error) {
         console.error("Failed to load model:", error);
       }
@@ -108,25 +153,30 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData 
     setValue("version", selectedVersion);
   }, [selectedVersion, setValue]);
 
-  const onSubmitHandler = (data: Step4Data) => {
+  const onSubmitHandler = async (data: Step4Data) => {
     if (!data.cameraId || !data.version) {
       showError("Please complete all required fields.");
       return;
     }
 
+    console.log("Submit data4:", data);
+    await updateStep4(data);
+
     const updatedFormData: FormData = {
       ...formData,
+      currentStep: 4,
       cameraId: data.cameraId,
       version: data.version,
-      isComplete: true
     };
-    
     next(updatedFormData);
-    console.log("Step4Data:", formData);
 
     showSuccess("Saved successfully!");
   };
 
+
+  
+  // console.log("Form Errors:", errors);
+  
   return (
     <form onSubmit={handleSubmit(onSubmitHandler)}>
       <div className="w-full">
@@ -142,7 +192,6 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData 
 
         <div className="grid grid-cols-1 gap-4 mb-6">
           <input type="hidden" {...register("modelId")} />
-          <input type="hidden" {...register("isComplete")} />
 
           {/* Camera No. */}
           <div className="flex items-center">
@@ -163,12 +212,12 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData 
 
           {/* Model Version */}
           <div className="flex items-center">
-            <label className="w-64 font-medium">Model Version :</label>
+            <label className="w-64 font-medium">Version :</label>
             <div className="w-64">
               <SelectField
-                value={selectedVersion}
+                value={String(selectedVersion)}
                 onChange={(value) => {
-                  setSelectedVersion(value);
+                  setSelectedVersion(parseInt(value));
                   clearErrors("version");
                 }}
                 options={versionOptions}
@@ -184,9 +233,8 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData 
             style={{ zIndex: 1000, left: "250px" }}
           >
           <button
-            className={`ml-1 px-4 py-2 rounded-md transition w-32 ${isTraining ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-gray-400 hover:bg-gray-600 text-white" }`}
+            className={`ml-1 px-4 py-2 rounded-md transition w-32 bg-gray-400 hover:bg-gray-600 text-white`}
             onClick={prev}
-            disabled={isTraining}
           >
             Previous
           </button>

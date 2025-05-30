@@ -1,7 +1,13 @@
 import { use } from "react";
-import LiveInspectionViewPage from "./components/LiveInspectionViewPage";
+// import SocketProvider from '@/app/providers/SocketProvider';
+import LiveInspectionViewPage from "./components/LiveInspectionView";
 
 export default function Page({ params }: { params: Promise<{ camera: string }> }) {
   const { camera } = use(params);
-  return <LiveInspectionViewPage camera={camera} />;
+  return (
+    // <SocketProvider>
+      <LiveInspectionViewPage cameraId={camera} />
+    // </SocketProvider>
+  );
 }
+ 

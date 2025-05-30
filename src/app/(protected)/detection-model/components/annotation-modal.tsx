@@ -9,6 +9,13 @@ import { useSession } from "next-auth/react";
 import { DetectionModel } from "@/app/types/detection-model";
 import { ClassName } from "@/app/types/class-name";
 import ClassNameModal from "./class-name-modal";
+import KonvaAnnotation from '@/app/components/annotation/KonvaAnnotation';
+
+import dynamic from 'next/dynamic';
+
+// const KonvaAnnotation = dynamic(() => import('@/app/components/annotation/KonvaAnnotation'), {
+//   ssr: false,
+// });
 
 const classNameList: ClassName[]  = [
   { id: '1', name: 'houseclip missing', checked: true },
@@ -52,7 +59,7 @@ export default function AnnotationModal({
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-        <div className="relative flex flex-col bg-white rounded-xl w-[90%] max-w-6xl h-[70%] p-4 shadow-xl space-y-4">
+        <div className="relative flex flex-col bg-white rounded-xl w-[90%] max-w-7xl h-[70%] p-4 shadow-xl space-y-4">
           {/* Close Button */}
           <button
             type="button"

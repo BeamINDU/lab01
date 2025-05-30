@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Download } from 'lucide-react';
-import { ExportType } from '@/app/lib/constants/export-type';
+import { ExportType } from '@/app/constants/export-type';
 
 interface ExportButtonProps {
   onExport: (type: ExportType) => void;
@@ -39,7 +39,7 @@ const ExportButton = ({onExport} : ExportButtonProps) => {
     <div className="relative">
       <button
         ref={buttonRef}
-        className="flex items-center gap-1 px-4 py-2 rounded whitespace-nowrap btn-primary"
+        className="flex items-center gap-1 px-4 py-2 rounded whitespace-nowrap btn-primary-dark"
         onClick={() => setShowExportOptions(!showExportOptions)}
       >
         Export

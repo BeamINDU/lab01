@@ -19,7 +19,7 @@ export default function TrendDetectionChart({ data }: TrendDetectionChartProps) 
       <h2 className="text-xl font-semibold text-center mb-4">
         Trend of Top 5 Detection Types
       </h2>
-      <div style={{ height: 310 }}>
+      <div style={{ height: 280 }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={chartData}

@@ -1,4 +1,3 @@
-// src/app/(protected)/report/product-defect/components/report-product-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
@@ -9,9 +8,9 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import 'dayjs/locale/th';
 import SearchField from '@/app/components/common/SearchField';
-import { search as searchReportProducts } from "@/app/lib/services/report-product-defect";
-import { search as searchDefectTypes } from "@/app/lib/services/defect-type";
-import { search as searchCameras } from "@/app/lib/services/camera";
+import { getProductOptions } from "@/app/libs/services/product";
+import { getDefectTypeOptions } from "@/app/libs/services/defect-type";
+import { getCameraOptions } from "@/app/libs/services/camera";
 
 interface ReportProductFilterFormProps {
   register: UseFormRegister<any>;
@@ -90,14 +89,20 @@ export default function ReportProductFilterForm({ register, setValue, control, o
             />
           </div>
           
-          {/* Camera Name */}
+          {/* Camera Name - ใช้ Camera Options */}
           <SearchField
             register={register}
             setValue={setValue}
             fieldName="cameraName"
             label="Camera Name"
-            placeholder="Search camera name..."
-            dataLoader={searchCameras}
+            placeholder="Search camera..."
+            dataLoader={async () => {
+              const options = await getCameraOptions();
+              // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
+              return options.map(opt => ({
+                cameraName: opt.label.split(' - ')[0] // ใช้ชื่อกล้องอย่างเดียว
+              }));
+            }}
             labelField="cameraName"
             valueField="cameraName"
             allowFreeText={true}
@@ -106,20 +111,26 @@ export default function ReportProductFilterForm({ register, setValue, control, o
       </LocalizationProvider>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Product Name */}
+        {/* Product Name - ใช้ Product Options */}
         <SearchField
           register={register}
           setValue={setValue}
           fieldName="productName"
           label="Product Name"
-          placeholder="Search product name..."
-          dataLoader={searchReportProducts}
+          placeholder="Search product..."
+          dataLoader={async () => {
+            const options = await getProductOptions();
+            // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
+            return options.map(opt => ({
+              productName: opt.label
+            }));
+          }}
           labelField="productName"
           valueField="productName"
           allowFreeText={true}
         />
         
-        {/* Defect Type - แปลงจาก input เป็น SearchField */}
+        {/* Defect Type - ใช้ Defect Type Options */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -127,15 +138,11 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           label="Defect Type"
           placeholder="Search defect type..."
           dataLoader={async () => {
-            const [reportData, defectTypes] = await Promise.all([
-              searchReportProducts(),
-              searchDefectTypes()
-            ]);
-            
-            const reportDefectTypes = reportData.map(r => ({ defectType: r.defectType }));
-            const masterDefectTypes = defectTypes.map(d => ({ defectType: d.defectTypeName }));
-            
-            return [...reportDefectTypes, ...masterDefectTypes];
+            const options = await getDefectTypeOptions();
+            // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
+            return options.map(opt => ({
+              defectType: opt.label
+            }));
           }}
           labelField="defectType"
           valueField="defectType"
@@ -145,8 +152,9 @@ export default function ReportProductFilterForm({ register, setValue, control, o
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
           <button
-            type="button"
-            className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900"
+
+            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900"
+
             onClick={onSearch}
           >
             Search

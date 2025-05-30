@@ -2,8 +2,9 @@
 'use client';
 
 import { useState } from 'react';
-import AnnotoriousImplementation from './Annotorious';
-import KonvaAnnotation from './KonvaAnnotation';
+import AnnotoriousImplementation from './components/Annotorious';
+import KonvaAnnotation from './components/KonvaAnnotation';
+
 
 export default function AnnotationTestPage() {
   const [activeTab, setActiveTab] = useState<'annotorious' | 'konva'>('konva');

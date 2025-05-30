@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useForm } from "react-hook-form";
 import { Plus, Trash2 } from 'lucide-react'
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import { exportExcel, exportCSV } from "@/app/lib/export";
-import { ExportType } from '@/app/lib/constants/export-type';
+import { exportExcel, exportCSV } from "@/app/libs/export";
+import { ExportType } from '@/app/constants/export-type';
 import { DetectionModel, ParamSearch } from "@/app/types/detection-model"
-import { search, detail, create, update, remove, upload } from "@/app/lib/services/detection-model";
+import { search, create, remove } from "@/app/libs/services/detection-model";
 import { usePermission } from '@/app/contexts/permission-context';
-import { Menu, Action } from '@/app/lib/constants/menu';
+import { Menu, Action } from '@/app/constants/menu';
 import ExportButton from "@/app/components/common/ExportButton";
 import DataTable from "@/app/components/table/DataTable";
 import DetectionModelColumns from "./components/detection-model-column";
@@ -37,7 +37,7 @@ export default function Page() {
         modelName: formValues.modelName || '',
         version: formValues.version || '',
         function: formValues.function || '',
-        status: formValues.status || '',
+        statusId: formValues.statusId || '',
       };
       const result = await search(param);
       setData(result);
@@ -50,7 +50,7 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     const headers = ["Model Name", "Version", "Function", "Status" ];
-    const keys: (keyof DetectionModel)[] = ["modelName", "version", "function", "status" ];
+    const keys: (keyof DetectionModel)[] = ["modelName", "currentVersion", "function", "statusId" ];
     const fileName = "Detection Model";
   
     switch (type) {
@@ -63,16 +63,16 @@ export default function Page() {
     }
   };
 
-  const handleUpload = async (file: File) => {
-    try {
-      await upload(file);
-      showSuccess(`Uploaded: ${file.name}`);
-    } catch (error) {
-      console.error("Upload operation failed:", error);
-      showError("Upload failed");
-      throw error;
-    }
-  };
+  // const handleUpload = async (file: File) => {
+  //   try {
+  //     await upload(file);
+  //     showSuccess(`Uploaded: ${file.name}`);
+  //   } catch (error) {
+  //     console.error("Upload operation failed:", error);
+  //     showError("Upload failed");
+  //     throw error;
+  //   }
+  // };
   
   const handleAdd = async (row?: DetectionModel | null) => {
     try {
@@ -105,7 +105,7 @@ export default function Page() {
         for (const modelId of selectedIds) {
           await remove(modelId);
         }
-        setData(prev => prev.filter(item => item.modelId === item.modelId));
+        setData(prev => prev.filter(item => !selectedIds.includes(item.modelId ?? 0)));
         setSelectedIds([]);
         showSuccess(`Deleted successfully`)
       } catch (error) {
@@ -117,13 +117,8 @@ export default function Page() {
 
   const handleSave = async (formData: DetectionModel) => {
     try {
-      if (formData.isCreateMode) {
-        const newData = await create(formData) as DetectionModel;
-        setData(prev => [...prev, newData]);
-      } else {
-        const updatedData = await update(formData) as DetectionModel;
-        setData(prev => prev.map(item => (item.modelId === formData.modelId ? updatedData : item)));
-      }
+      const newData = await create(formData) as DetectionModel;
+      setData(prev => [...prev, newData]);
       showSuccess(`Saved successfully`)
     } catch (error) {
       console.error('Save operation failed:', error);
@@ -187,7 +182,7 @@ export default function Page() {
         </div>
 
         {/* DataTable */}
-        {/* <DataTable
+        <DataTable
           columns={DetectionModelColumns({
             showCheckbox: hasPermission(Menu.DetectionModel, Action.Delete),
             canEdit: hasPermission(Menu.DetectionModel, Action.Edit),
@@ -197,9 +192,9 @@ export default function Page() {
             data,
           })}
           data={data}
-          selectedIds={selectedIds.toString()}
+          selectedIds={selectedIds}
           defaultSorting={[{ id: "modelName", desc: false }]}
-        /> */}
+        />
 
         {/* Add Modal */}
         {isFormModalOpen && (

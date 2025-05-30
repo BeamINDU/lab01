@@ -1,52 +1,26 @@
 import { format, isValid, parseISO } from 'date-fns';
-import { th, enUS } from 'date-fns/locale';
+import { enUS } from 'date-fns/locale';
 
-export const formatDateTime = (rawValue: string | number | Date | null | undefined): string => {
-  if (!rawValue) return '';
+type DateInput = string | number | Date | null | undefined;
 
-  let date: Date;
+const toValidDate = (raw: DateInput): Date | null => {
+  if (!raw) return null;
 
-  if (typeof rawValue === 'string') {
-    date = parseISO(rawValue);
-  } else {
-    date = new Date(rawValue);
-  }
-
-  if (!isValid(date)) return '';
-
-  return format(date, 'yyyy-MM-dd HH:mm:ss', { locale: enUS });
+  const date = typeof raw === 'string' ? parseISO(raw) : new Date(raw);
+  return isValid(date) ? date : null;
 };
 
-
-export const formatDate = (rawValue: string | number | Date | null | undefined): string => {
-  if (!rawValue) return '';
-
-  let date: Date;
-
-  if (typeof rawValue === 'string') {
-    date = parseISO(rawValue);
-  } else {
-    date = new Date(rawValue);
-  }
-
-  if (!isValid(date)) return '';
-
-  return format(date, 'yyyy-MM-dd', { locale: enUS });
+export const formatDateTime = (value: DateInput): string => {
+  const date = toValidDate(value);
+  return date ? format(date, 'yyyy-MM-dd HH:mm:ss', { locale: enUS }) : '';
 };
 
+export const formatDate = (value: DateInput): string => {
+  const date = toValidDate(value);
+  return date ? format(date, 'yyyy-MM-dd', { locale: enUS }) : '';
+};
 
-export const formatTime = (rawValue: string | number | Date | null | undefined): string => {
-  if (!rawValue) return '';
-
-  let date: Date;
-
-  if (typeof rawValue === 'string') {
-    date = parseISO(rawValue);
-  } else {
-    date = new Date(rawValue);
-  }
-
-  if (!isValid(date)) return '';
-
-  return format(date, 'HH:mm', { locale: enUS });
+export const formatTime = (value: DateInput): string => {
+  const date = toValidDate(value);
+  return date ? format(date, 'HH:mm', { locale: enUS }) : '';
 };

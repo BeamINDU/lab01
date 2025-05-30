@@ -2,10 +2,10 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useSession } from "next-auth/react";
-import { getPermissions } from "@/app/lib/services/user-permissions"
+import { getPermissions } from "@/app/libs/services/user-permissions"
 import { UserPermission } from "@/app/types/user-permissions"
 import { MenuItem } from "@/app/types/menu";
-import { Action } from "@/app/lib/constants/menu";
+import { Action } from "@/app/constants/menu";
 
 interface PermissionContextType {
   userPermissions: UserPermission[];

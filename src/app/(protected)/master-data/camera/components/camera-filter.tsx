@@ -3,8 +3,8 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
-import { search as searchCameras } from "@/app/lib/services/camera";
-import { ActiveStatus } from '@/app/lib/constants/status';
+import { search as searchCameras } from "@/app/libs/services/camera";
+import { ActiveStatus } from '@/app/constants/status';
 
 interface CameraFilterFormProps {
   register: UseFormRegister<any>;
@@ -81,8 +81,9 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
           <button
-            type="button"
-            className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900"
+
+            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900"
+
             onClick={onSearch}
           >
             Search

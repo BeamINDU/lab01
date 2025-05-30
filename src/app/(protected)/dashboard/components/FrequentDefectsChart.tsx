@@ -19,7 +19,7 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
       <h2 className="text-xl font-semibold text-center mb-4">
         Top 5 Most Frequent Defect Types
       </h2>
-      <div style={{ height: 270 }}>
+      <div style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             layout="vertical"

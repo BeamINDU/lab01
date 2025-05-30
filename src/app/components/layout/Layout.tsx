@@ -2,6 +2,7 @@ import NextTopLoader from "nextjs-toploader";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import ToastNotifications from '@/app/components/toastify/ToastNotifications'; 
+import { PopupTraining } from '@/app/components/common/PopupTraining';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -22,7 +23,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Sidebar />
 
         <div className="bg-[#F4F4F4]">
-          <main className="flex-1 p-4 overflow-auto">{children}</main>
+          <main className="flex-1 p-4 overflow-auto">
+            {children}
+
+            <PopupTraining/>
+          </main>
         </div>
       </div>
     </>

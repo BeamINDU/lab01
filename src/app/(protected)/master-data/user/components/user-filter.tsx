@@ -4,9 +4,9 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
-import { getRoleOptions } from '@/app/lib/services/role';
-import { search as searchUsers } from '@/app/lib/services/user';
-import { ActiveStatus } from '@/app/lib/constants/status';
+import { getRoleOptions } from '@/app/libs/services/role';
+import { search as searchUsers } from '@/app/libs/services/user';
+import { ActiveStatus } from '@/app/constants/status';
 
 interface UserFilterFormProps {
   register: UseFormRegister<any>;
@@ -83,8 +83,7 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
           <button
-            type="button"
-            className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900"
+            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900"
             onClick={onSearch}
           >
             Search

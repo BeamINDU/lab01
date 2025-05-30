@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Trash2 } from 'lucide-react'
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import { exportText, exportExcel, exportWord, exportCSV } from "@/app/lib/export";
-import { ExportType } from '@/app/lib/constants/export-type';
+import { exportText, exportExcel, exportWord, exportCSV } from "@/app/libs/export";
+import { ExportType } from '@/app/constants/export-type';
 import { ReportProduct, ProductDetail, ParamSearch, ParamUpdate } from "@/app/types/report-product-defect"
-import { search, detail, update } from "@/app/lib/services/report-product-defect";
+import { search, detail, update } from "@/app/libs/services/report-product-defect";
 import { usePermission } from '@/app/contexts/permission-context';
-import { Menu, Action } from '@/app/lib/constants/menu';
+import { Menu, Action } from '@/app/constants/menu';
 import ExportButton from "@/app/components/common/ExportButton";
 import DataTable from "@/app/components/table/DataTable";
 import ReportProductColumns from "./components/report-product-column";
@@ -65,16 +65,21 @@ export default function Page() {
   const handleDetail = async (row?: ReportProduct) => {
     try {
       if (row) {
-        const result = (await detail(row.productId ?? "")) ?? (row as ReportProduct);
-        const updatedRow = { ...result, isCreateMode: !row.productId };
-        setEditingData(updatedRow);
+        // ✅ แก้ไข: เรียก detail service เพื่อได้ ProductDetail
+        const productDetail = await detail(row.productId);
+        if (productDetail) {
+          setEditingData(productDetail);
+          setIsFormModalOpen(true);
+        } else {
+          showError('Product detail not found');
+        }
       } else {
         reset();
         setEditingData(null);
+        setIsFormModalOpen(true);
       }
-      setIsFormModalOpen(true);
     } catch (error) {
-      console.error('Failed to open modal:', error);
+      console.error('Failed to load product detail:', error);
       showError('Failed to load product details');
     }
   };
@@ -125,17 +130,17 @@ export default function Page() {
         <DataTable
           columns={ReportProductColumns({
             canEdit: hasPermission(Menu.ReportProductDefect, Action.Edit),
-            openDetailModal:handleDetail,
+            openDetailModal: handleDetail,
             selectedIds,
             setSelectedIds,
             data,
           })}
           data={data}
           selectedIds={selectedIds}
-          defaultSorting={[{ id: "datetime", desc: false }]}
+          defaultSorting={[{ id: "datetime", desc: true }]}
         />
 
-        {/* Add & Edit Modal */}
+        {/* Detail Modal */}
         {isFormModalOpen && (
           <ReportProductFormModal
             canEdit={hasPermission(Menu.ReportProductDefect, Action.Edit)}

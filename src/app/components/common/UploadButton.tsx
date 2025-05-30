@@ -2,10 +2,8 @@
 
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Dialog } from '@headlessui/react';
 import { X, Upload } from 'lucide-react';
-import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import { toastSuccess, toastError } from '@/app/utils/toast';
+import { toastError } from '@/app/utils/toast';
 
 type UploadButtonProps = {
   onUpload: (file: File) => void;
@@ -17,42 +15,29 @@ export default function UploadButton({ onUpload }: UploadButtonProps) {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    if (acceptedFiles.length > 0) {
-      const selectedFile = acceptedFiles[0];
-  
-      if (selectedFile.size > 25 * 1024 * 1024) {
-        toastError("File size must not exceed 25MB.");
-        return;
-      }
-  
-      setFile(selectedFile);
+    const selectedFile = acceptedFiles[0];
+    if (selectedFile?.size > 25 * 1024 * 1024) {
+      toastError('File size must not exceed 25MB.');
+      return;
     }
+    setFile(selectedFile);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: false,
-    accept: {
-      'text/csv': []
-      // .csv	      text/csv
-      // .xlsx	    application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
-      // .xls	      application/vnd.ms-excel
-      // .pdf	      application/pdf
-      // .jpg/.png	image/*
-    },
+    accept: { 'text/csv': [] },
   });
 
   const handleUpload = async () => {
     if (!file) return;
-  
     setIsUploading(true);
-  
     try {
       await Promise.resolve(onUpload(file));
       setFile(null);
       setIsUploadModalOpen(false);
-    } catch (error) {
-      toastError("Upload failed");
+    } catch {
+      toastError('Upload failed');
     } finally {
       setIsUploading(false);
     }
@@ -60,23 +45,22 @@ export default function UploadButton({ onUpload }: UploadButtonProps) {
 
   const handleCancel = () => {
     setFile(null);
-    setIsUploadModalOpen(false)
+    setIsUploadModalOpen(false);
   };
 
   return (
     <>
-      <button 
-        className="flex items-center gap-1 px-4 py-2 rounded btn-primary"
+      <button
+        className="flex items-center gap-1 px-4 py-2 rounded btn-primary-dark"
         onClick={() => setIsUploadModalOpen(true)}
       >
         Upload CSV
         <Upload size={16} className="mt-1" />
       </button>
 
-      <Dialog open={isUploadModalOpen} onClose={handleCancel} className="relative z-50">
-        <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
-        <div className="fixed inset-0 flex items-center justify-center p-4">
-          <div className="w-full max-w-xl rounded-xl bg-white p-8 shadow-lg relative">
+      {isUploadModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="w-full max-w-xl bg-white rounded-xl p-8 shadow-xl relative animate-fade-in">
             {/* Close button */}
             <button
               onClick={handleCancel}
@@ -104,7 +88,6 @@ export default function UploadButton({ onUpload }: UploadButtonProps) {
               </div>
             </div>
 
-            {/* Bottom info and buttons */}
             <div className="flex items-center justify-between mt-2 text-sm text-gray-500">
               <div>
                 <p>Supported format: <span className="font-medium text-gray-700">CSV</span></p>
@@ -135,7 +118,7 @@ export default function UploadButton({ onUpload }: UploadButtonProps) {
             </div>
           </div>
         </div>
-      </Dialog>
+      )}
     </>
   );
 }

@@ -1,12 +1,11 @@
-// src/app/(protected)/master-data/product/components/product-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
-import { getProductTypeOptions } from '@/app/lib/services/product-type'; 
-import { search as searchProducts } from '@/app/lib/services/product';
-import { ActiveStatus } from '@/app/lib/constants/status'; // 
+import { getProductTypeOptions } from '@/app/libs/services/product-type'; 
+import { search as searchProducts } from '@/app/libs/services/product';
+import { ActiveStatus } from '@/app/constants/status'; // 
 
 interface ProductFilterFormProps {
   register: UseFormRegister<any>;

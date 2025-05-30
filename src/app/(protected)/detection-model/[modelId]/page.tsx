@@ -5,14 +5,12 @@ import DetectionModelForm from '../components/detection-model-form';
 
 export default function DetectionModelStepPage() {
   const params = useParams();
-
   const rawModelId = params?.modelId;
-  const modelId =
-    typeof rawModelId === 'string' && !Array.isArray(rawModelId)
-      ? parseInt(rawModelId, 10)
-      : null;
 
-  if (!modelId || isNaN(modelId)) {
+  const modelId =
+    typeof rawModelId === 'string' ? parseInt(rawModelId, 10) : NaN;
+
+  if (Number.isNaN(modelId)) {
     return <div>Error: Invalid model ID</div>;
   }
 

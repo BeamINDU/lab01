@@ -1,4 +1,3 @@
-// src/app/(protected)/planning/components/planning-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
@@ -9,7 +8,12 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import 'dayjs/locale/th';
 import SearchField from '@/app/components/common/SearchField';
-import { search as searchPlannings } from "@/app/lib/services/planning";
+import { 
+  getPlanningPlanOptions, 
+  getPlanningProductOptions, 
+  getPlanningLotOptions, 
+  getPlanningLineOptions 
+} from "@/app/libs/services/planning";
 
 interface PlanningFilterFormProps {
   register: UseFormRegister<any>;
@@ -98,20 +102,20 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           fieldName="planId"
           label="Plan ID"
           placeholder="Search plan ID..."
-          dataLoader={searchPlannings}
+          dataLoader={getPlanningPlanOptions}
           labelField="planId"
           valueField="planId"
           allowFreeText={true}
         />
         
-        {/* Product ID */}
+        {/* Product ID*/}
         <SearchField
           register={register}
           setValue={setValue}
           fieldName="productId"
           label="Product ID"
           placeholder="Search product ID..."
-          dataLoader={searchPlannings}
+          dataLoader={getPlanningProductOptions}
           labelField="productId"
           valueField="productId"
           allowFreeText={true}
@@ -119,14 +123,14 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Lot No */}
+        {/* Lot No  */}
         <SearchField
           register={register}
           setValue={setValue}
           fieldName="lotNo"
           label="Lot No"
           placeholder="Search lot number..."
-          dataLoader={searchPlannings}
+          dataLoader={getPlanningLotOptions}
           labelField="lotNo"
           valueField="lotNo"
           allowFreeText={true}
@@ -139,7 +143,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           fieldName="lineId"
           label="Line ID"
           placeholder="Search line ID..."
-          dataLoader={searchPlannings}
+          dataLoader={getPlanningLineOptions}
           labelField="lineId"
           valueField="lineId"
           allowFreeText={true}

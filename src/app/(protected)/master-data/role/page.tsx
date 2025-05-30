@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Trash2 } from 'lucide-react'
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import { exportText, exportExcel, exportWord, exportCSV } from "@/app/lib/export";
-import { ExportType } from '@/app/lib/constants/export-type';
+import { exportText, exportExcel, exportWord, exportCSV } from "@/app/libs/export";
+import { ExportType } from '@/app/constants/export-type';
 import { Role, ParamSearch } from "@/app/types/role"
-import { search, detail, create, update, remove, upload } from "@/app/lib/services/role";
+import { search, detail, create, update, remove, upload } from "@/app/libs/services/role";
 import { usePermission } from '@/app/contexts/permission-context';
-import { Menu, Action } from '@/app/lib/constants/menu';
+import { Menu, Action } from '@/app/constants/menu';
 import UploadButton from "@/app/components/common/UploadButton";
 import ExportButton from "@/app/components/common/ExportButton";
 import DataTable from "@/app/components/table/DataTable";
@@ -17,7 +17,7 @@ import RoleColumns from "./components/role-column";
 import RoleFilterForm from './components/role-filter';
 import RoleFormModal from "./components/role-form";
 import RolePermissionModal from './components/role-permission';
-import { saveRolePermissions } from "@/app/lib/services/role-permission";
+import { saveRolePermissions } from "@/app/libs/services/role-permission";
 
 export default function Page() {
   const { hasPermission } = usePermission();

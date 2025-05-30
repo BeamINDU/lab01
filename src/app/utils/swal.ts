@@ -1,65 +1,58 @@
-import Swal from 'sweetalert2'
+import Swal, { SweetAlertIcon, SweetAlertOptions } from 'sweetalert2'
 
-export const showSuccess = (text?: string) => {
+const DEFAULT_CONFIRM_COLOR = '#004798';
+const DEFAULT_CANCEL_COLOR = '#ef4444';
+
+const baseAlert = (options: SweetAlertOptions) => {
   return Swal.fire({
-    icon: 'success',
     title: '',
-    text,
-    confirmButtonColor: '#004798',
-    confirmButtonText: 'OK',
-  })
-}
+    confirmButtonColor: DEFAULT_CONFIRM_COLOR,
+    ...options,
+  });
+};
 
-export const showError = (text?: string) => {
-  return Swal.fire({
-    icon: 'error',
-    title: '',
-    text,
-  })
-}
+export const showSuccess = (text?: string, title = '') =>
+  baseAlert({ icon: 'success', title, text });
 
-export const showWarning = (text?: string) => {
-  return Swal.fire({
-    icon: 'warning',
-    title: '',
-    text,
-  })
-}
+export const showError = (text?: string, title = '') =>
+  baseAlert({ icon: 'error', title, text });
 
-export const showConfirm = (text?: string) => {
-  return Swal.fire({
+export const showWarning = (text?: string, title = '') =>
+  baseAlert({ icon: 'warning', title, text });
+
+export const showConfirm = (text?: string,title = '', confirmText = 'Yes', cancelText = 'No') =>
+  baseAlert({
     icon: 'question',
-    title: '',
+    title,
     text,
     showCancelButton: true,
-    confirmButtonColor: '#004798',
-    cancelButtonColor: '#e5e7eb',
-    confirmButtonText: 'Yes',
-    cancelButtonText: 'No',
-    // reverseButtons: true,
-  })
-}
+    confirmButtonText: confirmText,
+    cancelButtonText: cancelText,
+    confirmButtonColor: DEFAULT_CONFIRM_COLOR,
+    cancelButtonColor: DEFAULT_CANCEL_COLOR,
+  });
 
-export const showInput = async (defaultValue: string = '') => {
-  return Swal.fire({
-    title: '',
+export const showInput = async ( defaultValue = '', title = 'Enter value:', placeholder = '') =>
+  Swal.fire({
+    title,
     input: 'text',
     inputValue: defaultValue,
+    inputPlaceholder: placeholder,
     showCancelButton: true,
     confirmButtonText: 'Save',
     cancelButtonText: 'Cancel',
-  })
-}
+    confirmButtonColor: DEFAULT_CONFIRM_COLOR,
+    cancelButtonColor: DEFAULT_CANCEL_COLOR,
+  });
 
-export const showLoading = (text = 'Loading...') => {
-  return Swal.fire({
+export const showLoading = (text = 'Loading...') =>
+  Swal.fire({
     title: '',
     text,
     allowOutsideClick: false,
     didOpen: () => {
-      Swal.showLoading()
+      Swal.showLoading();
     },
-  })
-}
+  });
 
-export const closeAlert = () => Swal.close()
+export const closeAlert = () => Swal.close();
