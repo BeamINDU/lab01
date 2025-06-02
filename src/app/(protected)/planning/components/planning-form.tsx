@@ -1,17 +1,19 @@
-// src/app/(protected)/planning/components/planning-form.tsx - ใช้ DateTimeFieldModal
+// src/app/(protected)/planning/components/planning-form.tsx
 "use client";
 
 import { useEffect } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Planning } from "@/app/types/planning";
 import { useSession } from "next-auth/react";
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import { getProductIdOptions, getLineIdOptions } from '@/app/libs/services/planning';
 import { SearchFieldModal } from '@/app/components/common/SearchField';
-import { DateTimeFieldModal } from '@/app/components/common/DateTimeField'; // ✅ ใช้ DateTimeFieldModal
 
 const PlanningSchema = z.object({
   planId: z.string().min(1, "Plan ID is required"),
@@ -43,6 +45,11 @@ export default function PlanningFormModal({
 }: PlanningModalProps) {
   const { data: session } = useSession();
   const dateFormat = 'YYYY-MM-DD HH:mm';
+  
+  const inputStyle = {
+    backgroundColor: 'white',
+    borderRadius: '0.375rem',
+  };
 
   const defaultValues: PlanningFormValues = {
     planId: '',
@@ -68,11 +75,9 @@ export default function PlanningFormModal({
     defaultValues,
   });
 
-  // ✅ Watch values สำหรับ SearchField และ DateTimeField
+
   const productId = watch("productId");
   const lineId = watch("lineId");
-  const startDate = watch("startDate");
-  const endDate = watch("endDate");
 
   useEffect(() => {
     if (editingData) {
@@ -115,6 +120,7 @@ export default function PlanningFormModal({
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded shadow-lg w-1/3 relative">
+        {/* Close Button */}
         <button
           type="button"
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
@@ -127,25 +133,24 @@ export default function PlanningFormModal({
           {editingData && !editingData.isCreateMode ? 'Edit Planning' : 'Add Planning'}
         </h2>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate className='text-sm'>
+        {/* Form */}
+        <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('isCreateMode')} />
           
           {/* Plan ID */}
           <div className="mb-4">
-            <div className="grid grid-cols-[160px_1fr] items-center gap-4">
-              <label className="font-normal w-32 pr-3">Plan ID:</label>
-              <div className="w-full">
-                <input 
-                  {...register("planId")} 
-                  className="border p-2 w-full bg-white"
-                  readOnly={editingData && !editingData.isCreateMode ? true : undefined}
-                />
-                {errors.planId && <p className="text-red-500 text-xs mt-1">{errors.planId.message}</p>}
-              </div>
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Plan ID:</label>
+              <input 
+                {...register("planId")} 
+                className="border p-2 w-full mb-1 bg-white"
+                readOnly={editingData && !editingData.isCreateMode ? true : undefined}
+              />
             </div>
+            {errors.planId && <p className="text-red-500 ml-160">{errors.planId.message}</p>}
           </div>
           
-          {/*  Product ID - ใช้ SearchFieldModal */}
+          {/* ✅ Product ID - ใช้ SearchFieldModal */}
           <div className="mb-4">
             <SearchFieldModal
               key={`productId-${editingData?.planId || 'new'}`}
@@ -161,29 +166,23 @@ export default function PlanningFormModal({
               disabled={!canEdit}
               initialValue={productId}
               onSelectionChange={(value, option) => {
+                console.log('Product ID selected:', value, option);
                 setValue("productId", value, { shouldValidate: true });
               }}
             />
-            {errors.productId && (
-              <div className="grid grid-cols-[160px_1fr] gap-4">
-                <div></div>
-                <p className="text-red-500 text-xs mt-1">{errors.productId.message}</p>
-              </div>
-            )}
+            {errors.productId && <p className="text-red-500 ml-160">{errors.productId.message}</p>}
           </div>
           
           {/* Lot No */}
           <div className="mb-4">
-            <div className="grid grid-cols-[160px_1fr] items-center gap-4">
-              <label className="font-normal w-32 pr-3">Lot No:</label>
-              <div className="w-full">
-                <input {...register("lotNo")} className="border p-2 w-full bg-white" />
-                {errors.lotNo && <p className="text-red-500 text-xs mt-1">{errors.lotNo.message}</p>}
-              </div>
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Lot No:</label>
+              <input {...register("lotNo")} className="border p-2 w-full mb-1 bg-white" />
             </div>
+            {errors.lotNo && <p className="text-red-500 ml-160">{errors.lotNo.message}</p>}
           </div>
           
-          {/*  Line ID - ใช้ SearchFieldModal */}
+          {/* ✅ Line ID - ใช้ SearchFieldModal */}
           <div className="mb-4">
             <SearchFieldModal
               key={`lineId-${editingData?.planId || 'new'}`}
@@ -199,71 +198,96 @@ export default function PlanningFormModal({
               disabled={!canEdit}
               initialValue={lineId}
               onSelectionChange={(value, option) => {
+                console.log('Line ID selected:', value, option);
                 setValue("lineId", value, { shouldValidate: true });
               }}
             />
-            {errors.lineId && (
-              <div className="grid grid-cols-[160px_1fr] gap-4">
-                <div></div>
-                <p className="text-red-500 text-xs mt-1">{errors.lineId.message}</p>
-              </div>
-            )}
+            {errors.lineId && <p className="text-red-500 ml-160">{errors.lineId.message}</p>}
           </div>
 
           {/* Quantity */}
           <div className="mb-4">
-            <div className="grid grid-cols-[160px_1fr] items-center gap-4">
-              <label className="font-normal w-32 pr-3">Quantity:</label>
-              <div className="w-full">
-                <input 
-                  {...register("quantity", { valueAsNumber: true })} 
-                  className="border p-2 w-full bg-white" 
-                  type="number"
-                />
-                {errors.quantity && <p className="text-red-500 text-xs mt-1">{errors.quantity.message}</p>}
-              </div>
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Quantity:</label>
+              <input 
+                {...register("quantity", { valueAsNumber: true })} 
+                className="border p-2 w-full mb-1 bg-white" 
+                type="number"
+              />
             </div>
+            {errors.quantity && <p className="text-red-500 ml-160">{errors.quantity.message}</p>}
           </div>
           
-          {/*  Start Date - ใช้ DateTimeFieldModal */}
-          <div className="mb-4">
-            <DateTimeFieldModal
-              key={`startDate-${editingData?.planId || 'new'}`}
-              control={control}
-              fieldName="startDate"
-              label="Start Date"
-              placeholder="YYYY-MM-DD HH:mm"
-              variant="datetime"
-              format="YYYY-MM-DD HH:mm"
-              ampm={false}
-              timeSteps={{ minutes: 1 }}
-              closeOnSelect={false}
-              required={true}
-              disabled={!canEdit}
-              initialValue={startDate}
-            />
-          </div>
-          
-          {/*  End Date - ใช้ DateTimeFieldModal */}
-          <div className="mb-4">
-            <DateTimeFieldModal
-              key={`endDate-${editingData?.planId || 'new'}`}
-              control={control}
-              fieldName="endDate"
-              label="End Date"
-              placeholder="YYYY-MM-DD HH:mm"
-              variant="datetime"
-              format="YYYY-MM-DD HH:mm"
-              ampm={false}
-              timeSteps={{ minutes: 1 }}
-              closeOnSelect={false}
-              required={true}
-              disabled={!canEdit}
-              initialValue={endDate}
-            />
-          </div>
+          {/* Date Time Pickers */}
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            {/* Start Date */}
+            <div className="mb-4">
+              <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+                <label className="font-normal w-32">Start Date:</label>
+                <Controller
+                  name="startDate"
+                  control={control}
+                  render={({ field }) => (
+                    <DateTimePicker
+                      value={field.value ? dayjs(field.value) : null}
+                      onChange={(date) => field.onChange(date ? date.format(dateFormat) : '')}
+                      format={dateFormat}
+                      ampm={false}
+                      timeSteps={{ minutes: 1 }}
+                      closeOnSelect={false} 
+                      slotProps={{ 
+                        textField: { 
+                          size: "small",
+                          fullWidth: true,
+                          className: "border p-2 w-full rounded",
+                          placeholder: "YYYY-MM-DD HH:mm",
+                          sx: inputStyle,
+                          error: !!errors.startDate
+                        } 
+                      }}
+                    />
+                  )}
+                />
+              </div>
+              {errors.startDate && <p className="text-red-500 ml-160">{errors.startDate.message}</p>}
+            </div>
+            
+            {/* End Date */}
+            <div className="mb-4">
+              <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+                <label className="font-normal w-32">End Date:</label>
+                <Controller
+                  name="endDate"
+                  control={control}
+                  render={({ field }) => (
+                    <DateTimePicker
+                      value={field.value ? dayjs(field.value) : null}
+                      onChange={(date) => field.onChange(date ? date.format(dateFormat) : '')}
+                      format={dateFormat}
+                      ampm={false}
+                      timeSteps={{ minutes: 1 }}
+                      closeOnSelect={false} 
+                      slotProps={{ 
+                        textField: { 
+                          size: "small",
+                          fullWidth: true,
+                          className: "border p-2 w-full rounded",
+                          placeholder: "YYYY-MM-DD HH:mm",
+                          sx: inputStyle,
+                          error: !!errors.endDate
+                        } 
+                      }}
+                    />
+                  )}
+                />
+              </div>
+              {errors.endDate && <p className="text-red-500 ml-160">{errors.endDate.message}</p>}
+            </div>
+          </LocalizationProvider>
 
+          {/* Action Buttons */}
           <div className="flex justify-end gap-2 mt-4">
+            {/* Save Button */}
             {canEdit && (
               <button
                 type="submit"
@@ -273,6 +297,7 @@ export default function PlanningFormModal({
                 <Save size={16} />
               </button>
             )}
+            {/* Cancel Button */}
             <button
               type="button"
               className="px-4 py-2 bg-secondary rounded flex items-center gap-2"

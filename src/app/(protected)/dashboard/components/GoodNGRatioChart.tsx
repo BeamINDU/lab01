@@ -17,35 +17,40 @@ export default function GoodNGRatioChart({ data }: GoodNGRatioChartProps) {
   ];
 
   return (
-    <div className="p-4 bg-white rounded-xl shadow max-w-xs mx-auto">
-      <h2 className="text-xl font-semibold text-center mb-1"> 
+    <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full min-h-[200px] md:min-h-[220px]">
+      <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-1"> 
         Good / NG Ratio
       </h2>
-      <div style={{ height: 150 }}>
-        <ResponsiveContainer width="100%" height="100%" >
+      <div className="h-[140px] md:h-[150px]">
+        <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={chartData}
               cx="50%"
               cy="50%"
-              innerRadius={40}
-              outerRadius={60}
+              innerRadius={30}
+              outerRadius={50}
               dataKey="value"
               label={({ value, percent }) =>
-                `${value}, ${(percent * 100).toFixed(0)}%`
+                `${value.toLocaleString()}, ${(percent * 100).toFixed(0)}%`
               }
+              labelLine={false}
+              fontSize={10}
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={colors[index]} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip 
+              formatter={(value) => [value.toLocaleString(), '']}
+              contentStyle={{ fontSize: '11px' }}
+            />
             <Legend
               verticalAlign="bottom"
               iconType="circle"
               wrapperStyle={{ 
                 bottom: -5,
-                fontSize: '0.75rem' 
+                fontSize: '0.625rem'
               }}
             />
           </PieChart>

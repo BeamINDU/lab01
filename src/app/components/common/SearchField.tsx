@@ -1,4 +1,3 @@
-// src/app/components/common/SearchField.tsx - รองรับทั้ง register และ Controller
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -6,10 +5,9 @@ import { UseFormRegister, UseFormSetValue, Control, Controller } from "react-hoo
 import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
 
 interface SearchFieldProps {
-  // Form integration - รองรับทั้งสองแบบ
   register?: UseFormRegister<any>;
   setValue?: UseFormSetValue<any>;
-  control?: Control<any>; // ✅ เพิ่ม control option
+  control?: Control<any>; 
   fieldName: string;
   
   // Display
@@ -36,6 +34,7 @@ interface SearchFieldProps {
   
   // ✅ เพิ่มตัวเลือกให้แสดง error ใน component
   showInternalError?: boolean;
+  required?: boolean;
   
   // Events
   onSelectionChange?: (value: string, option: SearchOption | null) => void;
@@ -61,6 +60,7 @@ export default function SearchField({
   layout = 'responsive',
   labelWidth = '150px',
   showInternalError = false, // ✅ default เป็น false เพื่อ backward compatibility
+  required = false,
   onSelectionChange
 }: SearchFieldProps) {
   const [selectedValue, setSelectedValue] = useState<string>('');
@@ -182,14 +182,17 @@ export default function SearchField({
     }
   };
 
-  //  เลือก layout ตาม prop
+  // ✅ เลือก layout ตาม prop
   const renderLayout = () => {
-
+    // ✅ ถ้าใช้ control และต้องการ error handling
     if (control && showInternalError) {
       const searchFieldWithController = (
         <Controller
           name={fieldName}
           control={control}
+          rules={{
+            required: required ? `${label} is required` : false
+          }}
           render={({ field, fieldState }) => {
             const handleControllerSelect = (option: SearchOption | null) => {
               const value = option ? option.value : '';
@@ -239,8 +242,11 @@ export default function SearchField({
       switch (layout) {
         case 'modal':
           return (
-            <div className="grid grid-cols-[160px_1fr] items-center gap-4">
-              <label className="font-normal w-32 pr-3">{label}:</label>
+            <div className="grid grid-cols-[150px_1fr] items-start gap-2">
+              <label className="font-normal pt-2 text-sm">
+                {label}
+                {required && <span className="text-red-500 ml-1">*</span>}:
+              </label>
               <div className="w-full min-w-0">
                 {searchFieldWithController}
               </div>
@@ -249,9 +255,10 @@ export default function SearchField({
 
         case 'inline':
           return (
-            <div className="flex items-center gap-4">
-              <label className="font-semibold whitespace-nowrap pr-3" style={{width: labelWidth}}>
-                {label}:
+            <div className="flex items-start gap-2">
+              <label className="font-semibold whitespace-nowrap pt-2" style={{width: labelWidth}}>
+                {label}
+                {required && <span className="text-red-500 ml-1">*</span>}:
               </label>
               <div className="flex-1 min-w-0">
                 {searchFieldWithController}
@@ -262,9 +269,10 @@ export default function SearchField({
         case 'responsive':
         default:
           return (
-            <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] lg:grid-cols-[150px_1fr] items-start sm:items-center gap-4">
-              <label className="font-semibold text-sm sm:text-base whitespace-nowrap pr-3">
+            <div className="grid grid-cols-1 sm:grid-cols-[110px_1fr] lg:grid-cols-[120px_1fr] items-start gap-2">
+              <label className="font-semibold text-sm sm:text-base whitespace-nowrap pt-2">
                 {label}
+                {required && <span className="text-red-500 ml-1">*</span>}
               </label>
               <div className="w-full min-w-0">
                 {searchFieldWithController}
@@ -274,6 +282,7 @@ export default function SearchField({
       }
     }
 
+    // ✅ Traditional register() approach
     const searchComponent = (
       <>
         {register && <input type="hidden" {...register(fieldName)} />}
@@ -296,8 +305,11 @@ export default function SearchField({
     switch (layout) {
       case 'modal':
         return (
-          <div className="grid grid-cols-[160px_1fr] items-center gap-4">
-            <label className="font-normal w-32 pr-3">{label}:</label>
+          <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+            <label className="font-normal text-sm">
+              {label}
+              {required && <span className="text-red-500 ml-1">*</span>}:
+            </label>
             <div className="w-full min-w-0">
               {searchComponent}
             </div>
@@ -306,9 +318,10 @@ export default function SearchField({
 
       case 'inline':
         return (
-          <div className="flex items-center gap-4">
-            <label className="font-semibold whitespace-nowrap pr-3" style={{width: labelWidth}}>
-              {label}:
+          <div className="flex items-center gap-2">
+            <label className="font-semibold whitespace-nowrap" style={{width: labelWidth}}>
+              {label}
+              {required && <span className="text-red-500 ml-1">*</span>}:
             </label>
             <div className="flex-1 min-w-0">
               {searchComponent}
@@ -319,9 +332,10 @@ export default function SearchField({
       case 'responsive':
       default:
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] lg:grid-cols-[150px_1fr] items-start sm:items-center gap-4">
-            <label className="font-semibold text-sm sm:text-base whitespace-nowrap pr-3">
+          <div className="grid grid-cols-1 sm:grid-cols-[110px_1fr] lg:grid-cols-[120px_1fr] items-start sm:items-center gap-2">
+            <label className="font-semibold text-sm sm:text-base whitespace-nowrap">
               {label}
+              {required && <span className="text-red-500 ml-1">*</span>}
             </label>
             <div className="w-full min-w-0">
               {searchComponent}
@@ -338,7 +352,7 @@ export default function SearchField({
   );
 }
 
-
+// ✅ Export convenience components สำหรับการใช้งานแต่ละแบบ
 export const SearchFieldModal = (props: Omit<SearchFieldProps, 'layout'>) => (
   <SearchField {...props} layout="modal" />
 );
@@ -349,4 +363,13 @@ export const SearchFieldInline = (props: Omit<SearchFieldProps, 'layout'>) => (
 
 export const SearchFieldResponsive = (props: Omit<SearchFieldProps, 'layout'>) => (
   <SearchField {...props} layout="responsive" />
+);
+
+// ✅ Convenience components with Controller
+export const SearchFieldModalWithController = (props: Omit<SearchFieldProps, 'layout' | 'showInternalError'>) => (
+  <SearchField {...props} layout="modal" showInternalError={true} />
+);
+
+export const SearchFieldResponsiveWithController = (props: Omit<SearchFieldProps, 'layout' | 'showInternalError'>) => (
+  <SearchField {...props} layout="responsive" showInternalError={true} />
 );

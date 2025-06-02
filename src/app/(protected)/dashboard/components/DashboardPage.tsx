@@ -231,28 +231,50 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
-        {/* Left column: Total products and Good/NG Ratio stacked */}
-        <div className="lg:col-span-1 space-y-6">
+      {/* 📱 RESPONSIVE GRID LAYOUT */}
+      <div className="space-y-4 md:space-y-6">
+        
+        {/* 📱 Mobile: Stack all cards */}
+        <div className="grid grid-cols-1 gap-4 md:hidden">
           <TotalProductsCard data={dashboardData} />
           <GoodNGRatioChart data={dashboardData} />
-        </div>
-
-        {/* Middle: Trend and Top Defects */}
-        <div className="lg:col-span-2">
           <TrendDetectionChart data={dashboardData} />
-        </div>
-        <div className="lg:col-span-3">
           <FrequentDefectsChart data={dashboardData} />
-        </div>
-
-        {/* Bottom row: NG Distribution and Camera Defects */}
-        <div className="lg:col-span-3">
           <NGDistributionChart data={dashboardData} />
-        </div>
-        <div className="lg:col-span-3">
           <DefectByCameraChart data={dashboardData} />
         </div>
+
+        {/* 💻 Tablet & Desktop: Responsive grid */}
+        <div className="hidden md:grid md:grid-cols-1 lg:grid-cols-6 gap-4 lg:gap-6">
+          
+          {/* Left column: Summary cards (Mobile: full width, Desktop: 1 column) */}
+          <div className="lg:col-span-1 space-y-4 lg:space-y-6">
+            <TotalProductsCard data={dashboardData} />
+            <GoodNGRatioChart data={dashboardData} />
+          </div>
+
+          {/* Middle & Right: Charts (Mobile: full width, Desktop: 5 columns) */}
+          <div className="lg:col-span-5 space-y-4 lg:space-y-6">
+            
+            {/* Top row: Trend + Defects (Mobile: stack, Desktop: side by side) */}
+            <div className="grid grid-cols-1 xl:grid-cols-5 gap-4 lg:gap-6">
+              <div className="xl:col-span-2">
+                <TrendDetectionChart data={dashboardData} />
+              </div>
+              <div className="xl:col-span-3">
+                <FrequentDefectsChart data={dashboardData} />
+              </div>
+            </div>
+
+            {/* Bottom row: Distribution + Camera (Mobile: stack, Desktop: side by side) */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
+              <NGDistributionChart data={dashboardData} />
+              <DefectByCameraChart data={dashboardData} />
+            </div>
+            
+          </div>
+        </div>
+
       </div>
     </main>
   );

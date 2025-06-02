@@ -8,11 +8,11 @@ export default function TotalProductsCard({ data }: TotalProductsCardProps) {
   const totalProducts = data?.totalProducts || 5000;
 
   return (
-    <div className="bg-white p-2 rounded shadow w-full">
-      <h2 className="text-xl font-semibold text-center mb-2 mt-2">
+    <div className="bg-white p-3 md:p-4 rounded shadow w-full min-h-[120px] flex flex-col justify-center">
+      <h2 className="text-lg md:text-xl font-semibold text-center mb-2">
         Total all products
       </h2>
-      <p className="text-4xl font-bold mt-2 text-center mb-4">
+      <p className="text-2xl md:text-4xl font-bold text-center mb-2 md:mb-4">
         {totalProducts.toLocaleString()}
       </p>
     </div>

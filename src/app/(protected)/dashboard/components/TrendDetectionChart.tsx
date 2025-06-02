@@ -15,40 +15,53 @@ export default function TrendDetectionChart({ data }: TrendDetectionChartProps) 
   ];
 
   return (
-    <div className="bg-white p-4 rounded shadow w-full">
-      <h2 className="text-xl font-semibold text-center mb-4">
+    <div className="bg-white p-3 md:p-4 rounded shadow w-full">
+      <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
         Trend of Top 5 Detection Types
       </h2>
-      <div style={{ height: 280 }}>
+      <div className="h-[200px] sm:h-[240px] md:h-[280px]">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={chartData}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+            margin={{ 
+              top: 5, 
+              right: 10, 
+              left: 10, 
+              bottom: 20 
+            }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="time" />
+            <XAxis 
+              dataKey="time" 
+              tick={{ fontSize: 10 }}
+              interval={0}
+            />
             <YAxis 
               label={{ 
                 value: 'Quantity', 
                 angle: -90, 
                 position: 'insideLeft',
-                style: { textAnchor: 'middle' }
-              }} 
+                style: { textAnchor: 'middle', fontSize: '10px' }
+              }}
+              tick={{ fontSize: 10 }}
             />
-            <Tooltip />
+            <Tooltip 
+              contentStyle={{ fontSize: '10px' }}
+              labelStyle={{ fontSize: '10px' }}
+            />
             <Legend 
               verticalAlign="bottom"
               iconType="circle"
               wrapperStyle={{ 
-                fontSize: '0.875rem',
-                paddingTop: '10px'
+                fontSize: '0.625rem',
+                paddingTop: '5px'
               }}
             />
-            <Line type="monotone" dataKey="MissingPart" stroke="#8884d8" strokeWidth={2} />
-            <Line type="monotone" dataKey="Misalignment" stroke="#82ca9d" strokeWidth={2} />
-            <Line type="monotone" dataKey="Dent" stroke="#ffc658" strokeWidth={2} />
-            <Line type="monotone" dataKey="Crack" stroke="#ff7300" strokeWidth={2} />
-            <Line type="monotone" dataKey="Scratch" stroke="#00c49f" strokeWidth={2} />
+            <Line type="monotone" dataKey="MissingPart" stroke="#8884d8" strokeWidth={2} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="Misalignment" stroke="#82ca9d" strokeWidth={2} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="Dent" stroke="#ffc658" strokeWidth={2} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="Crack" stroke="#ff7300" strokeWidth={2} dot={{ r: 3 }} />
+            <Line type="monotone" dataKey="Scratch" stroke="#00c49f" strokeWidth={2} dot={{ r: 3 }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
