@@ -2,7 +2,7 @@
 
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
-import SearchField from '@/app/components/common/SearchField';
+import SearchFieldResponsive  from '@/app/components/common/SearchField';
 import { search as searchProductTypes } from "@/app/libs/services/product-type";
 import { ActiveStatus } from '@/app/constants/status';
 
@@ -17,7 +17,7 @@ export default function ProductTypeFilterForm({ register, setValue, onSearch }: 
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Product Type ID - แปลงจาก input เป็น SearchField */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="productTypeId"
@@ -30,7 +30,7 @@ export default function ProductTypeFilterForm({ register, setValue, onSearch }: 
         />
         
         {/* Product Type Name - แปลงจาก input เป็น SearchField */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="productTypeName"
@@ -44,8 +44,8 @@ export default function ProductTypeFilterForm({ register, setValue, onSearch }: 
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Status - แปลงจาก select เป็น SearchField */}
-        <SearchField
+        {/* Status  */}
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="status"

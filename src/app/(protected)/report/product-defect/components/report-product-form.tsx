@@ -23,25 +23,11 @@ export default function ProductFormModal({
 }: ProductModalProps) {
   const { data: session } = useSession();
 
-  // const defaultValues: ProductDetail = {
-  //   productId: '',
-  //   serialNo: '',
-  //   date: '',
-  //   time: '',
-  //   lotNo: '',
-  //   defectType: '',
-  //   cameraId: '',
-  //   history: [],
-  //   status: '',
-  //   comment: '',
-  // };
-
   const {
     register,
     handleSubmit,
     reset,
   } = useForm<ProductDetail>({
-    // defaultValues,
   });
 
   useEffect(() => {

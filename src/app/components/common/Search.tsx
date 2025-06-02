@@ -1,4 +1,4 @@
-// src/app/components/common/GoogleStyleSearch.tsx
+// src/app/components/common/Search.tsx
 'use client';
 
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
@@ -60,8 +60,8 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
   const [filteredOptions, setFilteredOptions] = useState<SearchOption[]>([]); // ตัวเลือกที่กรองแล้ว
   const [highlightedIndex, setHighlightedIndex] = useState(-1); // index ของรายการที่ highlight
   const [selectedOption, setSelectedOption] = useState<SearchOption | null>(null); // ตัวเลือกที่เลือก
+  const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom'); // ตำแหน่ง dropdown
   
- 
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -101,6 +101,23 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
     }
   }, [inputValue, options, minSearchLength, maxDisplayItems]);
 
+  // คำนวณตำแหน่ง dropdown
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+      
+      // ถ้าพื้นที่ด้านล่างไม่พอ และพื้นที่ด้านบนมากกว่า ให้แสดงด้านบน
+      if (spaceBelow < 240 && spaceAbove > spaceBelow) {
+        setDropdownPosition('top');
+      } else {
+        setDropdownPosition('bottom');
+      }
+    }
+  }, [isOpen]);
+
   // ปิด dropdown เมื่อคลิกข้างนอก
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -116,12 +133,37 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
       }
     };
 
+    // จัดการการ resize หน้าจอ
+    const handleResize = () => {
+      if (isOpen) {
+        // อัพเดทตำแหน่ง dropdown เมื่อมีการ resize
+        setTimeout(() => {
+          if (containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const spaceBelow = viewportHeight - rect.bottom;
+            const spaceAbove = rect.top;
+            
+            if (spaceBelow < 240 && spaceAbove > spaceBelow) {
+              setDropdownPosition('top');
+            } else {
+              setDropdownPosition('bottom');
+            }
+          }
+        }, 100);
+      }
+    };
+
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('resize', handleResize);
+      window.addEventListener('scroll', handleResize);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleResize);
     };
   }, [isOpen, selectedOption, value]);
 
@@ -224,11 +266,6 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
         ${isOpen ? 'ring-2 ring-blue-500 border-blue-500' : ''}
         transition-all duration-200
       `}>
-        {/* Search Icon */}
-        {/* <Search 
-          size={16} 
-          className="ml-3 text-gray-400 flex-shrink-0" 
-        /> */}
 
         {/* Input Field */}
         <input
@@ -239,12 +276,12 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => !disabled && setIsOpen(true)}
-          //placeholder={placeholder}
+          placeholder={placeholder}
           disabled={disabled}
           className={`
             flex-1 px-3 py-2 bg-transparent outline-none text-sm
             ${disabled ? 'cursor-not-allowed text-gray-500' : 'text-gray-900'}
-            placeholder:text-gray-500
+            placeholder:text-gray-500 min-w-0
           `}
           autoComplete="off"
         />
@@ -254,7 +291,7 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
           <button
             type="button"
             onClick={handleClear}
-            className="p-1 mr-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+            className="flex-shrink-0 p-1 mr-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
             tabIndex={-1}
           >
             <X size={14} />
@@ -267,7 +304,7 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
             type="button"
             onClick={toggleDropdown}
             className={`
-              p-2 text-gray-400 hover:text-gray-600 transition-colors
+              flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 transition-colors
               ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
             `}
             tabIndex={-1}
@@ -290,7 +327,16 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
       {isOpen && !disabled && (
         <div
           ref={dropdownRef}
-          className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto"
+          className={`
+            absolute left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 
+            max-h-60 overflow-y-auto
+            ${dropdownPosition === 'top' ? 'bottom-full mb-1 mt-0' : 'top-full'}
+          `}
+          style={{
+            minWidth: '200px',
+
+            maxWidth: '90vw'
+          }}
         >
           {filteredOptions.length > 0 ? (
             <>
@@ -303,22 +349,25 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
                     w-full text-left px-4 py-2 text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none
                     ${index === highlightedIndex ? 'bg-blue-50 text-blue-700' : 'text-gray-900'}
                     ${selectedOption?.id === option.id ? 'bg-blue-50 text-blue-700 font-medium' : ''}
-                    transition-colors duration-150
+                    transition-colors duration-150 break-words
                   `}
                 >
                   {/* Highlight ส่วนที่ค้นหา */}
-                  <span dangerouslySetInnerHTML={{
-                    __html: option.label.replace(
-                      new RegExp(`(${inputValue})`, 'gi'),
-                      '<mark class="bg-yellow-200 px-0">$1</mark>'
-                    )
-                  }} />
+                  <span 
+                    className="block"
+                    dangerouslySetInnerHTML={{
+                      __html: option.label.replace(
+                        new RegExp(`(${inputValue})`, 'gi'),
+                        '<mark class="bg-yellow-200 px-0">$1</mark>'
+                      )
+                    }} 
+                  />
                 </button>
               ))}
             </>
           ) : inputValue.length >= minSearchLength ? (
             <div className="px-4 py-3 text-sm text-gray-500 text-center">
-              No results found {inputValue}
+              No results found for {inputValue}
             </div>
           ) : minSearchLength > 0 ? (
             <div className="px-4 py-3 text-sm text-gray-500 text-center">

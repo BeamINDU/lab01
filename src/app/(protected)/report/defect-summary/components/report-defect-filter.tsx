@@ -3,7 +3,7 @@
 
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
-import SearchField from '@/app/components/common/SearchField';
+import SearchFieldResponsive from '@/app/components/common/SearchField';
 import { getProductTypeOptions } from "@/app/libs/services/product-type";
 import { getDefectTypeOptions } from "@/app/libs/services/defect-type";
 import { search as searchReportDefects } from "@/app/libs/services/report-defect-summary";
@@ -19,7 +19,7 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Lot No - ใช้ข้อมูลจาก report service */}
-        <SearchField
+        <SearchFieldResponsive
           register={register}
           setValue={setValue}
           fieldName="lotNo"
@@ -35,7 +35,7 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
         />
         
         {/* Product Type - ใช้ Product Type Options */}
-        <SearchField
+        <SearchFieldResponsive
           register={register}
           setValue={setValue}
           fieldName="productType"
@@ -56,7 +56,7 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Defect Type - ใช้ Defect Type Options */}
-        <SearchField
+        <SearchFieldResponsive
           register={register}
           setValue={setValue}
           fieldName="defectType"

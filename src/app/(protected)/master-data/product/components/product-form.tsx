@@ -1,14 +1,15 @@
+// src/app/(protected)/master-data/product/components/product-form.tsx - แก้ไข layout
 "use client";
 
-import { useEffect, useState } from 'react';
-import { useForm, SubmitHandler,Controller } from 'react-hook-form';
+import { useEffect } from 'react';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Product } from "@/app/types/product";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
-import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
+import { SearchFieldModal } from '@/app/components/common/SearchField'; 
 import { getProductTypeOptions } from '@/app/libs/services/product-type'; 
 
 const ProductSchema = z.object({
@@ -39,12 +40,6 @@ export default function ProductFormModal({
 }: ProductModalProps) {
   const { data: session } = useSession();
 
-  
-  // State สำหรับ Product Type
-  const [selectedProductType, setSelectedProductType] = useState<string>('');
-  const [productTypeOptions, setProductTypeOptions] = useState<SearchOption[]>([]);
-  const [isLoadingProductTypes, setIsLoadingProductTypes] = useState<boolean>(false);
-  
   const defaultValues: ProductFormValues = {
     productId: '',
     productName: '',
@@ -60,76 +55,30 @@ export default function ProductFormModal({
     reset,
     control,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<ProductFormValues>({
     resolver: zodResolver(ProductSchema),
     defaultValues,
   });
 
-  // โหลดข้อมูล Product Types
-  useEffect(() => {
-    const loadProductTypes = async () => {
-      try {
-        setIsLoadingProductTypes(true);
-        const types = await getProductTypeOptions(); 
-        
-        const searchOptions: SearchOption[] = types.map((item, index) => ({
-          id: (index + 1).toString(),
-          label: item.label,
-          value: item.value
-        }));
-        
-        setProductTypeOptions(searchOptions);
-      } catch (error) {
-        console.error('Failed to load product types:', error);
-        setProductTypeOptions([]);
-      } finally {
-        setIsLoadingProductTypes(false);
-      }
-    };
-
-    loadProductTypes();
-  }, []);
+  const productTypeName = watch("productTypeName");
 
   useEffect(() => {
     if (editingData) {
       console.log('Form received editingData:', editingData); 
       reset(editingData);
-      setSelectedProductType(editingData.productTypeName || '');
     } else {
       console.log('Form reset to default values'); 
       reset({...defaultValues, isCreateMode: true});
-      setSelectedProductType('');
     }
   }, [editingData, reset]);
-
-
-
-  // จัดการเมื่อเลือก Product Type
-  const handleProductTypeSelect = (option: SearchOption | null) => {
-    const value = option ? option.value : '';
-    setSelectedProductType(value);
-    setValue("productTypeName", value);
-  };
-
-  // จัดการเมื่อพิมพ์ใน Product Type Search Box
-  const handleProductTypeInputChange = (inputValue: string) => {
-    const matchedOption = productTypeOptions.find(opt => 
-      opt.label.toLowerCase() === inputValue.toLowerCase()
-    );
-    
-    if (!matchedOption) {
-      setSelectedProductType(inputValue);
-      setValue("productTypeName", inputValue);
-    }
-  };
 
   if (!showModal) return null;
 
   const onSubmit: SubmitHandler<ProductFormValues> = async (formData) => {
     try {
-      console.log('Form submitted with data:', formData); // Debug log
-      console.log('Is create mode:', formData.isCreateMode); // Debug log
+      console.log('Form submitted with data:', formData);
       
       const formWithMeta: Product = {
         ...formData,
@@ -138,15 +87,10 @@ export default function ProductFormModal({
         updatedBy: session?.user?.userid,
       };
       
-      console.log('Sending to onSave:', formWithMeta); // Debug log
-      console.log('Calling onSave function...'); // Debug log
+      await onSave(formWithMeta);
       
-      await onSave(formWithMeta); // ✅ เพิ่ม await เพื่อจับ error
-      
-      console.log('onSave completed successfully'); // Debug log
     } catch (error) {
       console.error('Error in form submission:', error);
-      // แสดง error ให้ user เห็น
       alert('Error saving product: ' + (error as Error).message);
     }
   };
@@ -154,7 +98,6 @@ export default function ProductFormModal({
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded shadow-lg w-1/3 relative">
-        {/* Close Button */}
         <button
           type="button"
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
@@ -173,11 +116,8 @@ export default function ProductFormModal({
             : 'Add Product'}
         </h2>
 
-        {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('isCreateMode')} />
-          
-
           
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
@@ -199,33 +139,25 @@ export default function ProductFormModal({
             {errors.productName && <p className="text-red-500 ml-160">{errors.productName.message}</p>}
           </div>
 
-          {/* Product Type - ใช้ Google Style Search Component */}
           <div className="mb-4">
-            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">Product Type:</label>
-              <div className="relative">
-                {/* Register กับ React Hook Form */}
-                <input
-                  type="hidden"
-                  {...register("productTypeName")}
-                />
-                
-                {/* Google Style Search Component */}
-                <GoogleStyleSearch
-                  options={productTypeOptions}
-                  value={selectedProductType}
-                  placeholder={isLoadingProductTypes ? "Loading product types..." : "Select product type..."}
-                  onSelect={handleProductTypeSelect}
-                  onInputChange={handleProductTypeInputChange}
-                  allowClear={true}
-                  showDropdownIcon={true}
-                  minSearchLength={0}
-                  maxDisplayItems={8}
-                  disabled={isLoadingProductTypes || !canEdit}
-                  className="w-full"
-                />
-              </div>
-            </div>
+            <SearchFieldModal
+              key={`productType-${editingData?.productId || 'new'}`}
+              register={register}
+              setValue={setValue}
+              fieldName="productTypeName"
+              label="Product Type"
+              placeholder="Select product type..."
+              dataLoader={getProductTypeOptions}
+              labelField="label"
+              valueField="value"
+              allowFreeText={true}
+              disabled={!canEdit}
+              initialValue={productTypeName}
+              onSelectionChange={(value, option) => {
+                console.log('Product Type selected:', value, option);
+                setValue("productTypeName", value, { shouldValidate: true });
+              }}
+            />
             {errors.productTypeName && <p className="text-red-500 ml-160">{errors.productTypeName.message}</p>}
           </div>
           
@@ -261,7 +193,6 @@ export default function ProductFormModal({
           </div>
 
           <div className="flex justify-end gap-2 mt-4">
-            {/* Save Button */}
             {canEdit && (
               <button
                 type="submit"
@@ -271,7 +202,6 @@ export default function ProductFormModal({
                 <Save size={16} />
               </button>
             )}
-            {/* Cancel Button */}
             <button
               type="button"
               className="px-4 py-2 bg-secondary rounded flex items-center gap-2"

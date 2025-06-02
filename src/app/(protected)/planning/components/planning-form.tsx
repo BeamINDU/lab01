@@ -1,6 +1,7 @@
+// src/app/(protected)/planning/components/planning-form.tsx
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
@@ -12,7 +13,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import { getProductIdOptions, getLineIdOptions } from '@/app/libs/services/planning';
-import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
+import { SearchFieldModal } from '@/app/components/common/SearchField';
 
 const PlanningSchema = z.object({
   planId: z.string().min(1, "Plan ID is required"),
@@ -45,16 +46,6 @@ export default function PlanningFormModal({
   const { data: session } = useSession();
   const dateFormat = 'YYYY-MM-DD HH:mm';
   
-  // ⭐ State สำหรับ dropdown options
-  const [productIdOptions, setProductIdOptions] = useState<SearchOption[]>([]);
-  const [lineIdOptions, setLineIdOptions] = useState<SearchOption[]>([]);
-  const [isLoadingProducts, setIsLoadingProducts] = useState<boolean>(false);
-  const [isLoadingLines, setIsLoadingLines] = useState<boolean>(false);
-  
-  // ⭐ State สำหรับ selected values
-  const [selectedProductId, setSelectedProductId] = useState<string>('');
-  const [selectedLineId, setSelectedLineId] = useState<string>('');
-
   const inputStyle = {
     backgroundColor: 'white',
     borderRadius: '0.375rem',
@@ -77,38 +68,16 @@ export default function PlanningFormModal({
     control,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<PlanningFormValues>({
     resolver: zodResolver(PlanningSchema),
     defaultValues,
   });
 
-  // ⭐ โหลดข้อมูล dropdown options
-  useEffect(() => {
-    const loadOptions = async () => {
-      try {
-        // โหลด Product ID options
-        setIsLoadingProducts(true);
-        const products = await getProductIdOptions();
-        setProductIdOptions(products);
-        
-        // โหลด Line ID options
-        setIsLoadingLines(true);
-        const lines = await getLineIdOptions();
-        setLineIdOptions(lines);
-        
-      } catch (error) {
-        console.error('Failed to load dropdown options:', error);
-      } finally {
-        setIsLoadingProducts(false);
-        setIsLoadingLines(false);
-      }
-    };
 
-    if (showModal) {
-      loadOptions();
-    }
-  }, [showModal]);
+  const productId = watch("productId");
+  const lineId = watch("lineId");
 
   useEffect(() => {
     if (editingData) {
@@ -130,31 +99,12 @@ export default function PlanningFormModal({
         endDate: endDateString,
         isCreateMode: !editingData.productId
       });
-      
-      // ⭐ Set selected values สำหรับ dropdown
-      setSelectedProductId(editingData.productId || '');
-      setSelectedLineId(editingData.lineId || '');
     } else {
       reset(defaultValues);
-      setSelectedProductId('');
-      setSelectedLineId('');
     }
   }, [editingData, reset]);
 
   if (!showModal) return null;
-
-  // ⭐ Handle dropdown selections
-  const handleProductIdSelect = (option: SearchOption | null) => {
-    const value = option ? option.value : '';
-    setSelectedProductId(value);
-    setValue("productId", value);
-  };
-
-  const handleLineIdSelect = (option: SearchOption | null) => {
-    const value = option ? option.value : '';
-    setSelectedLineId(value);
-    setValue("lineId", value);
-  };
 
   const onSubmit: SubmitHandler<PlanningFormValues> = async (formData) => {
     const formWithMeta: Planning = {
@@ -179,12 +129,15 @@ export default function PlanningFormModal({
           <X className="text-red-500" size={20} />
         </button>
 
-        <h2 className="text-2xl font-semibold text-center mb-6">{editingData && !editingData.isCreateMode ? 'Edit Planning' : 'Add Planning'}</h2>
+        <h2 className="text-2xl font-semibold text-center mb-6">
+          {editingData && !editingData.isCreateMode ? 'Edit Planning' : 'Add Planning'}
+        </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('isCreateMode')} />
           
+          {/* Plan ID */}
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Plan ID:</label>
@@ -197,29 +150,30 @@ export default function PlanningFormModal({
             {errors.planId && <p className="text-red-500 ml-160">{errors.planId.message}</p>}
           </div>
           
-          {/* ⭐ Product ID - ใช้ GoogleStyleSearch */}
+          {/* ✅ Product ID - ใช้ SearchFieldModal */}
           <div className="mb-4">
-            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">Product ID:</label>
-              <div className="relative">
-                <input type="hidden" {...register("productId")} />
-                <GoogleStyleSearch
-                  options={productIdOptions}
-                  value={selectedProductId}
-                  placeholder={isLoadingProducts ? "Loading products..." : "Select product ID..."}
-                  onSelect={handleProductIdSelect}
-                  allowClear={true}
-                  showDropdownIcon={true}
-                  minSearchLength={0}
-                  maxDisplayItems={8}
-                  disabled={isLoadingProducts || !canEdit}
-                  className="w-full"
-                />
-              </div>
-            </div>
+            <SearchFieldModal
+              key={`productId-${editingData?.planId || 'new'}`}
+              register={register}
+              setValue={setValue}
+              fieldName="productId"
+              label="Product ID"
+              placeholder="Select product ID..."
+              dataLoader={getProductIdOptions}
+              labelField="label"
+              valueField="value"
+              allowFreeText={true}
+              disabled={!canEdit}
+              initialValue={productId}
+              onSelectionChange={(value, option) => {
+                console.log('Product ID selected:', value, option);
+                setValue("productId", value, { shouldValidate: true });
+              }}
+            />
             {errors.productId && <p className="text-red-500 ml-160">{errors.productId.message}</p>}
           </div>
           
+          {/* Lot No */}
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Lot No:</label>
@@ -228,29 +182,30 @@ export default function PlanningFormModal({
             {errors.lotNo && <p className="text-red-500 ml-160">{errors.lotNo.message}</p>}
           </div>
           
-          {/* ⭐ Line ID - ใช้ GoogleStyleSearch */}
+          {/* ✅ Line ID - ใช้ SearchFieldModal */}
           <div className="mb-4">
-            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">Line ID:</label>
-              <div className="relative">
-                <input type="hidden" {...register("lineId")} />
-                <GoogleStyleSearch
-                  options={lineIdOptions}
-                  value={selectedLineId}
-                  placeholder={isLoadingLines ? "Loading lines..." : "Select line ID..."}
-                  onSelect={handleLineIdSelect}
-                  allowClear={true}
-                  showDropdownIcon={true}
-                  minSearchLength={0}
-                  maxDisplayItems={8}
-                  disabled={isLoadingLines || !canEdit}
-                  className="w-full"
-                />
-              </div>
-            </div>
+            <SearchFieldModal
+              key={`lineId-${editingData?.planId || 'new'}`}
+              register={register}
+              setValue={setValue}
+              fieldName="lineId"
+              label="Line ID"
+              placeholder="Select line ID..."
+              dataLoader={getLineIdOptions}
+              labelField="label"
+              valueField="value"
+              allowFreeText={true}
+              disabled={!canEdit}
+              initialValue={lineId}
+              onSelectionChange={(value, option) => {
+                console.log('Line ID selected:', value, option);
+                setValue("lineId", value, { shouldValidate: true });
+              }}
+            />
             {errors.lineId && <p className="text-red-500 ml-160">{errors.lineId.message}</p>}
           </div>
 
+          {/* Quantity */}
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Quantity:</label>
@@ -263,7 +218,9 @@ export default function PlanningFormModal({
             {errors.quantity && <p className="text-red-500 ml-160">{errors.quantity.message}</p>}
           </div>
           
+          {/* Date Time Pickers */}
           <LocalizationProvider dateAdapter={AdapterDayjs}>
+            {/* Start Date */}
             <div className="mb-4">
               <div className="grid grid-cols-[150px_1fr] items-center gap-2">
                 <label className="font-normal w-32">Start Date:</label>
@@ -295,6 +252,7 @@ export default function PlanningFormModal({
               {errors.startDate && <p className="text-red-500 ml-160">{errors.startDate.message}</p>}
             </div>
             
+            {/* End Date */}
             <div className="mb-4">
               <div className="grid grid-cols-[150px_1fr] items-center gap-2">
                 <label className="font-normal w-32">End Date:</label>
@@ -327,6 +285,7 @@ export default function PlanningFormModal({
             </div>
           </LocalizationProvider>
 
+          {/* Action Buttons */}
           <div className="flex justify-end gap-2 mt-4">
             {/* Save Button */}
             {canEdit && (

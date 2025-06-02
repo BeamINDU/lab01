@@ -2,7 +2,7 @@
 
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
-import SearchField from '@/app/components/common/SearchField';
+import SearchFieldResponsive  from '@/app/components/common/SearchField';
 import { search as searchDefectTypes } from "@/app/libs/services/defect-type";
 import { ActiveStatus } from '@/app/constants/status';
 
@@ -17,7 +17,7 @@ export default function DefectTypeFilterForm({ register, setValue, onSearch }: D
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Defect Type ID - */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="defectTypeId"
@@ -30,7 +30,7 @@ export default function DefectTypeFilterForm({ register, setValue, onSearch }: D
         />
         
         {/* Defect Type Name  */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="defectTypeName"
@@ -45,7 +45,7 @@ export default function DefectTypeFilterForm({ register, setValue, onSearch }: D
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Status  */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="status"

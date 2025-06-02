@@ -1,9 +1,8 @@
-// src/app/(protected)/master-data/user/components/user-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
-import SearchField from '@/app/components/common/SearchField';
+import SearchFieldResponsive  from '@/app/components/common/SearchField';
 import { getRoleOptions } from '@/app/libs/services/role';
 import { search as searchUsers } from '@/app/libs/services/user';
 import { ActiveStatus } from '@/app/constants/status';
@@ -19,7 +18,7 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* User ID - แปลงจาก input เป็น SearchField */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="userId"
@@ -32,7 +31,7 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
         />
         
         {/* Username - แปลงจาก input เป็น SearchField */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="userName"
@@ -47,7 +46,7 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Role - ใช้ SearchField (เหมือนเดิมแต่ง่ายขึ้น) */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="roleName"
@@ -63,7 +62,7 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
         />
         
         {/* Status */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="status"

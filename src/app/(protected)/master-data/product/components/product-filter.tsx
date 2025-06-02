@@ -2,7 +2,7 @@
 
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
-import SearchField from '@/app/components/common/SearchField';
+import SearchFieldResponsive  from '@/app/components/common/SearchField';
 import { getProductTypeOptions } from '@/app/libs/services/product-type'; 
 import { search as searchProducts } from '@/app/libs/services/product';
 import { ActiveStatus } from '@/app/constants/status'; // 
@@ -18,7 +18,7 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Product ID */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="productId"
@@ -31,7 +31,7 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
         />
         
         {/* Product Name */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="productName"
@@ -44,7 +44,7 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
         />
         
         {/* Product Type */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="productTypeName"
@@ -59,7 +59,7 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Serial No */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="serialNo"
@@ -72,7 +72,7 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
         />
         
         {/* Status */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="status"

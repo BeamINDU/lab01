@@ -1,13 +1,9 @@
 'use client';
 
 import { Search } from 'lucide-react'
-import { UseFormRegister, Controller, Control, UseFormSetValue } from "react-hook-form";
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import dayjs from 'dayjs';
-import 'dayjs/locale/th';
-import SearchField from '@/app/components/common/SearchField';
+import { UseFormRegister, Control, UseFormSetValue } from "react-hook-form";
+import SearchFieldResponsive  from '@/app/components/common/SearchField';
+import DateTimeField from '@/app/components/common/DateTimeField';
 import { 
   getPlanningPlanOptions, 
   getPlanningProductOptions, 
@@ -23,80 +19,45 @@ interface PlanningFilterFormProps {
 }
 
 export default function PlanningFilterForm({ register, setValue, control, onSearch }: PlanningFilterFormProps) {
-  const dateFormat = 'YYYY-MM-DD HH:mm';
-  
-  const inputStyle = {
-    backgroundColor: 'white',
-    borderRadius: '0.375rem',  
-  };
-  
   return (
     <div className="md:col-span-2 space-y-4">
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Date From */}
-          <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-            <label className="font-semibold w-[120px]">Date From</label>
-            <Controller
-              name="dateFrom"
-              control={control}
-              render={({ field }) => (
-                <DateTimePicker
-                  value={field.value ? dayjs(field.value) : null}
-                  onChange={(date) => field.onChange(date ? date.format(dateFormat) : null)}
-                  format={dateFormat}
-                  ampm={false}
-                  timeSteps={{ minutes: 1 }}
-                  closeOnSelect={false} 
-                  minutesStep={1}
-                  slotProps={{ 
-                    textField: { 
-                      size: "small",
-                      fullWidth: true,
-                      className: "rounded border border-gray-300",
-                      placeholder: "YYYY-MM-DD HH:mm",
-                      sx: inputStyle
-                    } 
-                  }}
-                />
-              )}
-            />
-          </div>
-          
-          {/* Date To */}
-          <div className="grid grid-cols-[110px_1fr] items-center gap-2">
-            <label className="font-semibold w-[120px]">Date To</label>
-            <Controller
-              name="dateTo"
-              control={control}
-              render={({ field }) => (
-                <DateTimePicker
-                  value={field.value ? dayjs(field.value) : null}
-                  onChange={(date) => field.onChange(date ? date.format(dateFormat) : null)}
-                  format={dateFormat}
-                  ampm={false}
-                  timeSteps={{ minutes: 1 }}
-                  closeOnSelect={false} 
-                  slotProps={{ 
-                    textField: { 
-                      size: "small",
-                      fullWidth: true,
-                      className: "rounded border border-gray-300",
-                      placeholder: "YYYY-MM-DD HH:mm",
-                      sx: inputStyle 
-                    } 
-                  }}
-                />
-              )}
-            />
-          </div>
+      {/* Date Range Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        {/*  Date From */}
+        <DateTimeField
+          control={control}
+          fieldName="dateFrom"
+          label="Date From"
+          placeholder="YYYY-MM-DD HH:mm"
+          variant="datetime"
+          format="YYYY-MM-DD HH:mm"
+          ampm={false}
+          timeSteps={{ minutes: 1 }}
+          closeOnSelect={false}
+          className="w-full"
+        />
+        
+        {/*  Date To  */}
+        <DateTimeField
+          control={control}
+          fieldName="dateTo"
+          label="Date To"
+          placeholder="YYYY-MM-DD HH:mm"
+          variant="datetime"
+          format="YYYY-MM-DD HH:mm"
+          ampm={false}
+          timeSteps={{ minutes: 1 }}
+          closeOnSelect={false}
+          className="w-full"
+        />
 
-        </div>
-      </LocalizationProvider>
+
+      </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Search Fields Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         {/* Plan ID */}
-        <SearchField
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="planId"
@@ -106,10 +67,11 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           labelField="planId"
           valueField="planId"
           allowFreeText={true}
+          className="w-full"
         />
         
-        {/* Product ID*/}
-        <SearchField
+        {/* Product ID */}
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="productId"
@@ -119,12 +81,16 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           labelField="productId"
           valueField="productId"
           allowFreeText={true}
+          className="w-full"
         />
+
+
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Lot No  */}
-        <SearchField
+      {/* Third Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        {/* Lot No */}
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="lotNo"
@@ -134,10 +100,11 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           labelField="lotNo"
           valueField="lotNo"
           allowFreeText={true}
+          className="w-full"
         />
           
-        {/* Line ID  */}
-        <SearchField
+        {/* Line ID */}
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="lineId"
@@ -147,13 +114,12 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           labelField="lineId"
           valueField="lineId"
           allowFreeText={true}
+          className="w-full"
         />
-        
-        {/* Search Button */}
-        <div className="flex items-center justify-start pt-[2px]">
+        <div className="hidden xl:flex items-center justify-start pt-[2px]">
           <button
             type="button"
-            className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900"
+            className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
             onClick={onSearch}
           >
             Search
@@ -161,6 +127,8 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           </button>
         </div>
       </div>
+
+
     </div>
   );
 }
