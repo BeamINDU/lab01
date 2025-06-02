@@ -1,14 +1,15 @@
-// src/app/components/common/SearchField.tsx - เพิ่มรองรับ layout แบบ modal
+// src/app/components/common/SearchField.tsx - รองรับทั้ง register และ Controller
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { UseFormRegister, UseFormSetValue } from "react-hook-form";
+import { UseFormRegister, UseFormSetValue, Control, Controller } from "react-hook-form";
 import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
 
 interface SearchFieldProps {
-  // Form integration
-  register: UseFormRegister<any>;
-  setValue: UseFormSetValue<any>;
+  // Form integration - รองรับทั้งสองแบบ
+  register?: UseFormRegister<any>;
+  setValue?: UseFormSetValue<any>;
+  control?: Control<any>; // ✅ เพิ่ม control option
   fieldName: string;
   
   // Display
@@ -29,9 +30,12 @@ interface SearchFieldProps {
   maxDisplayItems?: number;
   initialValue?: string;
   
-  // ✅ เพิ่ม layout options
+  // Layout options
   layout?: 'responsive' | 'modal' | 'inline';
   labelWidth?: string;
+  
+  // ✅ เพิ่มตัวเลือกให้แสดง error ใน component
+  showInternalError?: boolean;
   
   // Events
   onSelectionChange?: (value: string, option: SearchOption | null) => void;
@@ -40,6 +44,7 @@ interface SearchFieldProps {
 export default function SearchField({
   register,
   setValue,
+  control,
   fieldName,
   label,
   placeholder = "Search...",
@@ -53,8 +58,9 @@ export default function SearchField({
   minSearchLength = 0,
   maxDisplayItems = 10,
   initialValue,
-  layout = 'responsive', 
+  layout = 'responsive',
   labelWidth = '150px',
+  showInternalError = false, // ✅ default เป็น false เพื่อ backward compatibility
   onSelectionChange
 }: SearchFieldProps) {
   const [selectedValue, setSelectedValue] = useState<string>('');
@@ -95,10 +101,10 @@ export default function SearchField({
             );
             if (matchedOption) {
               setSelectedValue(matchedOption.value);
-              setValue(fieldName, matchedOption.value);
+              setValue?.(fieldName, matchedOption.value);
             } else if (allowFreeText) {
               setSelectedValue(initialValue);
-              setValue(fieldName, initialValue);
+              setValue?.(fieldName, initialValue);
             }
           }
         } catch (error) {
@@ -127,10 +133,10 @@ export default function SearchField({
         );
         if (matchedOption) {
           setSelectedValue(matchedOption.value);
-          setValue(fieldName, matchedOption.value);
+          setValue?.(fieldName, matchedOption.value);
         } else if (allowFreeText) {
           setSelectedValue(initialValue);
-          setValue(fieldName, initialValue);
+          setValue?.(fieldName, initialValue);
         }
       }
     }
@@ -150,14 +156,15 @@ export default function SearchField({
       } else {
         setSelectedValue(initialValue);
       }
-      setValue(fieldName, initialValue);
+      setValue?.(fieldName, initialValue);
     }
   }, [initialValue, searchOptions, allowFreeText, fieldName, setValue]);
 
+  // ✅ Handlers สำหรับ register() method
   const handleSelect = (option: SearchOption | null) => {
     const value = option ? option.value : '';
     setSelectedValue(value);
-    setValue(fieldName, value);
+    setValue?.(fieldName, value);
     onSelectionChange?.(value, option);
   };
 
@@ -169,7 +176,7 @@ export default function SearchField({
       
       if (!matchedOption) {
         setSelectedValue(inputValue);
-        setValue(fieldName, inputValue);
+        setValue?.(fieldName, inputValue);
         onSelectionChange?.(inputValue, null);
       }
     }
@@ -177,9 +184,99 @@ export default function SearchField({
 
   //  เลือก layout ตาม prop
   const renderLayout = () => {
+
+    if (control && showInternalError) {
+      const searchFieldWithController = (
+        <Controller
+          name={fieldName}
+          control={control}
+          render={({ field, fieldState }) => {
+            const handleControllerSelect = (option: SearchOption | null) => {
+              const value = option ? option.value : '';
+              field.onChange(value);
+              onSelectionChange?.(value, option);
+            };
+
+            const handleControllerInputChange = (inputValue: string) => {
+              if (allowFreeText) {
+                const matchedOption = searchOptions.find(opt => 
+                  opt.label.toLowerCase() === inputValue.toLowerCase()
+                );
+                
+                if (!matchedOption) {
+                  field.onChange(inputValue);
+                  onSelectionChange?.(inputValue, null);
+                }
+              }
+            };
+
+            return (
+              <div className="w-full">
+                <GoogleStyleSearch
+                  options={searchOptions}
+                  value={field.value || ''}
+                  placeholder={loading ? "Loading..." : placeholder}
+                  onSelect={handleControllerSelect}
+                  onInputChange={handleControllerInputChange}
+                  allowClear={true}
+                  showDropdownIcon={true}
+                  minSearchLength={minSearchLength}
+                  maxDisplayItems={maxDisplayItems}
+                  disabled={disabled || loading}
+                  className="w-full"
+                />
+                {fieldState.error && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {fieldState.error.message}
+                  </p>
+                )}
+              </div>
+            );
+          }}
+        />
+      );
+
+      switch (layout) {
+        case 'modal':
+          return (
+            <div className="grid grid-cols-[160px_1fr] items-center gap-4">
+              <label className="font-normal w-32 pr-3">{label}:</label>
+              <div className="w-full min-w-0">
+                {searchFieldWithController}
+              </div>
+            </div>
+          );
+
+        case 'inline':
+          return (
+            <div className="flex items-center gap-4">
+              <label className="font-semibold whitespace-nowrap pr-3" style={{width: labelWidth}}>
+                {label}:
+              </label>
+              <div className="flex-1 min-w-0">
+                {searchFieldWithController}
+              </div>
+            </div>
+          );
+
+        case 'responsive':
+        default:
+          return (
+            <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] lg:grid-cols-[150px_1fr] items-start sm:items-center gap-4">
+              <label className="font-semibold text-sm sm:text-base whitespace-nowrap pr-3">
+                {label}
+              </label>
+              <div className="w-full min-w-0">
+                {searchFieldWithController}
+              </div>
+            </div>
+          );
+      }
+    }
+
     const searchComponent = (
       <>
-        <input type="hidden" {...register(fieldName)} />
+        {register && <input type="hidden" {...register(fieldName)} />}
         <GoogleStyleSearch
           options={searchOptions}
           value={selectedValue}
@@ -198,7 +295,6 @@ export default function SearchField({
 
     switch (layout) {
       case 'modal':
-        //  Layout แบบ modal (เหมือนกับ input field อื่นๆ)
         return (
           <div className="grid grid-cols-[160px_1fr] items-center gap-4">
             <label className="font-normal w-32 pr-3">{label}:</label>
@@ -209,7 +305,6 @@ export default function SearchField({
         );
 
       case 'inline':
-        //  Layout แบบ inline (label และ input อยู่บรรทัดเดียวกัน)
         return (
           <div className="flex items-center gap-4">
             <label className="font-semibold whitespace-nowrap pr-3" style={{width: labelWidth}}>
@@ -223,7 +318,6 @@ export default function SearchField({
 
       case 'responsive':
       default:
-        //  Layout แบบ responsive (สำหรับ filter forms)
         return (
           <div className="grid grid-cols-1 sm:grid-cols-[140px_1fr] lg:grid-cols-[150px_1fr] items-start sm:items-center gap-4">
             <label className="font-semibold text-sm sm:text-base whitespace-nowrap pr-3">
@@ -244,7 +338,7 @@ export default function SearchField({
   );
 }
 
-// ✅ Export convenience components สำหรับการใช้งานแต่ละแบบ
+
 export const SearchFieldModal = (props: Omit<SearchFieldProps, 'layout'>) => (
   <SearchField {...props} layout="modal" />
 );

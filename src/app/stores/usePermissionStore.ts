@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 import { getPermissions } from '@/app/libs/services/user-permissions';
 import { UserPermission } from '@/app/types/user-permissions';
 import { MenuItem } from '@/app/types/menu';
