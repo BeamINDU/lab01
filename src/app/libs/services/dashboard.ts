@@ -1,4 +1,3 @@
-// src/app/libs/services/dashboard.ts
 import { api } from '@/app/utils/api'
 import { DashboardData, DashboardFilters, TrendData, DefectTypeData, DefectCameraData, NgDistributionData } from '@/app/types/dashboard'
 
@@ -18,7 +17,7 @@ export type LineOption = {
   lineName: string
 }
 
-// 🎯 Realistic Product Data with Categories
+//  Realistic Product Data with Categories
 const REALISTIC_PRODUCTS = [
   { id: 'PROD-BEV-001', name: 'Coca-Cola Classic 330ml Can', category: 'Beverage', line: 'LINE-A' },
   { id: 'PROD-BEV-002', name: 'Pepsi Cola 500ml Bottle', category: 'Beverage', line: 'LINE-A' },
@@ -33,7 +32,7 @@ const REALISTIC_PRODUCTS = [
   { id: 'PROD-MED-002', name: 'Vitamin C 1000mg Tablets', category: 'Supplement', line: 'LINE-D' },
 ];
 
-// 🎯 Realistic Camera Data
+//  Realistic Camera Data
 const REALISTIC_CAMERAS = [
   { id: 'CAM-LA-01', name: 'Line A - Input Inspection', location: 'Production Line A - Entry Point', line: 'LINE-A' },
   { id: 'CAM-LA-02', name: 'Line A - Label Check', location: 'Production Line A - Labeling Station', line: 'LINE-A' },
@@ -47,7 +46,7 @@ const REALISTIC_CAMERAS = [
   { id: 'CAM-PKG-01', name: 'Packaging - Final Check', location: 'Multi-Product Packaging Line', line: 'LINE-PKG' }
 ];
 
-// 🎯 Realistic Production Lines
+//  Realistic Production Lines
 const REALISTIC_LINES = [
   { id: 'LINE-A', name: 'Beverage Production Line A', shortName: 'Beverage Line' },
   { id: 'LINE-B', name: 'Food & Snack Production Line B', shortName: 'Food Line' },
@@ -73,14 +72,13 @@ const mockLines: LineOption[] = REALISTIC_LINES.map(line => ({
   lineName: line.name
 }));
 
-// 🎯 Smart dashboard data generator that responds to filters
+
 const generateMockDashboardData = (filters: DashboardFilters): DashboardData => {
-  // Get selected product info
   const selectedProduct = filters.productId ? REALISTIC_PRODUCTS.find(p => p.id === filters.productId) : null;
   const selectedCamera = filters.cameraId ? REALISTIC_CAMERAS.find(c => c.id === filters.cameraId) : null;
   const selectedLine = filters.lineId ? REALISTIC_LINES.find(l => l.id === filters.lineId) : null;
 
-  // Determine which line(s) to show data for
+
   let relevantLines: typeof REALISTIC_LINES = [];
   if (selectedLine) {
     relevantLines = [selectedLine];
@@ -94,21 +92,21 @@ const generateMockDashboardData = (filters: DashboardFilters): DashboardData => 
     relevantLines = REALISTIC_LINES;
   }
 
-  // Calculate production numbers
+
   const isWeekend = new Date().getDay() === 0 || new Date().getDay() === 6;
   const baseMultiplier = isWeekend ? 0.6 : 1.0;
   
   let baseTotal = 8500;
-  if (selectedProduct) baseTotal = 3500; // Single product
-  else if (selectedCamera) baseTotal = 5000; // Single camera coverage
-  else if (selectedLine) baseTotal = 6000; // Single line
+  if (selectedProduct) baseTotal = 3500; 
+  else if (selectedCamera) baseTotal = 5000;
+  else if (selectedLine) baseTotal = 6000; 
 
   const totalProducts = Math.floor(baseTotal * baseMultiplier);
   const defectRate = selectedLine?.id === 'LINE-D' ? 0.008 : 0.025; // Pharma has lower defect rate
   const ngCount = Math.floor(totalProducts * defectRate);
   const goodCount = totalProducts - ngCount;
 
-  // 🎯 Smart trend data based on filters
+
   const getDefectTypesForContext = () => {
     if (selectedProduct?.category === 'Beverage') {
       return ['Label Missing', 'Cap Defect', 'Volume Error', 'Surface Scratch', 'Barcode Error'];
@@ -166,15 +164,15 @@ const generateMockDashboardData = (filters: DashboardFilters): DashboardData => 
     }
   ];
 
-  // 🎯 Smart defects by type - use actual line names
+
   const defectsByType: DefectTypeData[] = defectTypes.slice(0, 5).map(defectType => {
     const lineData: any = { type: defectType };
     
     if (relevantLines.length === 1) {
-      // Single line selected - show only that line
+
       lineData[relevantLines[0].shortName] = Math.floor(Math.random() * 8) + 5;
     } else {
-      // Multiple lines - show up to 3 relevant lines with proper names
+
       relevantLines.slice(0, 3).forEach((line, index) => {
         lineData[line.shortName] = Math.floor(Math.random() * 6) + 3;
       });
@@ -183,7 +181,7 @@ const generateMockDashboardData = (filters: DashboardFilters): DashboardData => 
     return lineData;
   });
 
-  // 🎯 Smart camera defects - filter by selection
+
   let relevantCameras = REALISTIC_CAMERAS;
   if (selectedCamera) {
     relevantCameras = [selectedCamera];
@@ -194,11 +192,11 @@ const generateMockDashboardData = (filters: DashboardFilters): DashboardData => 
   }
 
   const defectsByCamera: DefectCameraData[] = relevantCameras.slice(0, 6).map(camera => ({
-    camera: camera.name.replace(/^Line [A-Z] - /, ''), // Shorten name for display
+    camera: camera.name.replace(/^Line [A-Z] - /, ''), 
     defects: Math.floor(Math.random() * 20) + 10
   }));
 
-  // 🎯 Smart NG distribution - adjust based on filters with proper category names
+
   const getProductCategories = () => {
     if (selectedProduct) {
       return [selectedProduct.category];
@@ -272,7 +270,7 @@ const generateMockDashboardData = (filters: DashboardFilters): DashboardData => 
 // API Functions
 export const getProducts = async (): Promise<ProductOption[]> => {
   try {
-    // return await api.get<ProductOption[]>('/dashboard/products');
+
     await new Promise(resolve => setTimeout(resolve, 500));
     return mockProducts;
   } catch (error) {
@@ -283,7 +281,7 @@ export const getProducts = async (): Promise<ProductOption[]> => {
 
 export const getCameras = async (): Promise<CameraOption[]> => {
   try {
-    // return await api.get<CameraOption[]>('/dashboard/cameras');
+
     await new Promise(resolve => setTimeout(resolve, 500)); 
     return mockCameras;
   } catch (error) {
@@ -294,7 +292,7 @@ export const getCameras = async (): Promise<CameraOption[]> => {
 
 export const getLines = async (): Promise<LineOption[]> => {
   try {
-    // return await api.get<LineOption[]>('/dashboard/lines');
+
     await new Promise(resolve => setTimeout(resolve, 500)); 
     return mockLines;
   } catch (error) {

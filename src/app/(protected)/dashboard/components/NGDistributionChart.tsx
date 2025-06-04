@@ -1,5 +1,25 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer } from "recharts";
+'use client';
+
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
 import { DashboardData } from '@/app/types/dashboard';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface NGDistributionChartProps {
   data: DashboardData | null;
@@ -14,21 +34,16 @@ export default function NGDistributionChart({ data }: NGDistributionChartProps) 
     { time: "21:00", A: 4, B: 2, C: 3, D: 3 },
   ];
 
-
-  const getProductCategoryName = (key: string): string => {
-    const categoryMap: Record<string, string> = {
-      'A': 'Beverages',
-      'B': 'Food & Snacks', 
-      'C': 'Personal Care',
-      'D': 'Pharmaceuticals'
-    };
-    return categoryMap[key] || `Product ${key}`;
+  const categoryNames = {
+    'A': 'Beverages',
+    'B': 'Food & Snacks', 
+    'C': 'Personal Care',
+    'D': 'Pharmaceuticals'
   };
 
-
+  // Get active categories
   const getActiveCategories = () => {
     if (!chartData || chartData.length === 0) return ['A', 'B', 'C', 'D'];
-    
     const categories = ['A', 'B', 'C', 'D'];
     return categories.filter(cat => 
       chartData.some(item => item[cat] && item[cat] > 0)
@@ -36,6 +51,82 @@ export default function NGDistributionChart({ data }: NGDistributionChartProps) 
   };
 
   const activeCategories = getActiveCategories();
+  const colors = [
+    'rgba(186, 230, 253, 0.8)', // Light blue
+    'rgba(96, 165, 250, 0.8)',  // Medium blue
+    'rgba(59, 130, 246, 0.8)',  // Blue
+    'rgba(30, 58, 138, 0.8)',   // Dark blue
+  ];
+
+  const datasets = activeCategories.map((category, index) => ({
+    label: categoryNames[category as keyof typeof categoryNames],
+    data: chartData.map(item => item[category] || 0),
+    backgroundColor: colors[index],
+    borderColor: colors[index]?.replace('0.8', '1'),
+    borderWidth: 1,
+    borderRadius: 4,
+    borderSkipped: false,
+  }));
+
+  const stackedBarData = {
+    labels: chartData.map(item => item.time),
+    datasets
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          font: { size: 10 },
+          padding: 12,
+          usePointStyle: true,
+        }
+      },
+      tooltip: {
+        mode: 'index' as const,
+        intersect: false,
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: 'white',
+        bodyColor: 'white',
+      }
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Time',
+          font: { size: 11 }
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)',
+        },
+        ticks: {
+          font: { size: 10 }
+        }
+      },
+      y: {
+        stacked: true,
+        title: {
+          display: true,
+          text: 'NG Product Quantity',
+          font: { size: 11 }
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)',
+        },
+        ticks: {
+          font: { size: 10 }
+        },
+        beginAtZero: true,
+      }
+    },
+    animation: {
+      duration: 1200,
+    }
+  };
 
   return (
     <div className="p-3 md:p-6 bg-white rounded-xl shadow w-full">
@@ -43,73 +134,7 @@ export default function NGDistributionChart({ data }: NGDistributionChartProps) 
         Distribution of NG Found per Hour by Product Category
       </h2>
       <div className="h-[200px] sm:h-[240px] md:h-[260px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={chartData}
-            margin={{ 
-              top: 0, 
-              right: 10, 
-              left: 10, 
-              bottom: 40 
-            }}
-            barCategoryGap="20%"
-            barSize={16}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="time"
-              label={{
-                value: "Time",
-                position: "insideBottom",
-                offset: -10,
-                style: { fill: "#555", fontSize: 10 },
-              }}
-              tick={{ fontSize: 10 }}
-            />
-            <YAxis
-              label={{
-                value: "NG Product Quantity",
-                angle: -90,
-                offset: 5,
-                style: { fill: "#555", fontSize: 10 },
-              }}
-              tick={{ fontSize: 10 }}
-            />
-            <Tooltip 
-              formatter={(value, name) => [value, getProductCategoryName(name as string)]}
-              labelStyle={{ fontSize: '10px' }}
-              contentStyle={{ fontSize: '10px' }}
-            />
-            <Legend
-              verticalAlign="top"
-              wrapperStyle={{
-                position: "absolute",
-                bottom: -20,
-                left: 0,
-                right: 0,
-                textAlign: "center",
-                fontSize: '0.625rem'
-              }}
-              iconType="circle" 
-              height={30}
-              formatter={(value) => getProductCategoryName(value)}
-            />
-            
-
-            {activeCategories.includes('A') && (
-              <Bar dataKey="A" stackId="a" fill="#bae6fd" name="A" />
-            )}
-            {activeCategories.includes('B') && (
-              <Bar dataKey="B" stackId="a" fill="#60a5fa" name="B" />
-            )}
-            {activeCategories.includes('C') && (
-              <Bar dataKey="C" stackId="a" fill="#3b82f6" name="C" />
-            )}
-            {activeCategories.includes('D') && (
-              <Bar dataKey="D" stackId="a" fill="#1e3a8a" name="D" />
-            )}
-          </BarChart>
-        </ResponsiveContainer>
+        <Bar data={stackedBarData} options={options} />
       </div>
     </div>
   );

@@ -180,9 +180,9 @@ export default function DateTimeField({
   return (
     <div className={`w-full ${className}`}>
       {/* Responsive Grid Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-[110px_1fr] lg:grid-cols-[120px_1fr] items-start sm:items-center gap-2">
+       <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] items-start sm:items-center gap-2">
         {/* Label */}
-        <label className="font-semibold text-sm sm:text-base whitespace-nowrap">
+        <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[140px] sm:min-w-[160px]">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -269,8 +269,7 @@ export const DateTimeHelpers = {
   }
 };
 
-// ======================================================================
-// HOC สำหรับ wrap form field กับ error handling
+
 
 interface DateTimeFieldWithValidationProps extends DateTimeFieldProps {
   rules?: {
@@ -288,7 +287,6 @@ export function DateTimeFieldWithValidation({
   return (
     <DateTimeField
       {...props}
-      // เพิ่ม validation rules ถ้ามี
     />
   );
 }

@@ -5,6 +5,7 @@ import { UseFormRegister, UseFormSetValue, Control, Controller } from "react-hoo
 import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
 
 interface SearchFieldProps {
+
   register?: UseFormRegister<any>;
   setValue?: UseFormSetValue<any>;
   control?: Control<any>; 
@@ -32,7 +33,7 @@ interface SearchFieldProps {
   layout?: 'responsive' | 'modal' | 'inline';
   labelWidth?: string;
   
-  // ✅ เพิ่มตัวเลือกให้แสดง error ใน component
+  //  เพิ่มตัวเลือกให้แสดง error ใน component
   showInternalError?: boolean;
   required?: boolean;
   
@@ -59,7 +60,7 @@ export default function SearchField({
   initialValue,
   layout = 'responsive',
   labelWidth = '150px',
-  showInternalError = false, // ✅ default เป็น false เพื่อ backward compatibility
+  showInternalError = false, 
   required = false,
   onSelectionChange
 }: SearchFieldProps) {
@@ -160,7 +161,7 @@ export default function SearchField({
     }
   }, [initialValue, searchOptions, allowFreeText, fieldName, setValue]);
 
-  // ✅ Handlers สำหรับ register() method
+  //  Handlers สำหรับ register() method
   const handleSelect = (option: SearchOption | null) => {
     const value = option ? option.value : '';
     setSelectedValue(value);
@@ -182,9 +183,9 @@ export default function SearchField({
     }
   };
 
-  // ✅ เลือก layout ตาม prop
+  //  เลือก layout ตาม prop
   const renderLayout = () => {
-    // ✅ ถ้าใช้ control และต้องการ error handling
+    //  ถ้าใช้ control และต้องการ error handling
     if (control && showInternalError) {
       const searchFieldWithController = (
         <Controller
@@ -266,19 +267,19 @@ export default function SearchField({
             </div>
           );
 
-        case 'responsive':
-        default:
-          return (
-            <div className="grid grid-cols-1 sm:grid-cols-[110px_1fr] lg:grid-cols-[120px_1fr] items-start gap-2">
-              <label className="font-semibold text-sm sm:text-base whitespace-nowrap pt-2">
-                {label}
-                {required && <span className="text-red-500 ml-1">*</span>}
-              </label>
-              <div className="w-full min-w-0">
-                {searchFieldWithController}
-              </div>
-            </div>
-          );
+case 'responsive':
+default:
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] items-start gap-2">
+      <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[140px] sm:min-w-[160px] pt-2">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
+      <div className="w-full min-w-0">
+        {searchFieldWithController}
+      </div>
+    </div>
+  );
       }
     }
 
@@ -329,19 +330,20 @@ export default function SearchField({
           </div>
         );
 
-      case 'responsive':
-      default:
-        return (
-          <div className="grid grid-cols-1 sm:grid-cols-[110px_1fr] lg:grid-cols-[120px_1fr] items-start sm:items-center gap-2">
-            <label className="font-semibold text-sm sm:text-base whitespace-nowrap">
-              {label}
-              {required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <div className="w-full min-w-0">
-              {searchComponent}
-            </div>
-          </div>
-        );
+
+case 'responsive':
+default:
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] items-start sm:items-center gap-2">
+      <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[140px] sm:min-w-[160px]">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
+      <div className="w-full min-w-0">
+        {searchComponent}
+      </div>
+    </div>
+  );
     }
   };
 
@@ -352,7 +354,7 @@ export default function SearchField({
   );
 }
 
-// ✅ Export convenience components สำหรับการใช้งานแต่ละแบบ
+//  Export convenience components สำหรับการใช้งานแต่ละแบบ
 export const SearchFieldModal = (props: Omit<SearchFieldProps, 'layout'>) => (
   <SearchField {...props} layout="modal" />
 );
@@ -365,7 +367,7 @@ export const SearchFieldResponsive = (props: Omit<SearchFieldProps, 'layout'>) =
   <SearchField {...props} layout="responsive" />
 );
 
-// ✅ Convenience components with Controller
+//  Convenience components with Controller
 export const SearchFieldModalWithController = (props: Omit<SearchFieldProps, 'layout' | 'showInternalError'>) => (
   <SearchField {...props} layout="modal" showInternalError={true} />
 );

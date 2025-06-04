@@ -1,5 +1,28 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer } from 'recharts';
+'use client';
+
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartOptions,
+} from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { DashboardData } from '@/app/types/dashboard';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartDataLabels
+);
 
 interface FrequentDefectsChartProps {
   data: DashboardData | null;
@@ -14,26 +37,91 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
     { type: 'Color Variance', Line1: 2, Line2: 2, Line3: 1 },
   ];
 
-
   const getAvailableLines = () => {
     if (!chartData || chartData.length === 0) return [];
-    
     const firstItem = chartData[0];
-    const lines = Object.keys(firstItem).filter(key => 
-      key !== 'type' && 
-      typeof firstItem[key] === 'number' && 
-      firstItem[key] > 0
+    return Object.keys(firstItem).filter(key =>
+      key !== 'type' && typeof firstItem[key] === 'number'
     );
-    
-    return lines;
   };
 
   const availableLines = getAvailableLines();
+  const colors = [
+    'rgba(30, 58, 138, 0.8)',
+    'rgba(96, 165, 250, 0.8)',
+    'rgba(186, 230, 253, 0.8)',
+    'rgba(224, 242, 254, 0.8)',
+  ];
 
+  const datasets = availableLines.map((lineKey, index) => ({
+    label: lineKey,
+    data: chartData.map(item => item[lineKey] || 0),
+    backgroundColor: colors[index] || 'rgba(148, 163, 184, 0.8)',
+    borderColor: colors[index]?.replace('0.8', '1') || 'rgba(148, 163, 184, 1)',
+    borderWidth: 1,
+    borderRadius: 4,
+    borderSkipped: false,
+  }));
 
-  const getBarColor = (lineKey: string, index: number) => {
-    const colors = ['#1e3a8a', '#60a5fa', '#bae6fd', '#e0f2fe', '#f0f9ff'];
-    return colors[index] || '#94a3b8';
+  const barChartData = {
+    labels: chartData.map(item => item.type),
+    datasets
+  };
+
+  const options: ChartOptions<'bar'> = {
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          font: { size: 10 },
+          padding: 8,
+          usePointStyle: true,
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: 'white',
+        bodyColor: 'white',
+      },
+      datalabels: {
+        anchor: 'end',
+        align: 'end',
+        color: '#333',
+        font: {
+          weight: 'bold',
+          size: 9,
+        },
+        formatter: (value: number) => value,
+        clamp: true,
+      },
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        stacked: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.1)',
+        },
+        ticks: {
+          font: { size: 10 }
+        }
+      },
+      y: {
+        stacked: true,
+        grid: {
+          display: false,
+        },
+        ticks: {
+          font: { size: 9 }
+        }
+      }
+    },
+    animation: {
+      duration: 1200,
+    }
   };
 
   return (
@@ -42,48 +130,7 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
         Top 5 Most Frequent Defect Types
       </h2>
       <div className="h-[200px] sm:h-[240px] md:h-[260px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            layout="vertical"
-            data={chartData}
-            margin={{ 
-              top: 5, 
-              right: 10, 
-              left: 40, 
-              bottom: 5 
-            }}
-            barCategoryGap={20}
-            barSize={16}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" tick={{ fontSize: 10 }} />
-            <YAxis 
-              dataKey="type" 
-              type="category" 
-              tick={{ fontSize: 9 }}
-              width={80}
-            />
-            <Tooltip 
-              formatter={(value, name) => [value, name]}
-              labelStyle={{ fontSize: '10px' }}
-              contentStyle={{ fontSize: '10px' }}
-            />
-            <Legend
-              verticalAlign="bottom"
-              iconType="circle"
-              wrapperStyle={{ fontSize: '0.625rem', paddingTop: '5px' }}
-            />
-
-            {availableLines.map((lineKey, index) => (
-              <Bar 
-                key={lineKey}
-                dataKey={lineKey} 
-                fill={getBarColor(lineKey, index)}
-                name={lineKey.includes('Line') ? lineKey : `${lineKey}`}
-              />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
+        <Bar data={barChartData} options={options} />
       </div>
     </div>
   );

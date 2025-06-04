@@ -1,4 +1,3 @@
-// src/app/(protected)/planning/components/planning-form.tsx
 "use client";
 
 import { useEffect } from 'react';
@@ -150,7 +149,7 @@ export default function PlanningFormModal({
             {errors.planId && <p className="text-red-500 ml-160">{errors.planId.message}</p>}
           </div>
           
-          {/* ✅ Product ID - ใช้ SearchFieldModal */}
+          {/*  Product ID - ใช้ SearchFieldModal */}
           <div className="mb-4">
             <SearchFieldModal
               key={`productId-${editingData?.planId || 'new'}`}
@@ -182,27 +181,13 @@ export default function PlanningFormModal({
             {errors.lotNo && <p className="text-red-500 ml-160">{errors.lotNo.message}</p>}
           </div>
           
-          {/* ✅ Line ID - ใช้ SearchFieldModal */}
+          {/*  Line ID - ใช้ SearchFieldModal */}
           <div className="mb-4">
-            <SearchFieldModal
-              key={`lineId-${editingData?.planId || 'new'}`}
-              register={register}
-              setValue={setValue}
-              fieldName="lineId"
-              label="Line ID"
-              placeholder="Select line ID..."
-              dataLoader={getLineIdOptions}
-              labelField="label"
-              valueField="value"
-              allowFreeText={true}
-              disabled={!canEdit}
-              initialValue={lineId}
-              onSelectionChange={(value, option) => {
-                console.log('Line ID selected:', value, option);
-                setValue("lineId", value, { shouldValidate: true });
-              }}
-            />
-            {errors.lineId && <p className="text-red-500 ml-160">{errors.lineId.message}</p>}
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Line ID:</label>
+              <input {...register("lineId")} className="border p-2 w-full mb-1 bg-white" />
+            </div>
+            {errors.lotNo && <p className="text-red-500 ml-160">{errors.lotNo.message}</p>}
           </div>
 
           {/* Quantity */}

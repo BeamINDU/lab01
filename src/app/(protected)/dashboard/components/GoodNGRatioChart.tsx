@@ -5,7 +5,7 @@ interface GoodNGRatioChartProps {
   data: DashboardData | null;
 }
 
-const colors = ['#60a5fa', '#1d4ed8'];
+const colors = ['#60a5fa', '#ef4444'];
 
 export default function GoodNGRatioChart({ data }: GoodNGRatioChartProps) {
   const chartData = data ? [
@@ -31,11 +31,9 @@ export default function GoodNGRatioChart({ data }: GoodNGRatioChartProps) {
               innerRadius={30}
               outerRadius={50}
               dataKey="value"
-              label={({ value, percent }) =>
-                `${value.toLocaleString()}, ${(percent * 100).toFixed(0)}%`
-              }
-              labelLine={false}
-              fontSize={10}
+              label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
+              labelLine={true}
+              fontSize={15}
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={colors[index]} />
