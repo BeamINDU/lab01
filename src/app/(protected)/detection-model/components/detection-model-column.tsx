@@ -155,7 +155,7 @@ export default function DetectionModelColumns({
             onClick={() => {
               const id = row.original.modelId;
               if (typeof id === "number") {
-                openEditModal(id);
+                // openEditModal(id);
               }
             }}
           >

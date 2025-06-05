@@ -3,7 +3,7 @@ import { MockLiveWebSocket } from '@/app/mocks/mock-live-websocket';
 
 interface LiveSocketState {
   socket: WebSocket | MockLiveWebSocket | null;
-  connect: () => void;
+  connect: (cameraId: string) => void;
   disconnect: () => void;
   send: (data: any) => void;
 }
@@ -11,21 +11,21 @@ interface LiveSocketState {
 export const useLiveSocketStore = create<LiveSocketState>((set, get) => ({
   socket: null,
 
-  connect: () => {
+  connect: (cameraId: string) => {
     if (get().socket) return;
-  
+
     const isDev = process.env.NODE_ENV !== 'production';
     const socketUrl = process.env.NEXT_PUBLIC_LIVE_SOCKET_URL || 'ws://localhost:8000/ws/live';
 
     const socket = isDev
-      ? new MockLiveWebSocket() as unknown as WebSocket
+      ? new MockLiveWebSocket(cameraId) as unknown as WebSocket
       : new WebSocket(socketUrl);
-  
-      socket.onopen = () => {
+
+    socket.onopen = () => {
       console.log("Live WebSocket connected");
       set({ socket: socket });
     };
-  
+
     socket.onclose = () => {
       console.log("Live WebSocket closed");
       set({ socket: null });
@@ -35,10 +35,9 @@ export const useLiveSocketStore = create<LiveSocketState>((set, get) => ({
       console.error("Live WebSocket error:", err);
     };
 
-    // ถ้าเป็น MockLiveWebSocket ให้เรียก connect() ของมันด้วย
-    // if ('connect' in socket && typeof (socket as MockLiveWebSocket).connect === 'function') {
-    //   (socket as MockLiveWebSocket).connect();
-    // }
+    if (isDev && 'connect' in socket && typeof (socket as any).connect === 'function') {
+      (socket as any).connect();
+    }
   },
 
   disconnect: () => {
@@ -55,5 +54,4 @@ export const useLiveSocketStore = create<LiveSocketState>((set, get) => ({
       console.warn("WebSocket not ready");
     }
   },
-
 }));

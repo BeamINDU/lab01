@@ -13,7 +13,6 @@ interface ClassNameModalProps {
 const classNameSchema = z.object({
   id: z.string(),
   name: z.string().min(1, "Class name is required"),
-  checked: z.boolean(),
 });
 
 export default function ClassNameModal({ onClose, onSave, data }: ClassNameModalProps) {
@@ -35,7 +34,6 @@ export default function ClassNameModal({ onClose, onSave, data }: ClassNameModal
     const newLabel: ClassName = {
       id: '',
       name: '',
-      checked: false,
     };
     setClassName([...className, newLabel]);
     setErrors([...errors, '']);

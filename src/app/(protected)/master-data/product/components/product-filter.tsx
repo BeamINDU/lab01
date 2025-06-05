@@ -47,7 +47,7 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
         <SearchFieldResponsive 
           register={register}
           setValue={setValue}
-          fieldName="productTypeName"
+          fieldName="productTypeId"
           label="Product Type"
           placeholder="Search product type..."
           dataLoader={getProductTypeOptions}

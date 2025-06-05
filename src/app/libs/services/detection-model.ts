@@ -21,7 +21,7 @@ const mockFormData = (id: number): FormData => {
     modelId: id,
     statusId: (id === 1) ? "Using" : (id === 2) ? "Processing" : "Ready",
     currentVersion: 1,
-    currentStep: 1,
+    currentStep: 2,
     functions: [1, 3, 5],
     modelName: `MODEL-${id}`,
     description: `Description ${id} `,
@@ -149,19 +149,69 @@ export const getCamera = async () => {
 };
 
 
-// export const classNameList:  => {
-//   return [
-//     { id: '1', name: 'houseclip missing', checked: true },
-//   { id: '2', name: 'Good clip', checked: true },
-//   ] as ClassName[] ;
-// } [
-  
-// ];
-
-
 export const getPicture = async () => {
   return [
-    { id: 1, name: "photos-random-1.png", url: "https://picsum.photos/800/600?random=1" },
+    { 
+      id: 1, 
+      name: "photos-random-1.png", 
+      url: "https://picsum.photos/800/600?random=1",
+      "annotations": [
+        {
+          "id": "annotation-1748887785393",
+          "type": "rect",
+          "color": "#FF5722",
+          "points": [
+            116,
+            95.125
+          ],
+          "startX": 116,
+          "startY": 95.125,
+          "width": 122,
+          "height": 93,
+          "radius": 0,
+          "label": {
+            "id": "1",
+            "name": "houseclip missing"
+          }
+        },
+        {
+          "id": "annotation-1748887794637",
+          "type": "circle",
+          "color": "#00ff58",
+          "points": [
+            392,
+            146.125
+          ],
+          "startX": 343,
+          "startY": 265.125,
+          "width": 0,
+          "height": 0,
+          "radius": 59.54829972383762,
+          "label": {
+            "id": "2",
+            "name": "Good clip"
+          }
+        },
+        {
+          "id": "annotation-1748887803991",
+          "type": "rect",
+          "color": "#ff00ef",
+          "points": [
+            581,
+            101.125
+          ],
+          "startX": 581,
+          "startY": 101.125,
+          "width": 97,
+          "height": 82,
+          "radius": 0,
+          "label": {
+            "id": "2",
+            "name": "Good clip"
+          }
+        }
+      ]
+    },
     { id: 2, name: "photos-random-2.png", url: "https://picsum.photos/800/600?random=2" },
     { id: 3, name: "photos-random-3.png", url: "https://picsum.photos/800/600?random=3" },
     { id: 4, name: "photos-random-4.png", url: "https://picsum.photos/800/600?random=4" },

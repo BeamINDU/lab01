@@ -3,6 +3,7 @@ import type { LiveInspectionView } from "@/app/types/live"
 
 export const detail = async (cameraId: string): Promise<LiveInspectionView> => {
   return {
+    liveStream: `http://127.0.0.1:8001/live-defect/${cameraId}`,
     location: `Location ${cameraId}`,
     cameraId: `C ${cameraId}`,
     cameraName: `CAM ${cameraId}`,
@@ -19,5 +20,7 @@ export const detail = async (cameraId: string): Promise<LiveInspectionView> => {
     totalPlanning: 5000,
     actualPlanning: 4000,
   };
+
+// const response = await fetch(`http://127.0.0.1:8001/live-defect/${cameraId}`);
 
 };

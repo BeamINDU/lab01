@@ -1,8 +1,8 @@
 export type Product = {
   productId: string
   productName: string
-  // productTypeId: string
-  productTypeName: string
+  productTypeId: string
+  productTypeName?: string
   serialNo: string
   status: number
   createdDate?: Date | null
@@ -15,7 +15,7 @@ export type Product = {
 export type ParamSearch = {
   productId?: string
   productName?: string
-  productType?: string
+  // productType?: string
   productTypeName?: string
   serialNo?: string
   status?: string,

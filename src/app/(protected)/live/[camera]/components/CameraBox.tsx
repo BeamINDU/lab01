@@ -2,10 +2,12 @@
 
 type Props = {
   cameraName: string;
+  liveStream: string;
   loading: boolean;
 };
 
-export default function CameraBox({ cameraName, loading }: Props) {
+export default function CameraBox({ cameraName, liveStream, loading }: Props) {
+  
   return (
     <div className="bg-gray-200">
       <div className={`bg-black text-white px-4 py-2 font-semibold ${loading && "animate-pulse bg-gray-600 text-transparent"}`}>
@@ -18,7 +20,7 @@ export default function CameraBox({ cameraName, loading }: Props) {
           // "640 × 480"
           <video
             className="w-full h-full object-cover"
-            src="/videos/2025-01-24_16-51-55.mp4"
+            src={`data:video/mp4;base64,${liveStream}`}
             autoPlay
             muted
             loop

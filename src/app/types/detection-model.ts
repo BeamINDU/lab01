@@ -1,3 +1,6 @@
+import { ClassName } from "@/app/types/class-name";
+import { ShapeType } from "@/app/constants/shape-type";
+
 export type DetectionModel = {
   modelId?: number | null,
   modelName: string,
@@ -33,16 +36,27 @@ export type FormData = {
   epochs: number | undefined,
   cameraId?: string | undefined,
   version?: number,
-
-  // isComplete?: boolean
 };
-
 
 export type ModelPicture = {
   id: number
   name: string,
-  url: string
+  url: string,
+  annotations?: Annotation[];
 }
+
+export type Annotation = {
+  id: string
+  type: ShapeType
+  color?: string
+  points: number[]
+  startX: number
+  startY: number
+  width: number
+  height: number
+  radius: number
+  label: ClassName,
+};
 
   // cameraId?: string,
   // trainDataset?: number | null,

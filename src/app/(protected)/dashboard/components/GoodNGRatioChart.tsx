@@ -1,5 +1,6 @@
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { DashboardData } from '@/app/types/dashboard';
+import { useMemo } from 'react';
 
 interface GoodNGRatioChartProps {
   data: DashboardData | null;
@@ -8,41 +9,124 @@ interface GoodNGRatioChartProps {
 const colors = ['#60a5fa', '#ef4444'];
 
 export default function GoodNGRatioChart({ data }: GoodNGRatioChartProps) {
-  const chartData = data ? [
-    { name: "Good", value: data.goodCount },
-    { name: "Not Good", value: data.ngCount },
-  ] : [
-    { name: "Good", value: 900 },
-    { name: "Not Good", value: 100 },
-  ];
+
+  const chartData = useMemo(() => {
+    if (data) {
+      return [
+        { name: "Good", value: data.goodCount },
+        { name: "Not Good", value: data.ngCount },
+      ];
+    }
+    // Default fallback data
+    return [
+      { name: "Good", value: 900 },
+      { name: "Not Good", value: 100 },
+    ];
+  }, [data]);
+
+
+  const chartKey = useMemo(() => {
+    return `pie-chart-${data?.goodCount || 0}-${data?.ngCount || 0}-${Date.now()}`;
+  }, [data?.goodCount, data?.ngCount]);
+
+
+  const total = chartData.reduce((sum, item) => sum + item.value, 0);
+  const goodPercentage = total > 0 ? ((chartData[0].value / total) * 100).toFixed(1) : '0.0';
+  const ngPercentage = total > 0 ? ((chartData[1].value / total) * 100).toFixed(1) : '0.0';
+
+
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+    const RADIAN = Math.PI / 180;
+    
+
+    const isSmall = percent < 0.1;
+    const radius = outerRadius + (isSmall ? 25 : 15);
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+
+    const color = name === 'Good' ? '#1e40af' : '#dc2626';
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill={color}
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize={isSmall ? 10 : 11}
+        fontWeight="bold"
+        style={{ 
+          textShadow: '1px 1px 2px rgba(255,255,255,0.9)',
+          filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
+        }}
+      >
+        {`${(percent * 100).toFixed(1)}%`}
+      </text>
+    );
+  };
+
+  // ✅ Custom tooltip
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0];
+      const percentage = total > 0 ? ((data.value / total) * 100).toFixed(1) : '0.0';
+      return (
+        <div className="bg-black bg-opacity-80 text-white p-2 rounded text-xs">
+          <p className="font-medium">{data.name}</p>
+          <p>Count: {data.value.toLocaleString()}</p>
+          <p>Percentage: {percentage}%</p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full min-h-[200px] md:min-h-[220px]">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-1"> 
         Good / NG Ratio
       </h2>
-      <div className="h-[140px] md:h-[150px]">
+      
+      {/* ✅ แสดงสถิติด้านบน */}
+      <div className="flex justify-center gap-4 mb-2 text-xs">
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded-full bg-blue-400"></div>
+          <span>Good: {goodPercentage}%</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-3 h-3 rounded-full bg-red-500"></div>
+          <span>NG: {ngPercentage}%</span>
+        </div>
+      </div>
+
+      <div className="h-[140px] md:h-[150px] relative">
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+          <PieChart key={chartKey}>
             <Pie
               data={chartData}
               cx="50%"
               cy="50%"
-              innerRadius={30}
-              outerRadius={50}
+              labelLine={true} 
+              label={renderCustomizedLabel}
+              outerRadius={40} 
+              innerRadius={18} 
+              fill="#8884d8"
               dataKey="value"
-              label={({ percent }) => `${(percent * 100).toFixed(1)}%`}
-              labelLine={true}
-              fontSize={15}
+              animationBegin={0} 
+              animationDuration={800}
+              minAngle={5} 
             >
               {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={colors[index]} />
+                <Cell 
+                  key={`cell-${index}-${entry.value}`} 
+                  fill={colors[index % colors.length]}
+                  stroke="#ffffff"
+                  strokeWidth={2} 
+                />
               ))}
             </Pie>
-            <Tooltip 
-              formatter={(value) => [value.toLocaleString(), '']}
-              contentStyle={{ fontSize: '11px' }}
-            />
+            <Tooltip content={<CustomTooltip />} />
             <Legend
               verticalAlign="bottom"
               iconType="circle"
@@ -53,6 +137,12 @@ export default function GoodNGRatioChart({ data }: GoodNGRatioChartProps) {
             />
           </PieChart>
         </ResponsiveContainer>
+
+
+      </div>
+
+      <div className="text-center text-xs text-gray-600 mt-1">
+        Total: {total.toLocaleString()} products
       </div>
     </div>
   );

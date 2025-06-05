@@ -1,8 +1,7 @@
-import { api } from '@/app/utils/api'
+import { api } from "@/app/utils/api"
+import { API_ROUTES } from "@/app/constants/endpoint"
 import type { Product, ParamSearch } from "@/app/types/product"
 import { SelectOption } from "@/app/types/select-option";
-
-
 
 const PRODUCT_DATA = [
   // Beverages
@@ -49,6 +48,7 @@ const mockData: Product[] = PRODUCT_DATA.map((item, i) => {
   return {
     productId: `PROD${String(i + 1).padStart(4, '0')}`, 
     productName: item.name,
+    productTypeId: 'PT0011',
     productTypeName: item.type,
     serialNo: `${item.category.substring(0, 2).toUpperCase()}${Date.now() + i}${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
     status: Math.random() > 0.15 ? 1 : 0,
@@ -71,6 +71,7 @@ while (mockData.length < 50) {
   mockData.push({
     productId: `PROD${String(i + 1).padStart(4, '0')}`,
     productName: `${randomProduct.name} (Variant ${i - PRODUCT_DATA.length + 1})`,
+    productTypeId: randomProduct.type,
     productTypeName: randomProduct.type,
     serialNo: `${randomProduct.category.substring(0, 2).toUpperCase()}${Date.now() + i}${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
     status: Math.random() > 0.15 ? 1 : 0,
@@ -81,20 +82,16 @@ while (mockData.length < 50) {
   });
 }
 
-// ⭐ API-Ready Functions
+
 export const search = async (param?: ParamSearch) => { 
   console.log('Product service received params:', param);
-  
-
   
   if (!param) return mockData;
 
   const filteredData = mockData.filter(item => {
     const productIdMatch = !param.productId || item.productId.toLowerCase().includes(param.productId.toLowerCase());
     const productNameMatch = !param.productName || item.productName.toLowerCase().includes(param.productName.toLowerCase());
-    const productTypeMatch = !param.productTypeName || 
-      item.productTypeName.toLowerCase().includes(param.productTypeName.toLowerCase()) ||
-      param.productTypeName.toLowerCase().includes(item.productTypeName.toLowerCase());
+    const productTypeMatch = !param.productTypeName || item.productTypeName?.toLowerCase().includes(param.productTypeName.toLowerCase());
     const serialNoMatch = !param.serialNo || item.serialNo.toLowerCase().includes(param.serialNo.toLowerCase());
     
     let statusMatch = true;
@@ -110,6 +107,33 @@ export const search = async (param?: ParamSearch) => {
   
   console.log('Filtered results:', filteredData.length, 'items');
   return filteredData;
+
+  // const res = await api.get<string>(`${API_ROUTES.product.get}`);
+  // console.log('get product:', res);
+  // res
+  // {
+  //       "prodid": "G0123",
+  //       "prodname": "Grape juice",
+  //       "prodtypeid": "B0002",
+  //       "prodserial": "SR1234567",
+  //       "prodstatus": true,
+  //       "createdby": "TH0001",
+  //       "createddate": "2025-05-27T09:43:30.399727",
+  //       "updatedby": null,
+  //       "updateddate": null,
+  //       "isdeleted": true
+  //   }
+  
+  // productId: string
+  // productName: string
+  // productTypeId: string
+  // productTypeName: string
+  // serialNo: string
+  // status: number
+  // createdDate?: Date | null
+  // createdBy?: string
+  // updatedDate?: Date | null
+  // updatedBy?: string | null
 };
 
 export const detail = async (id: string) => {

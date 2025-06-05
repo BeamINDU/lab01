@@ -10,6 +10,7 @@ import SummaryBox from "./SummaryBox";
 import CameraBox from "./CameraBox";
 
 const emptyData: LiveInspectionView = {
+  liveStream: '',
   cameraId: "",
   cameraName: "Loading...",
   location: "Loading...",
@@ -34,7 +35,7 @@ const LiveInspectionViewPage = ({ cameraId }: { cameraId: string }) => {
 
   useEffect(() => {
     if (!socket) {
-      connect();
+      connect(cameraId);
       return;
     }
   
@@ -69,7 +70,7 @@ const LiveInspectionViewPage = ({ cameraId }: { cameraId: string }) => {
       <div className="flex flex-col gap-2 p-4 flex-1">
         <div className="flex flex-col md:flex-row gap-2">
           <div className="w-full md:w-1/2">
-            <CameraBox cameraName={data.cameraName} loading={loading} />
+            <CameraBox cameraName={data.cameraName} liveStream={data.liveStream} loading={loading} />
           </div>
 
           <div className="w-full md:w-1/2 space-y-4">

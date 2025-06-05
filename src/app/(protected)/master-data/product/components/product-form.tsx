@@ -15,7 +15,8 @@ import { getProductTypeOptions } from '@/app/libs/services/product-type';
 const ProductSchema = z.object({
   productId: z.string().min(1, "Product ID is required"),
   productName: z.string().min(1, "Product Name is required"),
-  productTypeName: z.string().min(1, "Product Type is required"),
+  productTypeId: z.string().min(1, "Product Type is required"),
+  // productTypeName: z.string().min(1, "Product Type is required"),
   serialNo: z.string().min(1, "Serial No is required"),
   status: z.number().min(0).max(1, "Status must be 0 or 1"), 
   isCreateMode: z.boolean().optional(),
@@ -43,7 +44,8 @@ export default function ProductFormModal({
   const defaultValues: ProductFormValues = {
     productId: '',
     productName: '',
-    productTypeName: '',
+    productTypeId: '',
+    // productTypeName: '',
     serialNo: '',
     status: 1,
     isCreateMode: true,
@@ -62,7 +64,8 @@ export default function ProductFormModal({
     defaultValues,
   });
 
-  const productTypeName = watch("productTypeName");
+  const productTypeId = watch("productTypeId");
+  // const productTypeName = watch("productTypeName");
 
   useEffect(() => {
     if (editingData) {
@@ -152,13 +155,13 @@ export default function ProductFormModal({
               valueField="value"
               allowFreeText={true}
               disabled={!canEdit}
-              initialValue={productTypeName}
+              initialValue={productTypeId}
               onSelectionChange={(value, option) => {
                 console.log('Product Type selected:', value, option);
-                setValue("productTypeName", value, { shouldValidate: true });
+                setValue("productTypeId", value, { shouldValidate: true });
               }}
             />
-            {errors.productTypeName && <p className="text-red-500 ml-160">{errors.productTypeName.message}</p>}
+            {errors.productTypeId && <p className="text-red-500 ml-160">{errors.productTypeId.message}</p>}
           </div>
           
           <div className="mb-4">

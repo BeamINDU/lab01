@@ -1,4 +1,5 @@
 export type LiveInspectionView = {
+  liveStream: string
   location: string
   cameraId: string
   cameraName: string

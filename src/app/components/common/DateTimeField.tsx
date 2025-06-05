@@ -48,6 +48,10 @@ interface DateTimeFieldProps {
   size?: 'small' | 'medium';
   fullWidth?: boolean;
   
+  // 🎨 เพิ่มตัวเลือกปรับขนาดตัวอักษร
+  fontSize?: 'xs' | 'sm' | 'md' | 'lg';
+  compactMode?: boolean;
+  
   // Events
   onChange?: (value: Dayjs | null) => void;
   onError?: (error: any) => void;
@@ -74,6 +78,8 @@ export default function DateTimeField({
   maxDateTime,
   size = 'small',
   fullWidth = true,
+  fontSize = 'sm',
+  compactMode = false,
   onChange,
   onError
 }: DateTimeFieldProps) {
@@ -108,6 +114,69 @@ export default function DateTimeField({
     }
   };
 
+  // 🎨 กำหนดขนาดตัวอักษรตาม prop fontSize
+  const getFontSizes = () => {
+    switch (fontSize) {
+      case 'xs':
+        return {
+          input: '10px',
+          calendarDay: '11px',
+          calendarHeader: '13px',
+          weekLabel: '9px',
+          timeItem: '11px',
+          actionButton: '10px'
+        };
+      case 'sm':
+        return {
+          input: '12px',
+          calendarDay: '13px',
+          calendarHeader: '15px',
+          weekLabel: '11px',
+          timeItem: '13px',
+          actionButton: '12px'
+        };
+      case 'md':
+        return {
+          input: '14px',
+          calendarDay: '15px',
+          calendarHeader: '17px',
+          weekLabel: '13px',
+          timeItem: '15px',
+          actionButton: '14px'
+        };
+      case 'lg':
+        return {
+          input: '16px',
+          calendarDay: '17px',
+          calendarHeader: '19px',
+          weekLabel: '15px',
+          timeItem: '17px',
+          actionButton: '16px'
+        };
+      default:
+        return getFontSizes(); // fallback to 'sm'
+    }
+  };
+
+  // 🎨 กำหนดขนาด Calendar ตาม compactMode
+  const getCalendarSizes = () => {
+    if (compactMode) {
+      return {
+        dayWidth: '28px',
+        dayHeight: '28px',
+        minHeight: '32px'
+      };
+    }
+    return {
+      dayWidth: '36px',
+      dayHeight: '36px', 
+      minHeight: '40px'
+    };
+  };
+
+  const fontSizes = getFontSizes();
+  const calendarSizes = getCalendarSizes();
+
   // Style สำหรับ responsive
   const inputStyle = {
     backgroundColor: 'white',
@@ -115,6 +184,84 @@ export default function DateTimeField({
     width: '100%',
     minWidth: 0,
   };
+
+  //   สำหรับปรับขนาดตัวอักษร
+  const getPopperStyles = () => ({
+    sx: {
+      // Calendar Days (ตัวเลขวันที่)
+      '& .MuiPickersDay-root': {
+        fontSize: fontSizes.calendarDay,
+        width: calendarSizes.dayWidth,
+        height: calendarSizes.dayHeight,
+        minWidth: calendarSizes.dayWidth,
+        fontWeight: '500'
+      },
+      // Selected day
+      '& .MuiPickersDay-root.Mui-selected': {
+        fontSize: fontSizes.calendarDay,
+        fontWeight: 'bold'
+      },
+      // Today's date
+      '& .MuiPickersDay-root.MuiPickersDay-today': {
+        fontSize: fontSizes.calendarDay,
+        fontWeight: '600'
+      },
+      // Month buttons
+      '& .MuiPickersMonth-monthButton': {
+        fontSize: fontSizes.calendarDay,
+        padding: compactMode ? '6px' : '8px'
+      },
+      // Year buttons  
+      '& .MuiPickersYear-yearButton': {
+        fontSize: fontSizes.calendarDay,
+        padding: compactMode ? '6px' : '8px'
+      },
+      // Header (June 2025)
+      '& .MuiPickersCalendarHeader-label': {
+        fontSize: fontSizes.calendarHeader,
+        fontWeight: '600'
+      },
+      // Week day labels (S M T W T F S)
+      '& .MuiDayCalendar-weekDayLabel': {
+        fontSize: fontSizes.weekLabel,
+        fontWeight: '500',
+        width: calendarSizes.dayWidth,
+        height: calendarSizes.dayHeight
+      },
+      // Navigation arrows
+      '& .MuiPickersArrowSwitcher-button': {
+        '& .MuiSvgIcon-root': {
+          fontSize: compactMode ? '16px' : '20px'
+        }
+      },
+      // Time picker digits
+      '& .MuiMultiSectionDigitalClock-root': {
+        '& .MuiMenuItem-root': {
+          fontSize: fontSizes.timeItem,
+          minHeight: calendarSizes.minHeight,
+          paddingTop: compactMode ? '4px' : '6px',
+          paddingBottom: compactMode ? '4px' : '6px'
+        }
+      },
+      // Action buttons (CANCEL, OK)
+      '& .MuiDialogActions-root': {
+        '& .MuiButton-root': {
+          fontSize: fontSizes.actionButton,
+          padding: compactMode ? '4px 8px' : '6px 12px'
+        }
+      },
+      // Overall popup sizing
+      '& .MuiPaper-root': {
+        fontSize: fontSizes.calendarDay
+      },
+      // Clock view (สำหรับ TimePicker)
+      '& .MuiClock-root': {
+        '& .MuiClockNumber-root': {
+          fontSize: fontSizes.timeItem
+        }
+      }
+    }
+  });
 
   // Render DateTimePicker component ตาม variant
   const renderPicker = (field: any) => {
@@ -132,10 +279,21 @@ export default function DateTimeField({
           size,
           fullWidth,
           placeholder: getPlaceholder(),
-          sx: inputStyle,
+          sx: {
+            ...inputStyle,
+            '& input': {
+              fontSize: `${fontSizes.input} !important`,
+              padding: compactMode ? '4px 8px !important' : '6px 12px !important'
+            },
+            '& .MuiOutlinedInput-root': {
+              fontSize: `${fontSizes.input} !important`
+            }
+          },
           required,
           error: !!field.error
-        } 
+        },
+        // 🎨 ใช้ custom popper styles
+        popper: getPopperStyles()
       },
       onError: (error: any) => {
         console.error('DateTimePicker error:', error);
@@ -290,20 +448,6 @@ export function DateTimeFieldWithValidation({
     />
   );
 }
-
-
-
-export const DateField = (props: Omit<DateTimeFieldProps, 'variant'>) => (
-  <DateTimeField {...props} variant="date" />
-);
-
-export const TimeField = (props: Omit<DateTimeFieldProps, 'variant'>) => (
-  <DateTimeField {...props} variant="time" />
-);
-
-export const DateTimePickerField = (props: Omit<DateTimeFieldProps, 'variant'>) => (
-  <DateTimeField {...props} variant="datetime" />
-);
 
 
 

@@ -116,25 +116,47 @@ export default function Page() {
     }
   };
 
-  const handleSave = async (formData: Planning) => {
-    try {
-      if (formData.isCreateMode) {
-        const newData = await create(formData) as Planning;
-        setData(prev => [...prev, newData]);
-      } else {
-        const updatedData = await update(formData) as Planning;
-        setData(prev => prev.map(item => (item.productId === formData.productId ? updatedData : item)));
-      }
-      toastSuccess(`Saved successfully`);
-      showSuccess(`Saved successfully`)
-    } catch (error) {
-      console.error('Save operation failed:', error);
-      showError('Save failed')
-    } finally {
-      reset();
-      setIsFormModalOpen(false);
+const handleSave = async (formData: Planning) => {
+  try {
+    console.log('handleSave received data:', formData);
+    
+    if (formData.isCreateMode) {
+      console.log('Creating new planning...');
+      const newData = await create(formData) as Planning;
+      console.log('Created new data:', newData);
+      setData(prev => [...prev, newData]);
+    } else {
+      console.log('Updating existing planning...');
+      console.log('Looking for item with planId:', formData.planId);
+      
+      const updatedData = await update(formData) as Planning;
+      console.log('Updated data received:', updatedData);
+      
+      setData(prev => {
+        console.log('Current data before update:', prev);
+        const newData = prev.map(item => {
+          if (item.planId === formData.planId) {
+            console.log('Found matching item by planId:', item);
+            console.log('Replacing with:', updatedData);
+            return updatedData;
+          }
+          return item;
+        });
+        console.log('New data after update:', newData);
+        return newData;
+      });
     }
-  };
+    
+    toastSuccess(`Saved successfully`);
+    showSuccess(`Saved successfully`);
+  } catch (error) {
+    console.error('Save operation failed:', error);
+    showError('Save failed');
+  } finally {
+    reset();
+    setIsFormModalOpen(false);
+  }
+};
   
 
   return (

@@ -114,6 +114,7 @@ export default function Page() {
         const newData = {
           productId: '',
           productName: '',
+          productTypeId: '',
           productTypeName: '',
           serialNo: '',
           status: 1,

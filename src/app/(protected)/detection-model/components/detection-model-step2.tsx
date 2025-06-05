@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
+import Konva from 'konva';
+import { Stage, Layer, Rect, Circle, Line, Text, Group } from 'react-konva';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Eye, SquarePen, Trash2, Plus } from "lucide-react";
@@ -7,7 +9,8 @@ import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
 import { SelectOption } from "@/app/types/select-option";
-import { FormData, DetectionModel, ModelPicture } from "@/app/types/detection-model";
+import { ShapeType } from "@/app/constants/shape-type";
+import { FormData, DetectionModel, ModelPicture, Annotation } from "@/app/types/detection-model";
 import { getPicture } from "@/app/libs/services/detection-model";
 import ImageLoading from "@/app/components/loading/ImageLoading";
 import SpinnerLoading from "@/app/components/loading/SpinnerLoading";
@@ -21,11 +24,11 @@ type Props = {
   formData: FormData;
 };
 
-export const step2Schema = z.object({
-  // modelId: z.number(),
-});
+// export const step2Schema = z.object({
+//   modelId: z.number(),
+// });
 
-type Step2Data = z.infer<typeof step2Schema>;
+// type Step2Data = z.infer<typeof step2Schema>;
 
 export default function DetectionModelStep2Page({ next, prev, modelId, formData }: Props) {
   // console.log("formData:", formData);
@@ -33,13 +36,17 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
   const { hasPermission } = usePermission();
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [pictureList, setPictureList] = useState<ModelPicture[]>([]);
-  const [selectedPicture, setSelectedPicture] = useState<string>("");
+  const [selectedPicture, setSelectedPicture] = useState<ModelPicture | null>(null);
+  const [editPicture, setEditPicture] = useState<ModelPicture | null>(null);
   const [isOpenAnnotation, setIsOpenAnnotation] = useState(false);
   const [isImageLoading, setIsImageLoading] = useState(false);
+  const stageRef = useRef<Konva.Stage | null>(null);
+  const [annotations, setAnnotations] = useState<Annotation[]>([]);
+  const [imageObj, setImageObj] = useState<HTMLImageElement | null>(null);
 
-  const defaultValues: Step2Data = {
-    // modelId: modelId,
-  };
+  // const defaultValues: Step2Data = {
+  //   modelId: modelId,
+  // };
 
   const {
     register, 
@@ -49,9 +56,9 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
     handleSubmit, 
     clearErrors,
     formState: { errors },
-  } = useForm<Step2Data>({
-    resolver: zodResolver(step2Schema),
-    defaultValues
+  } = useForm ({
+    // resolver: zodResolver(step2Schema),
+    // defaultValues
   });
 
   useEffect(() => {
@@ -59,7 +66,8 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
       try {
         const result = await getPicture();
         setPictureList(result);
-        setSelectedPicture(result[0]?.url);
+        setSelectedPicture(result[0]);
+        handlePreview(result[0]);
         // reset({
         //   modelId: modelId,
         // });
@@ -74,14 +82,24 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
   const handleDelete = async (index: number) => {
     const result = await showConfirm('Are you sure you want to delete this image?')
     if (result.isConfirmed) {
+      // Call API
       setPictureList((prev) => prev.filter((_, i) => i !== index));
-      setSelectedPicture("");
+      setSelectedPicture(null);
     }
   };
   
-  const handlePreview = (image: string) => {
-    setIsImageLoading(true);
+  const handlePreview = (image: ModelPicture) => {
     setSelectedPicture(image);
+    
+    setIsImageLoading(true);
+    const img = new Image();
+    img.onload = () => {
+      setImageObj(img);
+      setIsImageLoading(false);
+    };
+    img.src = image.url;
+
+    setAnnotations(image.annotations ?? []);
   };
 
   const handleAdd = async () => {
@@ -133,9 +151,9 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
     setIsOpenAnnotation(false);
   };
   
-  const onSubmitHandler = async (data: Step2Data) => {
-    console.log("Submit data2:", data);
-    await updateStep2(data);
+  const onSubmitHandler = async () => {
+    // console.log("Submit data2:", data);
+    // await updateStep2(data);
     
     const updatedFormData: FormData = {
       ...formData,
@@ -143,13 +161,104 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
     };
     next(updatedFormData);
   }
+  
+  const renderAnnotation = (ann) => {
+    // Calculate label position
+    let labelX = ann.startX;
+    let labelY = ann.startY - 15;
+
+    if (ann.type === 'rect') {
+      labelX = ann.startX + ann.width / 2;
+      labelY = ann.startY - 15;
+    } else if (ann.type === 'circle') {
+      labelX = ann.startX;
+      labelY = ann.startY - ann.radius - 15;
+    }
+
+    return (
+      <Group key={ann.id}>
+        {/* Annotation shape */}
+        {ann.type === 'rect' && (
+          <Rect
+            id={ann.id}
+            x={ann.startX}
+            y={ann.startY}
+            width={ann.width}
+            height={ann.height}
+            fill={ann.color + '33'}
+            stroke={ann.color}
+            strokeWidth={2}
+            draggable
+            onDragEnd={(e) => {
+              const node = e.target;
+              const updatedAnn = {
+                ...ann,
+                startX: node.x(),
+                startY: node.y(),
+              };
+              setAnnotations(annotations?.map(a => a.id === ann.id ? updatedAnn : a));
+            }}
+          />
+        )}
+
+        {ann.type === 'circle' && (
+          <Circle
+            id={ann.id}
+            x={ann.startX}
+            y={ann.startY}
+            radius={ann.radius}
+            fill={ann.color + '33'}
+            stroke={ann.color}
+            strokeWidth={2}
+            draggable
+            onDragEnd={(e) => {
+              const node = e.target;
+              const updatedAnn = {
+                ...ann,
+                startX: node.x(),
+                startY: node.y(),
+              };
+              setAnnotations(annotations?.map(a => a.id === ann.id ? updatedAnn : a));
+            }}
+          />
+        )}
+
+        {ann.type === 'polygon' && ann.points.length > 2 && (
+          <Line
+            id={ann.id}
+            points={ann.points}
+            fill={ann.color + '33'}
+            stroke={ann.color}
+            strokeWidth={2}
+            closed
+            draggable
+          />
+        )}
+
+        {/* Label */}
+        {ann.label && (
+          <Text
+            x={labelX}
+            y={labelY}
+            text={ann.label?.name}
+            fontSize={14}
+            fontStyle="bold"
+            fill={ann.color}
+            align="center"
+            offsetX={ann.label.length * 3.5}
+          />
+        )}
+      </Group>
+    );
+  };
+
+  const stageWidth = 760;
+  const stageHeight = 500;
 
   return (
     <div className="w-full">
       <div className="flex flex-col h-[63vh]">
         <div className="flex flex-1 gap-4">
-
-          {/* <input type="hidden" {...register('modelId')} /> */}
 
           {/* Picture List Panel */}
           <div className="w-1/2 bg-white rounded shadow">
@@ -178,22 +287,26 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
                   <tr
                     key={index}
                     className={`border-b transition-colors duration-150 cursor-pointer ${
-                      img.url === selectedPicture ? "bg-blue-50 font-semibold" : "hover:bg-gray-50"
+                      img.url === selectedPicture?.url ? "bg-blue-50 font-semibold" : "hover:bg-gray-50"
                     }`}
                   >
-                    {/* <td className="px-4 py-2 text-sm">{index + 1}</td> */}
+                    <td className="px-4 py-2 text-sm w-6">{index + 1}</td>
                     <td className="px-4 py-2 text-sm">{img.name}</td>
                     <td className="px-4 py-2 text-sm w-1/5">
                       <div className="flex gap-2 justify-start">
                         <button
-                          onClick={() => handlePreview(img.url)}
+                          onClick={() => handlePreview(img)}
                           className="bg-blue-600 text-xs text-white px-2 py-1 rounded flex items-center gap-1"
                         >
                           Preview <Eye size={16} /> 
                         </button>
                         <button 
-                          onClick={() => setIsOpenAnnotation(true)}
-                          className="bg-cyan-500 text-xs text-white px-2 py-1 rounded flex items-center gap-1">
+                          onClick={() => {
+                            setEditPicture(img);
+                            setIsOpenAnnotation(true);
+                          }}
+                          className="bg-cyan-500 text-xs text-white px-2 py-1 rounded flex items-center gap-1"
+                        >
                           Edit <SquarePen size={14} /> 
                         </button>
                         <button 
@@ -215,18 +328,38 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
               <h2 className="font-semibold text-blue-900">Preview</h2>
             </div>
             <div className="p-4 flex justify-center items-center">
-              <div className="p-4 flex justify-center items-center min-h-[300px] relative">
+              <div className="flex justify-center items-center min-h-[300px] relative">
                 {isImageLoading && ( 
                   <ImageLoading/>
                 )}
-                {selectedPicture && (
-                  <img
-                    src={selectedPicture}
-                    alt="preview"
-                    className="w-full max-w-[680px] object-contain"
-                    onLoad={() => setIsImageLoading(false)}
-                    onError={() => setIsImageLoading(false)}
-                  />
+                {imageObj && (
+                  // <img
+                  //   src={selectedPicture.url ?? ""}
+                  //   alt="preview"
+                  //   className="w-full max-w-[680px] object-contain"
+                  //   onLoad={() => setIsImageLoading(false)}
+                  //   onError={() => setIsImageLoading(false)}
+                  // />
+                  <Stage
+                    width={stageWidth}
+                    height={stageHeight}
+                    ref={stageRef}
+                    className="bg-gray-100"
+                  >
+                    <Layer>
+                      {imageObj && (
+                        <Rect
+                          name="background"
+                          width={stageWidth}
+                          height={stageHeight}
+                          fillPatternImage={imageObj}
+                          fillPatternScaleX={stageWidth / imageObj.width}
+                          fillPatternScaleY={stageHeight / imageObj.height}
+                        />
+                      )}
+                      {annotations.map(ann => renderAnnotation(ann))}
+                    </Layer>
+                  </Stage>
                 )}
               </div>
             </div>
@@ -259,6 +392,8 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
           canEdit={hasPermission(Menu.Planning, Action.Edit)}
           onClose={() => setIsOpenAnnotation(false)}
           onSave={handleSaveAnnotation}
+          data={pictureList}
+          editPicture={editPicture ?? pictureList?.[0]}
         />
       )}
 

@@ -449,14 +449,14 @@ const KonvaInlineAnnotation = () => {
             </div>
             
             {/* Instructions */}
-            <div className="mt-4 p-3 bg-blue-50 rounded">
+            {/* <div className="mt-4 p-3 bg-blue-50 rounded">
               <p className="text-sm text-blue-800">
               <strong>Instructions:</strong> Draw annotations and they&apos;ll be auto-labeled. 
                 Click on a label in the list to edit it inline. 
                 Double-click on annotations to edit labels directly on canvas. 
                 Press Enter to save, Escape to cancel.
               </p>
-            </div>
+            </div> */}
           </div>
         </div>
 

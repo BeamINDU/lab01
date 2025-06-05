@@ -185,14 +185,13 @@ export default function SearchField({
 
   //  เลือก layout ตาม prop
   const renderLayout = () => {
-    //  ถ้าใช้ control และต้องการ error handling
     if (control && showInternalError) {
       const searchFieldWithController = (
         <Controller
           name={fieldName}
           control={control}
           rules={{
-            required: required ? `${label} is required` : false
+
           }}
           render={({ field, fieldState }) => {
             const handleControllerSelect = (option: SearchOption | null) => {
@@ -283,7 +282,7 @@ default:
       }
     }
 
-    // ✅ Traditional register() approach
+
     const searchComponent = (
       <>
         {register && <input type="hidden" {...register(fieldName)} />}
@@ -365,13 +364,4 @@ export const SearchFieldInline = (props: Omit<SearchFieldProps, 'layout'>) => (
 
 export const SearchFieldResponsive = (props: Omit<SearchFieldProps, 'layout'>) => (
   <SearchField {...props} layout="responsive" />
-);
-
-//  Convenience components with Controller
-export const SearchFieldModalWithController = (props: Omit<SearchFieldProps, 'layout' | 'showInternalError'>) => (
-  <SearchField {...props} layout="modal" showInternalError={true} />
-);
-
-export const SearchFieldResponsiveWithController = (props: Omit<SearchFieldProps, 'layout' | 'showInternalError'>) => (
-  <SearchField {...props} layout="responsive" showInternalError={true} />
 );

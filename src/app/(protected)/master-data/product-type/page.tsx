@@ -110,7 +110,8 @@ export default function Page() {
     try {
       if (formData.isCreateMode) {
         const newData = await create(formData) as ProductType;
-        setData(prev => [...prev, newData]);
+        const newDataWithFlag: ProductType = { ...newData, isCreateMode: false };
+        setData(prev => [...prev, newDataWithFlag]);
       } else {
         const updatedData = await update(formData) as ProductType;
         setData(prev => prev.map(item => (item.productTypeId === formData.productTypeId ? updatedData : item)));

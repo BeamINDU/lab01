@@ -68,10 +68,35 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
     datasets
   };
 
+
+  const maxValue = Math.max(
+    ...chartData.flatMap(item => 
+      availableLines.map(line => item[line] || 0)
+    ).map(values => 
+      Array.isArray(values) ? Math.max(...values) : values
+    )
+  );
+
+
+  const maxStackedValue = Math.max(
+    ...chartData.map(item => 
+      availableLines.reduce((sum, line) => sum + (item[line] || 0), 0)
+    )
+  );
+
   const options: ChartOptions<'bar'> = {
     indexAxis: 'y',
     responsive: true,
     maintainAspectRatio: false,
+
+    layout: {
+      padding: {
+        right: 50, 
+        left: 10,
+        top: 10,
+        bottom: 10
+      }
+    },
     plugins: {
       legend: {
         position: 'bottom',
@@ -85,28 +110,58 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: 'white',
         bodyColor: 'white',
+        callbacks: {
+          label: function(context: any) {
+            return `${context.dataset.label}: ${context.parsed.x}`;
+          },
+          afterLabel: function(context: any) {
+
+            const dataIndex = context.dataIndex;
+            const total = availableLines.reduce((sum, line) => {
+              return sum + (chartData[dataIndex][line] || 0);
+            }, 0);
+            return `Total: ${total}`;
+          }
+        }
       },
       datalabels: {
+        display: function(context: any) {
+
+          return context.datasetIndex === availableLines.length - 1;
+        },
         anchor: 'end',
-        align: 'end',
-        color: '#333',
+        align: 'right',
+        color: '#1f2937',
         font: {
           weight: 'bold',
-          size: 9,
+          size: 10,
         },
-        formatter: (value: number) => value,
-        clamp: true,
+        formatter: function(value: number, context: any) {
+
+          const dataIndex = context.dataIndex;
+          const total = availableLines.reduce((sum, line) => {
+            return sum + (chartData[dataIndex][line] || 0);
+          }, 0);
+          return total;
+        },
+        offset: 8, 
       },
     },
     scales: {
       x: {
         beginAtZero: true,
         stacked: true,
+
+        max: Math.ceil(maxStackedValue * 1.2),
         grid: {
           color: 'rgba(0, 0, 0, 0.1)',
         },
         ticks: {
-          font: { size: 10 }
+          font: { size: 10 },
+
+          callback: function(value: any) {
+            return value <= maxStackedValue ? value : '';
+          }
         }
       },
       y: {
@@ -115,7 +170,15 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
           display: false,
         },
         ticks: {
-          font: { size: 9 }
+          font: { size: 9 },
+
+          callback: function(value: any, index: number) {
+            const label = this.getLabelForValue(value);
+            if (label && label.length > 20) {
+              return label.substring(0, 17) + '...';
+            }
+            return label;
+          }
         }
       }
     },
@@ -131,6 +194,20 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
       </h2>
       <div className="h-[200px] sm:h-[240px] md:h-[260px]">
         <Bar data={barChartData} options={options} />
+      </div>
+      
+      {/* แสดงข้อมูลสรุปด้านล่าง */}
+      <div className="mt-2 text-xs text-gray-600 text-center">
+        <div className="flex justify-center gap-4 flex-wrap">
+          {chartData.slice(0, 3).map((item, index) => {
+            const total = availableLines.reduce((sum, line) => sum + (item[line] || 0), 0);
+            return (
+              <span key={index} className="whitespace-nowrap">
+                <strong>{item.type}:</strong> {total}
+              </span>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

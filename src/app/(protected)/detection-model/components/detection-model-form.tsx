@@ -53,6 +53,7 @@ export default function DetectionModelSteps({ modelId }: { modelId: number }) {
           currentVersion: result?.currentVersion ?? 1,
           functions: result?.functions
         }));
+        setStep(result?.currentStep ?? 1);
       } catch (error) {
         console.error("Failed to load model:", error);
       }

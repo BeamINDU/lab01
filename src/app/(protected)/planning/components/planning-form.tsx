@@ -149,7 +149,7 @@ export default function PlanningFormModal({
             {errors.planId && <p className="text-red-500 ml-160">{errors.planId.message}</p>}
           </div>
           
-          {/*  Product ID - ใช้ SearchFieldModal */}
+          {/*  Product ID  */}
           <div className="mb-4">
             <SearchFieldModal
               key={`productId-${editingData?.planId || 'new'}`}
@@ -181,7 +181,7 @@ export default function PlanningFormModal({
             {errors.lotNo && <p className="text-red-500 ml-160">{errors.lotNo.message}</p>}
           </div>
           
-          {/*  Line ID - ใช้ SearchFieldModal */}
+          {/*  Line ID  */}
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Line ID:</label>
