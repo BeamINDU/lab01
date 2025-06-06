@@ -3,7 +3,7 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive  from '@/app/components/common/SearchField';
-import { getProductTypeIdOptions, getProductTypeNameOptions } from "@/app/libs/services/product-type";
+import { search as searchProductTypes } from "@/app/libs/services/product-type";
 import { ActiveStatus } from '@/app/constants/status';
 
 interface ProductTypeFilterFormProps {
@@ -12,75 +12,39 @@ interface ProductTypeFilterFormProps {
   onSearch: () => void;
 }
 
-// functions เพื่อ handle errors
-const safeGetProductTypeIdOptions = async () => {
-  try {
-    const result = await getProductTypeIdOptions();
-    console.log('ProductType ID options result:', result);
-    
-
-    if (!Array.isArray(result)) {
-      console.warn('Expected array but got:', typeof result, result);
-      return [];
-    }
-    
-    return result;
-  } catch (error) {
-    console.error('Failed to load product type IDs:', error);
-    return [];
-  }
-};
-
-const safeGetProductTypeNameOptions = async () => {
-  try {
-    const result = await getProductTypeNameOptions();
-    console.log('ProductType Name options result:', result);
-    
-    if (!Array.isArray(result)) {
-      console.warn('Expected array but got:', typeof result, result);
-      return [];
-    }
-    
-    return result;
-  } catch (error) {
-    console.error('Failed to load product type names:', error);
-    return [];
-  }
-};
-
 export default function ProductTypeFilterForm({ register, setValue, onSearch }: ProductTypeFilterFormProps) {
   return (
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Product Type ID */}
+        {/* Product Type ID - แปลงจาก input เป็น SearchField */}
         <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="productTypeId"
           label="Product Type ID"
           placeholder="Search or enter product type ID..."
-          dataLoader={safeGetProductTypeIdOptions}
-          labelField="label"
-          valueField="value"
+          dataLoader={searchProductTypes}
+          labelField="productTypeId"
+          valueField="productTypeId"
           allowFreeText={true}
         />
         
-        {/* Product Type Name */}
+        {/* Product Type Name - แปลงจาก input เป็น SearchField */}
         <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="productTypeName"
           label="Product Type Name"
           placeholder="Search or enter product type name..."
-          dataLoader={safeGetProductTypeNameOptions}
-          labelField="label"
-          valueField="value"
+          dataLoader={searchProductTypes}
+          labelField="productTypeName"
+          valueField="productTypeName"
           allowFreeText={true}
         />
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Status */}
+        {/* Status  */}
         <SearchFieldResponsive 
           register={register}
           setValue={setValue}
@@ -101,8 +65,8 @@ export default function ProductTypeFilterForm({ register, setValue, onSearch }: 
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
           <button
-            type="button"
             className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900"
+
             onClick={onSearch}
           >
             Search

@@ -132,12 +132,12 @@ const handleAddEdit = async (row?: ProductType) => {
       console.log('Edit mode data:', updatedRow);
       setEditingData(updatedRow);
     } else {
-      // Add mode 
+      // Add mode - ✅ กำหนดค่าที่จำเป็นทั้งหมด
       const newData: ProductType = {
         productTypeId: '',
         productTypeName: '',
         description: '',
-        status: true, 
+        status: true, // ✅ ใช้ boolean default
         createdDate: undefined,
         createdBy: undefined,
         updatedDate: null,
