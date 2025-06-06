@@ -16,6 +16,7 @@ import ImageLoading from "@/app/components/loading/ImageLoading";
 import SpinnerLoading from "@/app/components/loading/SpinnerLoading";
 import AnnotationModal from "./annotation-modal";
 import { detail, updateStep2 } from "@/app/libs/services/detection-model";
+import { nanoid } from 'nanoid';
 
 type Props = {
   next: (data: any) => void;
@@ -78,90 +79,10 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
     fetchPicture();
   }, []);
   
+  useEffect(() => {
+    stageRef.current?.batchDraw();
+  }, [annotations, imageObj]);
 
-  const handleDelete = async (index: number) => {
-    const result = await showConfirm('Are you sure you want to delete this image?')
-    if (result.isConfirmed) {
-      // Call API
-      setPictureList((prev) => prev.filter((_, i) => i !== index));
-      setSelectedPicture(null);
-    }
-  };
-  
-  const handlePreview = (image: ModelPicture) => {
-    setSelectedPicture(image);
-    
-    setIsImageLoading(true);
-    const img = new Image();
-    img.onload = () => {
-      setImageObj(img);
-      setIsImageLoading(false);
-    };
-    img.src = image.url;
-
-    setAnnotations(image.annotations ?? []);
-  };
-
-  const handleAdd = async () => {
-    fileRef.current?.click();
-  };
-    
-  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? []);
-  
-    if (files.length === 0) {
-      showError("No files selected.");
-      return;
-    }
-  
-    const allowedExtensions = ["png", "jpg", "jpeg"];
-    const maxSizeMB = 10;
-  
-    const newImages: ModelPicture[] = [];
-  
-    for (const file of files) {
-      const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
-      const fileSizeInMB = (file.size / 1024 / 1024).toFixed(2);
-  
-      if (!allowedExtensions.includes(fileExtension)) {
-        showError(`Invalid file type for ${file.name}. Only PNG, JPG, and JPEG are allowed.`);
-        continue;
-      }
-  
-      if (parseFloat(fileSizeInMB) > maxSizeMB) {
-        showError(`File ${file.name} is too large. Max size is ${maxSizeMB} MB.`);
-        continue;
-      }
-  
-      const imageUrl = URL.createObjectURL(file);
-      newImages.push({ id: 0, name: file.name, url: imageUrl });
-    }
-  
-    setPictureList((prev) => [...prev, ...newImages]);
-  
-    // if (newImages.length > 0) {
-    //   showSuccess(`${newImages.length} image(s) added successfully.`);
-    // }
-  
-    e.target.value = "";
-  };
-  
-  const handleSaveAnnotation = () => {
-    console.log("Saved Annotation:");
-    setIsOpenAnnotation(false);
-  };
-  
-  const onSubmitHandler = async () => {
-    // console.log("Submit data2:", data);
-    // await updateStep2(data);
-    
-    const updatedFormData: FormData = {
-      ...formData,
-      currentStep: 2,
-    };
-    next(updatedFormData);
-  }
-  
   const renderAnnotation = (ann) => {
     // Calculate label position
     let labelX = ann.startX;
@@ -245,13 +166,132 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
             fontStyle="bold"
             fill={ann.color}
             align="center"
-            offsetX={ann.label.length * 3.5}
+            verticalAlign="top"
+            offsetX={(ann.label?.name.length || 0) * 3.5}
           />
         )}
       </Group>
     );
   };
 
+  const handleAdd = async () => {
+    fileRef.current?.click();
+  };
+    
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+  
+    if (files.length === 0) {
+      showError("No files selected.");
+      return;
+    }
+  
+    const allowedExtensions = ["png", "jpg", "jpeg"];
+    const maxSizeMB = 10;
+  
+    const newImages: ModelPicture[] = [];
+  
+    for (const file of files) {
+      const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
+      const fileSizeInMB = (file.size / 1024 / 1024).toFixed(2);
+  
+      if (!allowedExtensions.includes(fileExtension)) {
+        showError(`Invalid file type for ${file.name}. Only PNG, JPG, and JPEG are allowed.`);
+        continue;
+      }
+  
+      if (parseFloat(fileSizeInMB) > maxSizeMB) {
+        showError(`File ${file.name} is too large. Max size is ${maxSizeMB} MB.`);
+        continue;
+      }
+  
+      const imageUrl = URL.createObjectURL(file);
+      newImages.push({ 
+        id: null,
+        name: file.name, 
+        url: imageUrl,
+        file: file,
+        refId: nanoid(),
+      });
+    }
+  
+    setPictureList((prev) => [...prev, ...newImages]);
+  
+    // if (newImages.length > 0) {
+    //   showSuccess(`${newImages.length} image(s) added successfully.`);
+    // }
+  
+    e.target.value = "";
+  };
+  
+  const handleDelete = async (index: number) => {
+    const result = await showConfirm('Are you sure you want to delete this image?')
+    if (result.isConfirmed) {
+      // Call API
+      setPictureList((prev) => prev.filter((_, i) => i !== index));
+      setSelectedPicture(null);
+    }
+  };
+  
+  const handlePreview = (image: ModelPicture) => {
+    setSelectedPicture(image);
+    setIsImageLoading(true);
+
+    const img = new Image();
+    img.onload = () => {
+      setImageObj(img);
+    };
+    img.src = image.url;
+    setIsImageLoading(false);
+
+    setAnnotations(image.annotations ?? []);
+    
+  };
+
+  const handleSaveAnnotation = (editData: ModelPicture[]) => {
+    const updateAnnotations = editData.map((pic) => {
+      return {
+        ...pic,
+        annotations: [...(pic.annotations ?? [])],
+      };
+    });
+    setPictureList(updateAnnotations);
+
+    if (selectedPicture?.refId) {
+      const updatedSelected = updateAnnotations.find(c => c.refId === selectedPicture.refId);
+      if (!updatedSelected) return;
+
+      handlePreview(updatedSelected);
+    }
+
+    // exportJson(editData);
+    setIsOpenAnnotation(false);
+  };
+
+  const exportJson = async (exportDate: ModelPicture[]) => {
+    const dataStr = JSON.stringify(exportDate, null, 2);
+    console.log("dataStr:", dataStr);
+
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `annotations_${Date.now()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+  
+  const onSubmitHandler = async () => {
+    // console.log("Submit data2:", data);
+    // await updateStep2(data);
+    
+    const updatedFormData: FormData = {
+      ...formData,
+      currentStep: 2,
+    };
+    next(updatedFormData);
+  }
+  
   const stageWidth = 760;
   const stageHeight = 500;
 
@@ -287,7 +327,7 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
                   <tr
                     key={index}
                     className={`border-b transition-colors duration-150 cursor-pointer ${
-                      img.url === selectedPicture?.url ? "bg-blue-50 font-semibold" : "hover:bg-gray-50"
+                      img.refId === selectedPicture?.refId ? "bg-blue-50 font-semibold" : "hover:bg-gray-50"
                     }`}
                   >
                     <td className="px-4 py-2 text-sm w-6">{index + 1}</td>
@@ -333,14 +373,8 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
                   <ImageLoading/>
                 )}
                 {imageObj && (
-                  // <img
-                  //   src={selectedPicture.url ?? ""}
-                  //   alt="preview"
-                  //   className="w-full max-w-[680px] object-contain"
-                  //   onLoad={() => setIsImageLoading(false)}
-                  //   onError={() => setIsImageLoading(false)}
-                  // />
                   <Stage
+                    key={imageObj?.src}
                     width={stageWidth}
                     height={stageHeight}
                     ref={stageRef}
@@ -360,6 +394,13 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
                       {annotations.map(ann => renderAnnotation(ann))}
                     </Layer>
                   </Stage>
+                  // <img
+                  //   src={selectedPicture.url ?? ""}
+                  //   alt="preview"
+                  //   className="w-full max-w-[680px] object-contain"
+                  //   onLoad={() => setIsImageLoading(false)}
+                  //   onError={() => setIsImageLoading(false)}
+                  // />
                 )}
               </div>
             </div>

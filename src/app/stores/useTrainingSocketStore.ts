@@ -113,7 +113,7 @@ export const useTrainingSocketStore = create<TrainingSocketState>((set, get) => 
       try {
         console.log('[cancelConnection] closing WebSocket...');
         socket.close();
-        set({ socket: null, isTraining: true });
+        set({ socket: null, isTraining: false });
         return true;
       } catch (err) {
         console.error('[cancelConnection] Error:', err);
@@ -122,6 +122,7 @@ export const useTrainingSocketStore = create<TrainingSocketState>((set, get) => 
     }
 
     console.warn('[cancelConnection] WebSocket already closed or not connected');
+    set({ socket: null, isTraining: false });
     return false;
   },
 }));

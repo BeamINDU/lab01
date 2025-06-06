@@ -116,47 +116,25 @@ export default function Page() {
     }
   };
 
-const handleSave = async (formData: Planning) => {
-  try {
-    console.log('handleSave received data:', formData);
-    
-    if (formData.isCreateMode) {
-      console.log('Creating new planning...');
-      const newData = await create(formData) as Planning;
-      console.log('Created new data:', newData);
-      setData(prev => [...prev, newData]);
-    } else {
-      console.log('Updating existing planning...');
-      console.log('Looking for item with planId:', formData.planId);
-      
-      const updatedData = await update(formData) as Planning;
-      console.log('Updated data received:', updatedData);
-      
-      setData(prev => {
-        console.log('Current data before update:', prev);
-        const newData = prev.map(item => {
-          if (item.planId === formData.planId) {
-            console.log('Found matching item by planId:', item);
-            console.log('Replacing with:', updatedData);
-            return updatedData;
-          }
-          return item;
-        });
-        console.log('New data after update:', newData);
-        return newData;
-      });
+  const handleSave = async (formData: Planning) => {
+    try {
+      if (formData.isCreateMode) {
+        const newData = await create(formData) as Planning;
+        setData(prev => [...prev, newData]);
+      } else {
+        const updatedData = await update(formData) as Planning;
+        setData(prev => prev.map(item => (item.productId === formData.productId ? updatedData : item)));
+      }
+      toastSuccess(`Saved successfully`);
+      showSuccess(`Saved successfully`)
+    } catch (error) {
+      console.error('Save operation failed:', error);
+      showError('Save failed')
+    } finally {
+      reset();
+      setIsFormModalOpen(false);
     }
-    
-    toastSuccess(`Saved successfully`);
-    showSuccess(`Saved successfully`);
-  } catch (error) {
-    console.error('Save operation failed:', error);
-    showError('Save failed');
-  } finally {
-    reset();
-    setIsFormModalOpen(false);
-  }
-};
+  };
   
 
   return (
@@ -164,16 +142,18 @@ const handleSave = async (formData: Planning) => {
       <h2 className="text-2xl font-bold mb-2 ml-3">Planning</h2>
       <div className="p-4 mx-auto">
       <div className="mb-6 max-w-full text-sm">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex flex-col md:flex-row gap-6">
             {/* Filters Form */}
-            <PlanningFilterForm 
-              register={register} 
-              control={control}
-              setValue={setValue}
-              onSearch={handleSearch} 
-            />
+            <div className="md:basis-[80%]">
+              <PlanningFilterForm 
+                register={register} 
+                control={control}
+                setValue={setValue}
+                onSearch={handleSearch} 
+              />
+            </div>
             
-            <div className="md:col-span-1 flex flex-col justify-between gap-4">
+            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-4">
               <div className="flex flex-wrap justify-end gap-2">
                 {/* Upload Button */}
                 {hasPermission(Menu.Planning, Action.Upload) && (

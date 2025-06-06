@@ -3,13 +3,14 @@
 import { X } from 'lucide-react';
 import { showConfirm, showError, showSuccess } from '@/app/utils/swal';
 import { usePopupTraining } from '@/app/contexts/popup-training-context';
-// import { useWebSocket } from '@/app/contexts/websocket-context';
+
 import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
+// import { useWebSocket } from '@/app/contexts/websocket-context';
 
 export const PopupTraining = () => {
   const { displayProcessing, displayError, hidePopup, popup } = usePopupTraining();
-  // const { cancelConnection } = useWebSocket();
   const { cancelConnection } = useTrainingSocketStore();
+  // const { cancelConnection } = useWebSocket();
 
   if (!popup.isVisible) return null;
 
@@ -47,8 +48,8 @@ export const PopupTraining = () => {
     if (result && result.isConfirmed) {
       const cancelled = await cancelConnection();
       if (cancelled) {
+        await showError('Training cancelled by user.');
         displayError('Training cancelled by user.');
-        showError('Training cancelled by user.');
       }
     }
   };
@@ -65,21 +66,24 @@ export const PopupTraining = () => {
         <X className="w-5 h-5" />
       </button>
 
-      <div className="flex items-center gap-4 justify-center">
+      <div className="flex items-center gap-4 justify-start">
         {getStatusDot()}
-        <span className="text-md leading-snug truncate max-w-[300px] whitespace-nowrap overflow-hidden">
+        <span className="text-sm leading-snug line-clamp-2 max-w-[300px] text-left">
           {popup.message}
         </span>
+        {/* <span className="text-md leading-snug truncate max-w-[300px] whitespace-nowrap overflow-hidden">
+          {popup.message}
+        </span> */}
       </div>
 
-      {popup.status === 'processing' && (
+      {/* {popup.status === 'processing' && (
         <button
           onClick={handleCancel}
           className="mt-3 inline-block px-4 py-1 bg-red-300 text-red-800 rounded-lg hover:bg-red-400 text-xs"
         >
           Stop training
         </button>
-      )}
+      )} */}
     </div>
   );
 };

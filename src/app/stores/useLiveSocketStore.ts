@@ -14,12 +14,11 @@ export const useLiveSocketStore = create<LiveSocketState>((set, get) => ({
   connect: (cameraId: string) => {
     if (get().socket) return;
 
-    const isDev = process.env.NODE_ENV !== 'production';
-    const socketUrl = process.env.NEXT_PUBLIC_LIVE_SOCKET_URL || 'ws://localhost:8000/ws/live';
+    // For MockLiveWebSocket
+    // const socket = new MockLiveWebSocket(cameraId) as unknown as WebSocket;
 
-    const socket = isDev
-      ? new MockLiveWebSocket(cameraId) as unknown as WebSocket
-      : new WebSocket(socketUrl);
+    const socketUrl = process.env.NEXT_PUBLIC_LIVE_SOCKET_URL || 'ws://localhost:8010/ws/live-frame';
+    const socket = new WebSocket(socketUrl);
 
     socket.onopen = () => {
       console.log("Live WebSocket connected");
@@ -35,9 +34,10 @@ export const useLiveSocketStore = create<LiveSocketState>((set, get) => ({
       console.error("Live WebSocket error:", err);
     };
 
-    if (isDev && 'connect' in socket && typeof (socket as any).connect === 'function') {
-      (socket as any).connect();
-    }
+    // For MockLiveWebSocket
+    // if (isDev && 'connect' in socket && typeof (socket as any).connect === 'function') {
+    //   (socket as any).connect();
+    // }
   },
 
   disconnect: () => {

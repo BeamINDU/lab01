@@ -41,7 +41,7 @@ export default function Page() {
       setData(products);
     } catch (error) {
       console.error("Failed to search producttype:", error);
-      showError('Search failed');
+      showError(`Search failed`);
       setData([]);
     }
   };
@@ -67,7 +67,7 @@ export default function Page() {
       showSuccess(`Uploaded: ${file.name}`);
     } catch (error) {
       console.error("Upload operation failed:", error);
-      showError("Upload failed");
+      showError(`Upload failed`);
       throw error;
     }
   };
@@ -75,8 +75,11 @@ export default function Page() {
   const handleAddEdit = async (row?: ProductType) => {
     try {
       if (row) {
-        const result = (await detail(row.productTypeId ?? "")) ?? (row as ProductType);
-        const updatedRow = { ...result, isCreateMode: !row.productTypeId };
+        const result = await detail(row.productTypeId ?? "");
+        const updatedRow: ProductType = {
+          ...result,
+          isCreateMode: !row.productTypeId,
+        };
         setEditingData(updatedRow);
       } else {
         reset();
@@ -85,7 +88,7 @@ export default function Page() {
       setIsFormModalOpen(true);
     } catch (error) {
       console.error('Delete operation failed:', error);
-      showError('Failed to load producttype details');
+      showError(`Failed to load product type details`);
     }
   };
 
@@ -101,7 +104,7 @@ export default function Page() {
         showSuccess(`Deleted successfully`)
       } catch (error) {
         console.error('Delete operation failed:', error);
-        showError('Delete failed')
+        showError(`Delete failed`)
       }
     }
   };
@@ -119,7 +122,7 @@ export default function Page() {
       showSuccess(`Saved successfully`)
     } catch (error) {
       console.error('Save operation failed:', error);
-      showError('Save failed')
+      showError(`Save failed`)
     } finally {
       reset();
       setIsFormModalOpen(false);
@@ -132,15 +135,17 @@ export default function Page() {
       <h2 className="text-2xl font-bold mb-2 ml-3">Product Type</h2>
       <div className="p-4 mx-auto">
         <div className="mb-6 max-w-full text-sm">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex flex-col md:flex-row gap-6">
             {/* Filters Form */}
-            <ProductTypeFilterForm 
-              register={register} 
-              setValue={setValue}
-              onSearch={handleSearch} 
-            />
+            <div className="md:basis-[80%]">
+              <ProductTypeFilterForm 
+                register={register} 
+                setValue={setValue}
+                onSearch={handleSearch} 
+              />
+            </div>
             
-            <div className="md:col-span-1 flex flex-col justify-between gap-4">
+            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-4">
               <div className="flex flex-wrap justify-end gap-2">
                 {/* Upload Button */}
                 {hasPermission(Menu.ProductType, Action.Upload) && (

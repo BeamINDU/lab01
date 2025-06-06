@@ -18,13 +18,10 @@ export default function CameraBox({ cameraName, liveStream, loading }: Props) {
           <div className="w-full h-full bg-gray-400 animate-pulse" />
         ) : (
           // "640 × 480"
-          <video
+          <img
             className="w-full h-full object-cover"
-            src={`data:video/mp4;base64,${liveStream}`}
-            autoPlay
-            muted
-            loop
-            playsInline
+            src={`data:image/jpeg;base64,${liveStream}`}
+            alt="Live stream"
           />
         )}
         </div>

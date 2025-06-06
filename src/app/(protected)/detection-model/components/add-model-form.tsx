@@ -12,6 +12,7 @@ import { ModelStatus } from "@/app/constants/status"
 const AddModelFormSchema = z.object({
   modelId: z.number().nullable(),
   modelName: z.string().min(1, "Model Name is required"),
+  productId: z.string().min(1, "Product ID is required"),
   description: z.string(),
   isCreateMode: z.boolean(), 
 }); 
@@ -38,6 +39,7 @@ export default function DetectionModelFormModal({
   const defaultValues: AddModelFormValues = {
     modelId: null,
     modelName: '',
+    productId: '',
     description: '',
     isCreateMode: true,
   };
@@ -109,6 +111,13 @@ export default function DetectionModelFormModal({
               <input {...register("modelName")} className="border p-2 w-full mb-1" />
             </div>
             {errors.modelName && <p className="text-red-500 ml-160">{errors.modelName.message}</p>}
+          </div>
+          <div className="mb-4">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Product ID:</label>
+              <input {...register("productId")} className="border p-2 w-full mb-1" />
+            </div>
+            {errors.productId && <p className="text-red-500 ml-160">{errors.productId.message}</p>}
           </div>
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">

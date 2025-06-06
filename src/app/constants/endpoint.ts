@@ -3,12 +3,24 @@ export const API_ROUTES = {
     login: "/login",
     userInfo: "/user-info",
   },
+  dashboard: {
+    total_products: "",
+    good_ng_ratio: "",
+    trend_detection: "",
+    frequent_defects: "",
+    ng_distribution: "",
+    defect_by_camera: "",
+  },
   product: {
     get: "/products",
     detail: "",
     insert: "/addproduct", 
     update: "/updateproduct",
     delete: "/deleteproduct",
+    upload: "",
+    suggest_product_id: "",
+    suggest_product_name: "",
+    suggest_serial_no: "",
   },
   product_type: {
     get: "/product-types",
@@ -16,6 +28,9 @@ export const API_ROUTES = {
     insert: "/addprodtype", 
     update: "/addprodtype",
     delete: "/deleteprodtype",
+    upload: "",
+    suggest_producttype_id: "",
+    suggest_producttype_name: "",
   },
   defect_type: {
     get: "",
@@ -23,6 +38,9 @@ export const API_ROUTES = {
     insert: "/adddefecttype", 
     update: "/updatedefecttype",
     delete: "/deletedefecttype",
+    upload: "",
+    suggest_defecttype_id: "",
+    suggest_defecttype_name: "",
   },
   camera: {
     get: "/cameras",
@@ -30,13 +48,20 @@ export const API_ROUTES = {
     insert: "/addcamera", 
     update: "/updatecamera",
     delete: "/deletecamera",
+    upload: "",
+    suggest_camera_id: "",
+    suggest_camera_name: "",
+    suggest_location: "",
   },
-  users: {
+  user: {
     get: "/users",
     role: "/roles",
     insert: "/adduser", 
     update: "/updateuser",
     delete: "/deleteuser",
+    upload: "",
+    suggest_userid: "",
+    suggest_username: "",
   },
   role: {
     get: "",
@@ -44,6 +69,9 @@ export const API_ROUTES = {
     insert: "/addrole", 
     update: "/updaterole",
     delete: "/deleterole",
+    upload: "",
+    suggest_role_id: "",
+    suggest_role_name: "",
   },
   permission: {
     get: "",
@@ -59,21 +87,6 @@ export const API_ROUTES = {
     update: "/update_menu",
     delete: "",
   },
-  planning: {
-    get: "",
-    detail: "",
-    insert: "/addplanning", 
-    update: "/updateplanning",
-    delete: "/deleteplanning",
-  },
-  detection_model: {
-    get: "",
-    detail: "",
-    insert: "/adddetectionmodel", 
-    update: "/updatedetectionmodel",
-    delete: "/deletemodel",
-  },
-  
   report_product: {
     get: "/productdefectresults",
     insert: "/addreportproduct",
@@ -84,19 +97,29 @@ export const API_ROUTES = {
     get: "/defectsummary",
     insert: "/addreportdefect", 
     update: "/updatereportdefect", 
+    suggest_lotno: "",
   },
   transaction: {
     get: "",
     insert: "/addtransaction", 
     update: "/updatetransaction",
+    suggest_lotno: "",
   },
-  live: {
-    live_stream: "/live-stream",
-    live_inspection: "/live_inspection",
+  planning: {
+    get: "",
+    detail: "",
+    insert: "/addplanning", 
+    update: "/updateplanning",
+    delete: "/deleteplanning",
+    suggest_planid: "",
+    suggest_lotno: "",
+    suggest_lineno: "",
   },
-  dashboard: {
-    total_products: "",
-    Good_NG_Ratio: "",
-
+  detection_model: {
+    get: "",
+    detail: "",
+    insert: "/adddetectionmodel", 
+    update: "/updatedetectionmodel",
+    delete: "/deletemodel",
   },
 };

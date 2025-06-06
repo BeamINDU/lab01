@@ -106,16 +106,18 @@ export default function Page() {
       <h2 className="text-2xl font-bold mb-2 ml-3">Product Defect Result</h2>
       <div className="p-4 mx-auto">
         <div className="mb-6 max-w-full text-sm">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex flex-col md:flex-row gap-6">
             {/* Filters Form */}
-            <ReportProductFilterForm 
-              register={register}
-              control={control} 
-              setValue={setValue}
-              onSearch={handleSearch} 
-            />
-            
-            <div className="md:col-span-1 flex flex-col justify-end items-end gap-4">
+            <div className="md:basis-[80%]">
+              <ReportProductFilterForm 
+                register={register}
+                control={control} 
+                setValue={setValue}
+                onSearch={handleSearch} 
+              />
+            </div>
+
+            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-4">
               <div className="flex flex-wrap justify-end gap-2">
                 {/* Export Button */}
                 {hasPermission(Menu.ReportProductDefect, Action.Export) && (

@@ -10,7 +10,7 @@ import { Product } from "@/app/types/product";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 import { SearchFieldModal } from '@/app/components/common/SearchField'; 
-import { getProductTypeOptions } from '@/app/libs/services/product-type'; 
+import { getProductTypeNameOptions } from '@/app/libs/services/product-type'; 
 
 const ProductSchema = z.object({
   productId: z.string().min(1, "Product ID is required"),
@@ -150,7 +150,7 @@ export default function ProductFormModal({
               fieldName="productTypeName"
               label="Product Type"
               placeholder="Select product type..."
-              dataLoader={getProductTypeOptions}
+              // dataLoader={getProductTypeNameOptions}
               labelField="label"
               valueField="value"
               allowFreeText={true}

@@ -2,7 +2,6 @@
 'use client';
 
 import { useState } from 'react';
-import AnnotoriousImplementation from './components/Annotorious';
 import KonvaAnnotation from './components/KonvaAnnotation';
 
 
@@ -42,7 +41,6 @@ export default function AnnotationTestPage() {
       {/* Tab Content */}
       <div className="py-8">
         {activeTab === 'konva' && <KonvaAnnotation />}
-        {activeTab === 'annotorious' && <AnnotoriousImplementation />}
       </div>
     </div>
   );

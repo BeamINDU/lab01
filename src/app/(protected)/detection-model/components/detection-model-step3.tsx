@@ -83,22 +83,22 @@ export default function DetectionModelStep3Page({ next, prev, modelId, formData 
     fetchData();
   }, [reset]);
   
-    const onSubmitHandler = async (data: Step3Data) => {
-      console.log("Submit data3:", data);
-      await updateStep3(data);
+  const onSubmitHandler = async (data: Step3Data) => {
+    console.log("Submit data3:", data);
+    await updateStep3(data);
 
-      const updatedFormData: FormData = {
-        ...formData,
-        currentStep: 3,
-        modelName: data.modelName,
-        description: data.description,
-        trainDataset: data.trainDataset,
-        testDataset: data.testDataset,
-        validationDataset: data.validationDataset,
-        epochs: data.epochs,
-      };
-      next(updatedFormData);
-    }
+    const updatedFormData: FormData = {
+      ...formData,
+      currentStep: 3,
+      modelName: data.modelName,
+      description: data.description,
+      trainDataset: data.trainDataset,
+      testDataset: data.testDataset,
+      validationDataset: data.validationDataset,
+      epochs: data.epochs,
+    };
+    next(updatedFormData);
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmitHandler)}>

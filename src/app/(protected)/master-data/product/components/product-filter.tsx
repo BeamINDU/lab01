@@ -3,7 +3,7 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive  from '@/app/components/common/SearchField';
-import { getProductTypeOptions } from '@/app/libs/services/product-type'; 
+import { getProductTypeNameOptions } from '@/app/libs/services/product-type'; 
 import { search as searchProducts } from '@/app/libs/services/product';
 import { ActiveStatus } from '@/app/constants/status'; // 
 
@@ -50,7 +50,7 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           fieldName="productTypeId"
           label="Product Type"
           placeholder="Search product type..."
-          dataLoader={getProductTypeOptions}
+          // dataLoader={getProductTypeNameOptions}
           labelField="label"
           valueField="value"
           allowFreeText={true}

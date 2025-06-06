@@ -29,7 +29,7 @@ const emptyData: LiveInspectionView = {
 };
 
 const LiveInspectionViewPage = ({ cameraId }: { cameraId: string }) => {
-  const { socket, connect, disconnect } = useLiveSocketStore();
+  const { socket, connect } = useLiveSocketStore();
   const [data, setData] = useState<LiveInspectionView>(emptyData);
   const [loading, setLoading] = useState(true);
 
@@ -41,10 +41,29 @@ const LiveInspectionViewPage = ({ cameraId }: { cameraId: string }) => {
   
     socket.onmessage = (event: MessageEvent) => {
       const incoming = JSON.parse(event.data);
-      if (incoming.cameraId === cameraId) {
-        setData(incoming);
+      // if (incoming.cameraId === cameraId) {
+        const frame = incoming.frame;
+        const data: LiveInspectionView = {
+          liveStream: frame,
+          location: "CSI",
+          cameraId: cameraId,
+          cameraName: "Camera 1",
+          status: "",
+          productId: "",
+          productName: "",
+          productTypeId: "",
+          productTypeName: "",
+          serialNo: "",
+          defectType: "",
+          productDateTime: new Date(),
+          lotNo: "",
+          totalNG: 1,
+          totalPlanning: 1,
+          actualPlanning : 1,
+        };
+        setData(data);
         setLoading(false);
-      }
+      // }
     };
   
     socket.onerror = () => {

@@ -29,9 +29,8 @@ type Step4Data = z.infer<typeof step4Schema>;
 
 export default function DetectionModelStep4Page({ prev, next, modelId, formData, startTraining }: Props) {
   // console.log("formData3:", formData);
-  const { isTraining } = useTrainingSocketStore();
+  const { isTraining, cancelConnection } = useTrainingSocketStore();
   const { displayProcessing, displaySuccess, displayError, hidePopup } = usePopupTraining();
-
   const [cameraOptions, setCameraOptions] = useState<SelectOption[]>([]);
   const [versionOptions, setVersionOptions] = useState<SelectOption[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<string>("");
@@ -144,16 +143,37 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
     };
     fetchData();
   }, [reset]);
-  
+
   useEffect(() => {
     setValue("cameraId", selectedCamera);
   }, [selectedCamera, setValue]);
-  
+
   useEffect(() => {
     setValue("version", selectedVersion);
   }, [selectedVersion, setValue]);
 
-  const onSubmitHandler = async (data: Step4Data) => {
+  const onPrevious = async () => {
+    if (!isTraining) {
+      prev();
+      return;
+    }
+
+    const result = await showConfirm('Are you sure you want to cancel this training model?');
+
+    if (result?.isConfirmed) {
+      const cancelled = await cancelConnection();
+      if (cancelled) {
+        displayError('Training cancelled by user.');
+        await showError('Training cancelled by user.');
+        prev();
+      }
+    }
+  };
+
+  
+  const onSubmitHandler = async () => {
+    const data = getValues();
+
     if (!data.cameraId || !data.version) {
       showError("Please complete all required fields.");
       return;
@@ -173,80 +193,76 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
     showSuccess("Saved successfully!");
   };
 
-
-  
   // console.log("Form Errors:", errors);
   
   return (
-    <form onSubmit={handleSubmit(onSubmitHandler)}>
-      <div className="w-full">
-        <div className="h-80 bg-white border border-gray-300 flex items-center justify-center mb-6">
-          {isTraining ? (
-            <span className="text-2xl font-medium">PLEASE WAIT....</span>
-          ) : (
-            <span className="text-3xl font-medium leading-relaxed text-center">
-              TRAIN<br />COMPLETED
-            </span>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 mb-6">
-          <input type="hidden" {...register("modelId")} />
-
-          {/* Camera No. */}
-          <div className="flex items-center">
-            <label className="w-64 font-medium">Camera ID :</label>
-            <div className="w-64">
-              <SelectField
-                value={selectedCamera}
-                onChange={(value) => {
-                  setSelectedCamera(value);
-                  clearErrors("cameraId");
-                }}
-                options={cameraOptions}
-                disabled={isTraining}
-              />
-            </div>
-          </div>
-          {errors.cameraId && (<p className="text-red-500 ml-260">{errors.cameraId.message}</p>)}
-
-          {/* Model Version */}
-          <div className="flex items-center">
-            <label className="w-64 font-medium">Version :</label>
-            <div className="w-64">
-              <SelectField
-                value={String(selectedVersion)}
-                onChange={(value) => {
-                  setSelectedVersion(parseInt(value));
-                  clearErrors("version");
-                }}
-                options={versionOptions}
-                disabled={isTraining}
-              />
-            </div>
-          </div>
-          {errors.version && (<p className="text-red-500 ml-260">{errors.version.message}</p>)}
-        </div>
-        
-        <div
-            className="fixed bottom-0 right-0 p-7 flex justify-between"
-            style={{ zIndex: 1000, left: "250px" }}
-          >
-          <button
-            className={`ml-1 px-4 py-2 rounded-md transition w-32 bg-gray-400 hover:bg-gray-600 text-white`}
-            onClick={prev}
-          >
-            Previous
-          </button>
-          <button 
-            type="submit"
-            className={`px-4 py-2 rounded gap-2 w-32 ${isTraining ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "btn-primary-dark text-white"}`}
-            disabled={isTraining}
-          >
-            Finish
-          </button>
-        </div>
+    <div className="w-full">
+      <div className="h-80 bg-white border border-gray-300 flex items-center justify-center mb-6">
+        {isTraining ? (
+          <span className="text-2xl font-medium">PLEASE WAIT....</span>
+        ) : (
+          <span className="text-3xl font-medium leading-relaxed text-center">
+            TRAIN<br />COMPLETED
+          </span>
+        )}
       </div>
-    </form>
+
+      <div className="grid grid-cols-1 gap-4 mb-6">
+        <input type="hidden" {...register("modelId")} />
+
+        {/* Camera No. */}
+        <div className="flex items-center">
+          <label className="w-64 font-medium">Camera ID :</label>
+          <div className="w-64">
+            <SelectField
+              value={selectedCamera}
+              onChange={(value) => {
+                setSelectedCamera(value);
+                clearErrors("cameraId");
+              }}
+              options={cameraOptions}
+              disabled={isTraining}
+            />
+          </div>
+        </div>
+        {errors.cameraId && (<p className="text-red-500 ml-260">{errors.cameraId.message}</p>)}
+
+        {/* Model Version */}
+        <div className="flex items-center">
+          <label className="w-64 font-medium">Version :</label>
+          <div className="w-64">
+            <SelectField
+              value={String(selectedVersion)}
+              onChange={(value) => {
+                setSelectedVersion(parseInt(value));
+                clearErrors("version");
+              }}
+              options={versionOptions}
+              disabled={isTraining}
+            />
+          </div>
+        </div>
+        {errors.version && (<p className="text-red-500 ml-260">{errors.version.message}</p>)}
+      </div>
+      
+      <div
+          className="fixed bottom-0 right-0 p-7 flex justify-between"
+          style={{ zIndex: 1000, left: "250px" }}
+        >
+        <button
+          className={`ml-1 px-4 py-2 rounded-md transition w-32 bg-gray-400 hover:bg-gray-600 text-white`}
+          onClick={onPrevious}
+        >
+          Previous
+        </button>
+        <button 
+          className={`px-4 py-2 rounded gap-2 w-32 ${isTraining ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "btn-primary-dark text-white"}`}
+          onClick={handleSubmit(onSubmitHandler)}
+          disabled={isTraining}
+        >
+          Finish
+        </button>
+      </div>
+    </div>
   );
 }

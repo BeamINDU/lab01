@@ -18,7 +18,7 @@ interface AnnotationModalProps {
   data: ModelPicture[];
   editPicture: ModelPicture,
   onClose: () => void;
-  onSave: () => void;
+  onSave: (editDate: ModelPicture[]) => void;
   canEdit: boolean;
 }
 
@@ -62,13 +62,15 @@ const AnnotationModal = ({
     const currentPic = pictureList[currentIndex];
     if (!currentPic) return;
 
+    setIsImageLoading(true);
+
     const img = new Image();
     img.onload = () => {
       setImageObj(img);
-      setIsImageLoading(false);
     };
     img.src = currentPic.url;
-    setIsImageLoading(true);
+    setIsImageLoading(false);
+    
     setAnnotations(currentPic.annotations ?? []);
 
     return () => {
@@ -83,7 +85,7 @@ const AnnotationModal = ({
         const data = await getClassName();
         setClassNames(data);
 
-        if (data.length > 0 && pictureList.length > 0) {
+        if (data.length > 0 && data.length > 0) {
           setSelectedClass(data[0]);
         }
       } catch (error) {
@@ -298,14 +300,15 @@ const AnnotationModal = ({
             fontStyle="bold"
             fill={ann.color}
             align="center"
-            offsetX={ann.label.length * 3.5}
+            verticalAlign="top"
+            offsetX={(ann.label?.name.length || 0) * 3.5}
           />
         )}
       </Group>
     );
   };
 
- const handleNext = () => {
+  const handleNext = () => {
     if (currentIndex < pictureList.length - 1) {
       updateCurrentAnnotationsToPicture(currentIndex);
       setCurrentIndex(currentIndex + 1);
@@ -319,6 +322,16 @@ const AnnotationModal = ({
     }
   };
 
+  const handleSaveClassName = (classname: ClassName[]) => {
+    setClassNames(classname);
+    handleBulkUpdateLabels(classname);
+    
+    const selected = classname.find(c => c.id == selectedClass?.id);
+    setSelectedClass(selected || null);
+
+    setIsOpen(false);
+  };
+
   const updateCurrentAnnotationsToPicture = (index) => {
     const updatedPictures = [...pictureList];
     updatedPictures[index] = {
@@ -328,32 +341,25 @@ const AnnotationModal = ({
     setPictureList(updatedPictures);
   };
 
-  const handleSave = (classname: ClassName[]) => {
-    setClassNames(classname);
-    handleBulkUpdateLabels(classname);
-    setIsOpen(false);
+  const updateAllAnnotationsToPictures = () => {
+    const updatedPictures = [...pictureList];
+    updatedPictures[currentIndex] = {
+      ...updatedPictures[currentIndex],
+      annotations: annotations,
+    };
+    setPictureList(updatedPictures);
+    return updatedPictures;
   };
 
   const onSubmit = async () => {
-    // const exportData = {
-    //   image: pictureList[currentIndex],
-    //   annotations: annotations.map(ann => ({
-    //     id: ann.id,
-    //     type: ann.type,
-    //     color: ann.color,
-    //     label: ann.label,
-    //     coordinates: ann.type === 'rect'
-    //       ? { x: ann.startX, y: ann.startY, width: ann.width, height: ann.height }
-    //       : ann.type === 'circle'
-    //         ? { x: ann.startX, y: ann.startY, radius: ann.radius }
-    //         : { points: ann.points },
-    //   })),
-    // };
+    const updatedPictures = updateAllAnnotationsToPictures();
 
-    const exportDataList = pictureList?.map((img) => {
+    const updateData = updatedPictures?.map((img) => {
       return {
         id: img.id,
         name: img.name,
+        file: img.file,
+        refId: img.refId,
         url: img.url,
         annotations: img.annotations?.map(ann => ({
           id: ann.id,
@@ -368,152 +374,155 @@ const AnnotationModal = ({
           label: ann.label,
         })),
       };
-    });
+    }) as ModelPicture[];
 
-    const dataStr = JSON.stringify(exportDataList, null, 2);
-    console.log("dataStr:", dataStr);
-
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `annotations_${Date.now()}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-
-    setIsOpen(false);
+    onSave(updateData); 
+    
+    // const exportData = {
+    //   image: pictureList[currentIndex],
+    //   annotations: annotations.map(ann => ({
+    //     id: ann.id,
+    //     type: ann.type,
+    //     color: ann.color,
+    //     label: ann.label,
+    //     coordinates: ann.type === 'rect'
+    //       ? { x: ann.startX, y: ann.startY, width: ann.width, height: ann.height }
+    //       : ann.type === 'circle'
+    //         ? { x: ann.startX, y: ann.startY, radius: ann.radius }
+    //         : { points: ann.points },
+    //   })),
+    // };
   };
 
-  const stageWidth = 900;
-  const stageHeight = 570;
+  const stageWidth = 760;
+  const stageHeight = 500;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-  <div className="relative flex flex-col bg-white rounded-xl w-[95%] max-w-7xl h-[82%] p-4 shadow-xl space-y-4 overflow-hidden">
+      <div className="relative flex flex-col bg-white rounded-xl w-[100%] max-w-6xl h-[75%] p-4 shadow-xl space-y-4 overflow-hidden">
 
-    {/* Close Button */}
-    <button
-      type="button"
-      className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
-      onClick={onClose}
-    >
-      <X className="text-red-500" size={24} />
-    </button>
-
-    <h2 className="text-xl sm:text-2xl font-semibold text-center">Edit</h2>
-
-    {/* Main Content Area */}
-    <div className="flex flex-col lg:flex-row flex-1 space-y-4 lg:space-y-0 lg:space-x-4 overflow-hidden">
-
-      {/* Tool Selection (top in mobile, left in desktop) */}
-      <AnnotationToolSelector tool={tool} setTool={setTool} />
-
-      {/* Image Viewer */}
-      <div className="flex-1 flex flex-col items-center overflow-hidden">
-        <div className="relative w-full bg-gray-100 aspect-[16/10] lg:aspect-auto">
-          {isImageLoading && <ImageLoading />}
-          <Stage
-            width={stageWidth}
-            height={stageHeight}
-            onMouseDown={handleMouseDown}
-            onMousemove={handleMouseMove}
-            onMouseup={handleMouseUp}
-            onClick={handleStageClick}
-            ref={stageRef}
-            className="bg-gray-100"
-          >
-            <Layer>
-              {imageObj && (
-                <Rect
-                  name="background"
-                  width={stageWidth}
-                  height={stageHeight}
-                  fillPatternImage={imageObj}
-                  fillPatternScaleX={stageWidth / imageObj.width}
-                  fillPatternScaleY={stageHeight / imageObj.height}
-                />
-              )}
-              {annotations.map(ann => renderAnnotation(ann))}
-              {newAnnotation && renderAnnotation(newAnnotation)}
-            </Layer>
-          </Stage>
-        </div>
-
-        {/* Image Navigation */}
-        <ImageNavigator
-          currentIndex={currentIndex}
-          total={pictureList.length}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-        />
-      </div>
-
-      {/* Right Sidebar */}
-      <div className="w-full lg:w-64 overflow-y-auto space-y-6">
-
-        {/* Colors */}
-        <div>
-          <h3 className="text-sm font-medium mb-2">Color</h3>
-          {/* <HuePicker
-            color={selectedColor}
-            onChange={(updatedColor) => setSelectedColor(updatedColor.hex)}
-            width="93%"
-          /> */}
-          <div style={{ width: '94%' }}>
-            <SliderPicker
-              color={selectedColor}
-              onChange={(updatedColor) => setSelectedColor(updatedColor.hex)}
-            />
-            </div>
-        </div>
-
-        {/* Box Class */}
-        <ClassSelector
-          classNames={classNames}
-          selectedClass={selectedClass}
-          setSelectedClass={setSelectedClass}
-          setIsOpen={setIsOpen}
-        />
-
-        {/* Annotations List */}
-        <AnnotationList
-          annotations={annotations}
-          selectedId={selectedId}
-          setSelectedId={setSelectedId}
-          onDelete={handleDelete}
-        />
-      </div>
-    </div>
-
-    {/* Save & Cancel Buttons */}
-    <div className="flex justify-end space-x-2">
-      {canEdit && (
+        {/* Close Button */}
         <button
-          className="px-4 py-2 btn-primary-dark rounded flex items-center gap-2"
-          onClick={onSubmit}
+          type="button"
+          className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
+          onClick={onClose}
         >
-          Save <Save size={16} />
+          <X className="text-red-500" size={24} />
         </button>
-      )}
-      <button
-        className="px-4 py-2 bg-secondary rounded flex items-center gap-2"
-        onClick={onClose}
-      >
-        Close <X size={16} />
-      </button>
+
+        <h2 className="text-xl sm:text-2xl font-semibold text-center">Edit</h2>
+
+        {/* Main Content Area */}
+        <div className="flex flex-col lg:flex-row flex-1 space-y-4 lg:space-y-0 lg:space-x-4 overflow-hidden">
+
+          {/* Tool Selection (top in mobile, left in desktop) */}
+          <AnnotationToolSelector tool={tool} setTool={setTool} />
+
+          {/* Image Viewer */}
+          <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
+            <div className="flex items-center justify-center relative w-full bg-white aspect-[1ุ6/10] lg:aspect-auto">
+              {isImageLoading && <ImageLoading />}
+              <Stage
+                width={stageWidth}
+                height={stageHeight}
+                onMouseDown={handleMouseDown}
+                onMousemove={handleMouseMove}
+                onMouseup={handleMouseUp}
+                onClick={handleStageClick}
+                ref={stageRef}
+                className="bg-white"
+              >
+                <Layer>
+                  {imageObj && (
+                    <Rect
+                      name="background"
+                      width={stageWidth}
+                      height={stageHeight}
+                      fillPatternImage={imageObj}
+                      fillPatternScaleX={stageWidth / imageObj.width}
+                      fillPatternScaleY={stageHeight / imageObj.height}
+                    />
+                  )}
+                  {annotations.map(ann => renderAnnotation(ann))}
+                  {newAnnotation && renderAnnotation(newAnnotation)}
+                </Layer>
+              </Stage>
+            </div>
+
+            {/* Image Navigation */}
+            <ImageNavigator
+              currentIndex={currentIndex}
+              total={pictureList.length}
+              onPrevious={handlePrevious}
+              onNext={handleNext}
+            />
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="w-full lg:w-64 overflow-y-auto space-y-6">
+
+            {/* Colors */}
+            <div>
+              <h3 className="text-sm font-medium mb-2">Color</h3>
+              {/* <HuePicker
+                color={selectedColor}
+                onChange={(updatedColor) => setSelectedColor(updatedColor.hex)}
+                width="93%"
+              /> */}
+              <div style={{ width: '100%' }}>
+                <SliderPicker
+                  color={selectedColor}
+                  onChange={(updatedColor) => setSelectedColor(updatedColor.hex)}
+                />
+                </div>
+            </div>
+
+            {/* Box Class */}
+            <ClassSelector
+              classNames={classNames}
+              selectedClass={selectedClass}
+              setSelectedClass={setSelectedClass}
+              setIsOpen={setIsOpen}
+            />
+
+            {/* Annotations List */}
+            <AnnotationList
+              annotations={annotations}
+              selectedId={selectedId}
+              setSelectedId={setSelectedId}
+              onDelete={handleDelete}
+            />
+          </div>
+        </div>
+
+        {/* Save & Cancel Buttons */}
+        <div className="flex justify-end space-x-2">
+          {canEdit && (
+            <button
+              className="px-4 py-2 btn-primary-dark rounded flex items-center gap-2"
+              onClick={onSubmit}
+            >
+              Save <Save size={16} />
+            </button>
+          )}
+          <button
+            className="px-4 py-2 bg-secondary rounded flex items-center gap-2"
+            onClick={onClose}
+          >
+            Close <X size={16} />
+          </button>
+        </div>
+
+        {/* Class Name Modal */}
+        {isOpen && (
+          <ClassNameModal
+            onClose={() => setIsOpen(false)}
+            onSave={handleSaveClassName}
+            data={classNames}
+          />
+        )}
+      </div>
     </div>
-  </div>
-
-  {/* Class Name Modal */}
-  {isOpen && (
-    <ClassNameModal
-      onClose={() => setIsOpen(false)}
-      onSave={handleSave}
-      data={classNames}
-    />
-  )}
-</div>
-
   );
 }
 
@@ -558,7 +567,7 @@ type ClassSelectorProps = {
 };
 function ClassSelector({classNames, selectedClass, setSelectedClass, setIsOpen}: ClassSelectorProps) {
   return (
-    <div className="mt-4 mb-6">
+    <div className="mt-4">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-medium mb-2">Box Class</h3>
         <button
@@ -597,7 +606,7 @@ type AnnotationListProps = {
 };
 function AnnotationList({annotations, selectedId, setSelectedId, onDelete}: AnnotationListProps) {
   return (
-    <div className="border-t pt-4">
+    <div className="mt-0">
       <h3 className="text-sm font-medium mb-2">Annotations List</h3>
       <div className="space-y-2 max-h-96 overflow-y-auto">
         {annotations.length === 0 ? (
@@ -615,7 +624,7 @@ function AnnotationList({annotations, selectedId, setSelectedId, onDelete}: Anno
                   {/* Annotations */}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-sm">#{index + 1}</span>
+                      <span className="font-medium text-sm mr-1">{index + 1}.</span>
                       <span
                         style={{
                           display: 'inline-block',
@@ -635,7 +644,7 @@ function AnnotationList({annotations, selectedId, setSelectedId, onDelete}: Anno
                       e.stopPropagation();
                       onDelete(ann.id);
                     }}
-                    className="text-red-500 hover:text-red-700"
+                    className="text-red-500 hover:text-red-700 mt-1"
                     title="Delete annotation"
                   >
                     <Trash2 size={14} />

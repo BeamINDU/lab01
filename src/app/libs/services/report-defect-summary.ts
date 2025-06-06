@@ -1,6 +1,6 @@
 import { api } from '@/app/utils/api'
 import type { ReportDefect, ParamSearch } from "@/app/types/report-defect-summary"
-import { getProductTypeOptions } from '@/app/libs/services/product-type';
+import { getProductTypeNameOptions } from '@/app/libs/services/product-type';
 import { getDefectTypeOptions } from '@/app/libs/services/defect-type';
 
 // Cache สำหรับเก็บข้อมูลที่ดึงมาแล้ว
@@ -12,8 +12,8 @@ const loadMasterData = async () => {
   if (cachedProductTypes.length === 0) {
     try {
       // โหลดข้อมูล Product Types
-      const productTypeOptions = await getProductTypeOptions();
-      cachedProductTypes = productTypeOptions.map(opt => opt.label);
+      // const productTypeOptions = await getProductTypeNameOptions();
+      // cachedProductTypes = productTypeOptions.map(opt => opt.label);
       
       // โหลดข้อมูล Defect Types  
       const defectOptions = await getDefectTypeOptions();

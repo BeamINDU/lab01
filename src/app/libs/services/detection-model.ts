@@ -5,6 +5,7 @@ import { SelectOption, } from "@/app/types/select-option";
 const mockData: DetectionModel[] = Array.from({ length: 5 }, (_, i) => ({
   modelId: i+1,
   modelName: `MD ${i+1}`,
+  productId: `PT ${i+1}`,
   description: 'description description description',      
   statusId: (i+1 === 1) ? "Using" : (i+1 === 2) ? "Processing" : "Ready",
   function: "Color Check, Classification Type",
@@ -33,6 +34,7 @@ const mockFormData = (id: number): FormData => {
     version: 1,
   };
 };
+
 export const search = async (param?: ParamSearch) => { 
   if (!param) return mockData;
 
@@ -122,7 +124,6 @@ export const upload = async (file: File) => {
   // const response = await api.post<Camera>('/upload', formData)
 };
 
-
 export const getFunctions = async () => {
   return [
     { label: "Color Check", value: "1" },
@@ -140,7 +141,6 @@ export const getFunctions = async () => {
   ] as SelectOption[];
 };
 
-
 export const getCamera = async () => {
   return [
     { label: "CAM 1", value: "CAM1" },
@@ -148,14 +148,16 @@ export const getCamera = async () => {
   ] as SelectOption[];
 };
 
-
 export const getPicture = async () => {
   return [
     { 
       id: 1, 
+      refId: `1`,
       name: "photos-random-1.png", 
       url: "https://picsum.photos/800/600?random=1",
-      "annotations": [
+      // url: "/images/takumi-pic.png",
+      // file:  await urlToFile("https://picsum.photos/800/600?random=1", "photos-random-1.png"),
+      annotations: [
         {
           "id": "annotation-1748887785393",
           "type": "rect",
@@ -171,7 +173,7 @@ export const getPicture = async () => {
           "radius": 0,
           "label": {
             "id": "1",
-            "name": "houseclip missing"
+            "name": "defect"
           }
         },
         {
@@ -189,7 +191,7 @@ export const getPicture = async () => {
           "radius": 59.54829972383762,
           "label": {
             "id": "2",
-            "name": "Good clip"
+            "name": "scratch"
           }
         },
         {
@@ -207,14 +209,20 @@ export const getPicture = async () => {
           "radius": 0,
           "label": {
             "id": "2",
-            "name": "Good clip"
+            "name": "dent"
           }
         }
       ]
     },
-    { id: 2, name: "photos-random-2.png", url: "https://picsum.photos/800/600?random=2" },
-    { id: 3, name: "photos-random-3.png", url: "https://picsum.photos/800/600?random=3" },
-    { id: 4, name: "photos-random-4.png", url: "https://picsum.photos/800/600?random=4" },
-    { id: 5, name: "photos-random-5.png", url: "https://picsum.photos/800/600?random=5" },
+    // { id: 2, name: "photos-random-2.png", url: "https://picsum.photos/800/600?random=2" },
+    // { id: 3, name: "photos-random-3.png", url: "https://picsum.photos/800/600?random=3" },
+    // { id: 4, name: "photos-random-4.png", url: "https://picsum.photos/800/600?random=4" },
+    // { id: 5, name: "photos-random-5.png", url: "https://picsum.photos/800/600?random=5" },
   ] as ModelPicture[];
 };
+
+async function urlToFile(url: string, filename: string, mimeType: string = 'image/png'): Promise<File> {
+  const res = await fetch(url);
+  const blob = await res.blob();
+  return new File([blob], filename, { type: mimeType });
+}

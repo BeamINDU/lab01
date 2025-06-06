@@ -1,4 +1,6 @@
 import { LiveInspectionView } from "@/app/types/live";
+import fs from "fs";
+import path from "path";
 
 type MessageHandler = (event: MessageEvent) => void;
 
@@ -12,7 +14,9 @@ export class MockLiveWebSocket {
   private intervalId: NodeJS.Timeout | null = null;
   private currentCamera: string | null = null;
 
-  constructor() {
+  constructor(cameraId?: string) {
+    this.currentCamera = cameraId ?? null;
+
     setTimeout(() => {
       this.readyState = WebSocket.OPEN;
       if (this.onopen) this.onopen();
@@ -48,8 +52,10 @@ export class MockLiveWebSocket {
     if (this.intervalId) clearInterval(this.intervalId);
 
     this.intervalId = setInterval(() => {
+      const base64Image = this.generateMockBase64Image();
+
       const data: LiveInspectionView = {
-        liveStream: '/videos/2025-01-24_16-51-55.mp4',
+        liveStream: "", // base64Image,
         cameraId: this.currentCamera ?? "",
         cameraName: `Mock Camera ${this.currentCamera}`,
         location: `Zone ${this.currentCamera}`,
@@ -79,4 +85,16 @@ export class MockLiveWebSocket {
       this.intervalId = null;
     }
   }
+
+  async generateMockBase64Image(): Promise<string> {
+    try {
+      const res = await fetch("/api/mock-frame", { cache: "no-store" });
+      const json = await res.json();
+      return json.dataUrl;
+    } catch (error) {
+      console.error("Error fetching image from API:", error);
+      return "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+P///38ACfsD/QZBt0sAAAAASUVORK5CYII=";
+    }
+  }
+  
 }

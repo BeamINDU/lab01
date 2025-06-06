@@ -4,6 +4,7 @@ import { ShapeType } from "@/app/constants/shape-type";
 export type DetectionModel = {
   modelId?: number | null,
   modelName: string,
+  productId: string,
   description?: string,
   function?: string,
   statusId?: string,
@@ -39,10 +40,12 @@ export type FormData = {
 };
 
 export type ModelPicture = {
-  id: number
+  id?: number | null,
   name: string,
+  file: File,
   url: string,
   annotations?: Annotation[];
+  refId?: string
 }
 
 export type Annotation = {
