@@ -3,157 +3,206 @@ import { API_ROUTES } from "@/app/constants/endpoint";
 import { ProductType, ParamSearch } from "@/app/types/product-type"
 import { SelectOption } from "@/app/types/select-option";
 
-
 // API Functions
 export const search = async (param?: ParamSearch) => { 
   try {
-    return await api.get<ProductType[]>(`${API_ROUTES.product_type.get}/${param}`);
-  } catch (error) {
-    throw error;
-  }  
 
-  // console.log('ProductType service received params:', param);
+    const queryParams = new URLSearchParams();
+    if (param?.productTypeId) queryParams.append('productTypeId', param.productTypeId);
+    if (param?.productTypeName) queryParams.append('productTypeName', param.productTypeName);
+    if (param?.status !== undefined && param.status !== '') queryParams.append('status', param.status);
 
-  // if (!param) return mockData;
-
-  // let parsedStatus: number | undefined = undefined;
-  // if (param.status !== undefined && param.status !== null && param.status.toString().trim() !== '') {
-  //   const statusNum = Number(param.status);
-  //   if (!isNaN(statusNum)) {
-  //     parsedStatus = statusNum;
-  //   }
-  // }
-
-  // const filteredData = mockData.filter(item => {
-  //   const productTypeIdMatch = !param.productTypeId || item.productTypeId.toLowerCase().includes(param.productTypeId.toLowerCase());
-  //   const productTypeNameMatch = !param.productTypeName || item.productTypeName.toLowerCase().includes(param.productTypeName.toLowerCase());
-  //   const statusMatch = parsedStatus === undefined || item.status === parsedStatus;
+    const queryString = queryParams.toString();
+    const url = queryString ? `${API_ROUTES.product_type.get}?${queryString}` : API_ROUTES.product_type.get;
     
-  //   return productTypeIdMatch && productTypeNameMatch && statusMatch;
-  // });
-  
-  // console.log('ProductType filtered results:', filteredData.length, 'items');
-  // return filteredData;
+    const result = await api.get<any>(url);
+    if (result && result.product_types && Array.isArray(result.product_types)) {
+      return result.product_types.map((item: any) => ({
+        productTypeId: item.prodtypeid,
+        productTypeName: item.prodtype,
+        description: item.proddescription,
+        status: item.prodstatus ? 1 : 0,
+        createdDate: item.createddate ? new Date(item.createddate) : undefined,
+        createdBy: item.createdby,
+        updatedDate: item.updateddate ? new Date(item.updateddate) : null,
+        updatedBy: item.updatedby,
+      }));
+    } else {
+      console.warn('Unexpected API response format:', result);
+      return [];
+    }
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
 };
 
 export const detail = async (id: string) => {
   try {
-    return await api.get<ProductType>(`${API_ROUTES.product_type.detail}/${id}`);
+    const result = await api.get<any>(`${API_ROUTES.product_type.detail}/${id}`);
+    
+    if (result && result.prodtypeid) {
+      return {
+        productTypeId: result.prodtypeid,
+        productTypeName: result.prodtype,
+        description: result.proddescription,
+        status: result.prodstatus, 
+        createdDate: result.createddate ? new Date(result.createddate) : undefined,
+        createdBy: result.createdby,
+        updatedDate: result.updateddate ? new Date(result.updateddate) : null,
+        updatedBy: result.updatedby,
+      };
+    }
+    return null;
   } catch (error) {
     throw error;
-  }  
-
-  // return mockData.find(item => item.productTypeId === id);
+  }
 };
 
 export const create = async (param: Partial<ProductType>) => {
   try {
-    return await api.post<ProductType>(`${API_ROUTES.product_type.insert}`, param);
-  } catch (error) {
-    throw error;
-  }  
+    console.log('Creating with param:', param);
+    
 
-  // const newProductType = {
-  //   ...param,
-  //   productTypeId: param.productTypeId || `PT${String(mockData.length + 1).padStart(3, '0')}`,
-  //   status: param.status ?? 1,
-  //   createdDate: new Date(),
-  //   createdBy: param.createdBy || 'admin',
-  //   updatedDate: null,
-  //   updatedBy: null,
-  // };
-  // mockData.push(newProductType as ProductType);
-  // return newProductType;
+    const apiParam = {
+      prodtypeid: param.productTypeId,
+      prodtype: param.productTypeName,
+      proddescription: param.description,
+      prodstatus: param.status, 
+      createdby: param.createdBy,
+    };
+    
+    console.log('API param for create:', apiParam); 
+    
+    const result = await api.post<any>(`${API_ROUTES.product_type.insert}`, apiParam);
+    console.log('Create result:', result); 
+    
+    if (result && result.prodtypeid) {
+      return {
+        productTypeId: result.prodtypeid,
+        productTypeName: result.prodtype,
+        description: result.proddescription,
+        status: result.prodstatus, // ✅ ใช้ boolean ตรงๆ
+        createdDate: result.createddate ? new Date(result.createddate) : undefined,
+        createdBy: result.createdby,
+        updatedDate: result.updateddate ? new Date(result.updateddate) : null,
+        updatedBy: result.updatedby,
+      };
+    }
+    return result;
+  } catch (error) {
+    console.error('Create error:', error); 
+    throw error;
+  }
 };
 
 export const update = async (param: Partial<ProductType>) => {
   try {
-    return await api.post<ProductType>(`${API_ROUTES.product_type.update}`, param);
+    console.log('Updating with param:', param); 
+    const apiParam = {
+      prodtypeid: param.productTypeId,
+      prodtype: param.productTypeName,
+      proddescription: param.description,
+      prodstatus: param.status, 
+      updatedby: param.updatedBy,
+    };
+    
+    console.log('API param for update:', apiParam); 
+    
+    const result = await api.put<any>(`${API_ROUTES.product_type.update}/${param.productTypeId}`, apiParam);
+    console.log('Update result:', result); 
+    
+    if (result && result.prodtypeid) {
+      return {
+        productTypeId: result.prodtypeid,
+        productTypeName: result.prodtype,
+        description: result.proddescription,
+        status: result.prodstatus, // ✅ ใช้ boolean ตรงๆ
+        createdDate: result.createddate ? new Date(result.createddate) : undefined,
+        createdBy: result.createdby,
+        updatedDate: result.updateddate ? new Date(result.updateddate) : null,
+        updatedBy: result.updatedby,
+      };
+    }
+    return result;
   } catch (error) {
+    console.error('Update error:', error); // Debug log
     throw error;
-  } 
-  
-  // const index = mockData.findIndex(item => item.productTypeId === param.productTypeId);
-  // if (index !== -1) {
-  //   mockData[index] = {
-  //     ...mockData[index],
-  //     ...param,
-  //     updatedDate: new Date(),
-  //     updatedBy: param.updatedBy || 'admin'
-  //   };
-  //   return mockData[index];
-  // }
-  
-  // return {
-  //   ...param,
-  //   updatedDate: new Date(),
-  //   updatedBy: param.updatedBy || 'admin'
-  // };
+  }
 };
 
 export const remove = async (id: string) => {
   try {
-    return await api.delete<ProductType>(`${API_ROUTES.product_type.delete}/${id}`);
+    return await api.delete(`${API_ROUTES.product_type.delete}/${id}`);
   } catch (error) {
     throw error;
-  }  
-
-  // const index = mockData.findIndex(item => item.productTypeId === id);
-  // if (index !== -1) {
-  //   mockData.splice(index, 1);
-  // }
-  // return {};
+  }
 };
 
 export const upload = async (file: File) => {
   try {
     const formData = new FormData();
     formData.append('file', file);
-
-    const res = await api.upload<ProductType[]>(`${API_ROUTES.product_type.upload}`, formData);
-    return res;
+    return await api.upload<ProductType[]>(API_ROUTES.product_type.upload, formData);
   } catch (error) {
     throw error;
-  } 
-  // await new Promise(resolve => setTimeout(resolve, 2000));
-  // return { message: 'Product type file uploaded successfully' };
+  }
 };
 
-
-export const getProductTypeIdOptions = async (id: string) => {
+// Options functions สำหรับ SearchField
+export const getProductTypeIdOptions = async (searchTerm?: string): Promise<SelectOption[]> => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_id}/${id}`);
+    // ใช้ search function ที่มีอยู่แล้ว
+    const data = await search();
+    let filteredData = data;
+    
+    if (searchTerm) {
+      filteredData = data.filter(item => 
+        item.productTypeId.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    return filteredData.map(item => ({
+      label: item.productTypeId,
+      value: item.productTypeId
+    }));
   } catch (error) {
-    throw error;
-  }  
-
-  // console.log('Loading ProductType options...');
-  // await new Promise(resolve => setTimeout(resolve, 500));
-
-  // const activeProductTypes = mockData.filter(item => item.status === 1);
-  
-  // const options = activeProductTypes.map(item => ({
-  //   label: item.productTypeName,
-  //   value: item.productTypeName 
-  // }));
-  
-  // console.log('ProductType options loaded:', options.length, 'items');
-  // return options;
+    console.error('Failed to load product type ID options:', error);
+    return [];
+  }
 };
 
-export const getProductTypeNameOptions = async (name: string) => {
+export const getProductTypeNameOptions = async (searchTerm?: string): Promise<SelectOption[]> => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_name}/${name}`);
+ 
+    const data = await search();
+    let filteredData = data;
+    
+    if (searchTerm) {
+      filteredData = data.filter(item => 
+        item.productTypeName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    return filteredData.map(item => ({
+      label: item.productTypeName,
+      value: item.productTypeName 
+    }));
+  } catch (error) {
+    console.error('Failed to load product type name options:', error);
+    return [];
+  }
+};
+
+// สำหรับ SearchField ในหน้า ProductType เอง
+export const getProductTypeSearchOptions = async (): Promise<SelectOption[]> => {
+  try {
+    const data = await search();
+    return data.map(item => ({
+      label: `${item.productTypeName} (${item.productTypeId})`,
+      value: item.productTypeName
+    }));
   } catch (error) {
     throw error;
-  }  
-}
-
-
-// export const getProductTypeSearchOptions = async (): Promise<SelectOption[]> => {
-//   await new Promise(resolve => setTimeout(resolve, 500));
-//   return mockData.map(item => ({
-//     label: `${item.productTypeName} (${item.productTypeId})`,
-//     value: item.productTypeName
-//   }));
-// };
+  }
+};

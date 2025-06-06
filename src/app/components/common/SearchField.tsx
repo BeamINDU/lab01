@@ -68,57 +68,66 @@ export default function SearchField({
   const [searchOptions, setSearchOptions] = useState<SearchOption[]>(options);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Load data if dataLoader is provided
-  useEffect(() => {
-    if (dataLoader && !options.length) {
-      const loadData = async () => {
-        try {
-          setLoading(true);
-          const data = await dataLoader();
-          
-          let transformedOptions: SearchOption[] = [];
-          
-          if (Array.isArray(data) && data.length > 0) {
-            if (typeof data[0] === 'string') {
-              transformedOptions = data.map((item, index) => ({
-                id: `string-${index}-${item}`,
-                label: item,
-                value: item
-              }));
-            } else if (typeof data[0] === 'object') {
-              transformedOptions = data.map((item, index) => ({
-                id: item.id || `obj-${index}-${item[valueField] || item.value || item.id || item[labelField]}`,
-                label: item[labelField] || item.label || item.name || String(item),
-                value: item[valueField] || item.value || item.id || item[labelField]
-              }));
-            }
-          }
-          
-          setSearchOptions(transformedOptions);
+// แก้ไขส่วน useEffect ใน SearchField.tsx (ประมาณบรรทัด 70-90)
 
-          if (initialValue && transformedOptions.length > 0) {
-            const matchedOption = transformedOptions.find(opt => 
-              opt.value === initialValue || opt.label === initialValue
-            );
-            if (matchedOption) {
-              setSelectedValue(matchedOption.value);
-              setValue?.(fieldName, matchedOption.value);
-            } else if (allowFreeText) {
-              setSelectedValue(initialValue);
-              setValue?.(fieldName, initialValue);
-            }
+useEffect(() => {
+  if (dataLoader && !options.length) {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        
+        const data = await dataLoader();
+        console.log(`Raw data from ${fieldName}:`, data); // Debug log
+        
+        let transformedOptions: SearchOption[] = [];
+        
+        // ✅ เช็คว่า data เป็น array หรือไม่
+        if (Array.isArray(data) && data.length > 0) {
+          if (typeof data[0] === 'string') {
+            transformedOptions = data.map((item, index) => ({
+              id: `string-${index}-${item}`,
+              label: item,
+              value: item
+            }));
+          } else if (typeof data[0] === 'object') {
+            transformedOptions = data.map((item, index) => ({
+              id: item.id || `obj-${index}-${item[valueField] || item.value || item.id || item[labelField]}`,
+              label: item[labelField] || item.label || item.name || String(item),
+              value: item[valueField] || item.value || item.id || item[labelField]
+            }));
           }
-        } catch (error) {
-          console.error(`Failed to load data for ${fieldName}:`, error);
-          setSearchOptions([]);
-        } finally {
-          setLoading(false);
+        } else {
+          // ถ้าไม่ใช่ array หรือ array ว่าง
+          console.warn(`${fieldName}: Expected array but got:`, typeof data, data);
+          transformedOptions = [];
         }
-      };
-      
-      loadData();
-    }
-  }, [dataLoader, labelField, valueField, fieldName, options.length, initialValue, allowFreeText, setValue]);
+        
+        console.log(`✅ Loaded ${transformedOptions.length} options for ${fieldName}`);
+        setSearchOptions(transformedOptions);
+
+        if (initialValue && transformedOptions.length > 0) {
+          const matchedOption = transformedOptions.find(opt => 
+            opt.value === initialValue || opt.label === initialValue
+          );
+          if (matchedOption) {
+            setSelectedValue(matchedOption.value);
+            setValue?.(fieldName, matchedOption.value);
+          } else if (allowFreeText) {
+            setSelectedValue(initialValue);
+            setValue?.(fieldName, initialValue);
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Failed to load data for ${fieldName}:`, error);
+        setSearchOptions([]); // ตั้งเป็น array ว่าง
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }
+}, [dataLoader, labelField, valueField, fieldName, options.length, initialValue, allowFreeText, setValue]);
 
   useEffect(() => {
     if (options.length > 0) {

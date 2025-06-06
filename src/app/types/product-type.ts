@@ -2,7 +2,7 @@ export type ProductType = {
   productTypeId: string
   productTypeName: string
   description: string
-  status: number
+  status: boolean
   createdDate?: Date
   createdBy?: string
   updatedDate?: Date | null
