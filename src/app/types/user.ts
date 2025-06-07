@@ -1,11 +1,12 @@
 export type User = {
   userId: string
-  userName: string
+  username: string
+  password: string
   firstname: string
   lastname: string
-  roleName?: string
   email: string
-  status: number
+  roleName?: string
+  status: boolean
   createdDate?: Date
   createdBy?: string
   updatedDate?: Date | null
@@ -20,5 +21,5 @@ export type ParamSearch = {
   lastname?: string
   roleName?: string
   roleId?: string
-  status?: number
+  status?: boolean
 }

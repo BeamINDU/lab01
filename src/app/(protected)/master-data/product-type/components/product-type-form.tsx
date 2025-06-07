@@ -13,7 +13,7 @@ const ProductTypeSchema = z.object({
   productTypeId: z.string().min(1, "Production Type Id is required"),
   productTypeName: z.string().min(1, "Product Type Name is required"),
   description: z.string(),
-  status: z.number(),
+  status: z.boolean(),
   isCreateMode: z.boolean().optional(),
 }); 
 
@@ -40,7 +40,7 @@ export default function ProductTypeFormModal({
     productTypeId: '',
     productTypeName: '',
     description: '',
-    status: 1, 
+    status: true, 
     isCreateMode: true,
   };
 
@@ -70,7 +70,9 @@ export default function ProductTypeFormModal({
       ...formData,
       productTypeId: formData.productTypeId ?? "",
       createdBy: session?.user?.userid,
+      createdDate: new Date(),
       updatedBy: session?.user?.userid,
+      updatedDate: new Date()
     };
     onSave(formWithMeta);
   };
@@ -151,9 +153,9 @@ export default function ProductTypeFormModal({
                 control={control}
                 render={({ field }) => (
                   <ToggleSwitch
-                    enabled={field.value === 1}
-                    onChange={(enabled: boolean) => field.onChange(enabled ? 1 : 0)}
-                    label={field.value === 1 ? "Active" : "Inactive"}
+                    enabled={field.value}
+                    onChange={(enabled: boolean) => field.onChange(enabled)}
+                    label={field.value ? "Active" : "Inactive"}
                     disabled={!canEdit}
                   />
                 )}

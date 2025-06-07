@@ -81,9 +81,9 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           options={[
             { id: "all", label: "All", value: "" },
             ...ActiveStatus.map(status => ({
-              id: status.value,
+              id: String(status.value),
               label: status.label,
-              value: status.value
+              value: String(status.value),
             }))
           ]}
           allowFreeText={false}

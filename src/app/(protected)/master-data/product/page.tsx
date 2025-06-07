@@ -19,46 +19,27 @@ import ProductFilterForm from './components/product-filter';
 
 export default function Page() {
   const { hasPermission } = usePermission();
-  const { register, getValues, setValue, reset, watch } = useForm({
-    defaultValues: {
-      productId: '',
-      productName: '',
-      productTypeName: '', 
-      serialNo: '',
-      status: ''
-    }
-  });
-  
+  const { register, getValues, setValue, reset } = useForm();
   const [data, setData] = useState<Product[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingData, setEditingData] = useState<Product | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
-  // Watch สำหรับ debug
-  const watchedProductTypeName = watch("productTypeName");
-
   useEffect(() => {
     handleSearch();
   }, []);
 
-  useEffect(() => {
-    console.log('Current productTypeName value:', watchedProductTypeName);
-  }, [watchedProductTypeName]);
-
   const handleSearch = async () => {
     try {
       const formValues = getValues();
-      console.log('Search with form values:', formValues);
       
       const param: ParamSearch = {
         productId: formValues.productId || '',
         productName: formValues.productName || '',
         productTypeName: formValues.productTypeName || '', 
         serialNo: formValues.serialNo || '',
-        status: formValues.status !== undefined ? formValues.status : undefined,
+        status: formValues.status === '' ? undefined : formValues.status === 'true',
       };
-      
-      console.log('Search parameters:', param);
       
       const products = await search(param);
       setData(products);
@@ -101,27 +82,16 @@ export default function Page() {
   const handleAddEdit = async (row?: Product) => {
     try {
       if (row) {
-
-        const result = (await detail(row.productId ?? "")) ?? (row as Product);
+        // const result = (await detail(row.productId ?? "")) ?? (row as Product);
+        const result = data.find((item) => item.productId === row.productId) ?? row;
         const updatedRow = { 
           ...result, 
           isCreateMode: false 
         };
-        console.log('Edit mode data:', updatedRow); // Debug log
         setEditingData(updatedRow);
       } else {
-        // Add mode
-        const newData = {
-          productId: '',
-          productName: '',
-          productTypeId: '',
-          productTypeName: '',
-          serialNo: '',
-          status: 1,
-          isCreateMode: true
-        };
-        console.log('Add mode data:', newData); // Debug log
-        setEditingData(newData);
+        reset();
+        setEditingData(null);
       }
       setIsFormModalOpen(true);
     } catch (error) {
@@ -148,31 +118,20 @@ export default function Page() {
   };
 
   const handleSave = async (formData: Product) => {
-    console.log('=== handleSave STARTED ==='); // Debug log
-    console.log('handleSave called with:', formData); // Debug log
-    console.log('Is create mode:', formData.isCreateMode); // Debug log
-    
     try {
       if (formData.isCreateMode) {
-        console.log('Creating new product...'); // Debug log
         const newData = await create(formData) as Product;
-        console.log('New product created:', newData); // Debug log
         setData(prev => [...prev, { ...newData, isCreateMode: false }]);
-        showSuccess('Product created successfully');
       } else {
-        console.log('Updating existing product...'); // Debug log
         const updatedData = await update(formData) as Product;
-        console.log('Product updated:', updatedData); // Debug log
-        setData(prev => prev.map(item => 
-          item.productId === formData.productId ? { ...updatedData, isCreateMode: false } : item
+        setData(prev => 
+          prev.map(item => item.productId === formData.productId 
+            ? { ...updatedData, isCreateMode: false } 
+            : item
         ));
         showSuccess('Product updated successfully');
       }
-      
-      console.log('Closing modal...'); // Debug log
       setIsFormModalOpen(false);
-      console.log('=== handleSave COMPLETED ==='); // Debug log
-      
     } catch (error) {
       console.error('=== handleSave ERROR ===', error);
       showError('Save failed: ' + (error as Error).message);

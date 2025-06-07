@@ -27,12 +27,12 @@ const mockData: UserPermission[] =
   { menuId: "RP003", parentId: "RP000", menuName: "Transaction", icon: "", seq: 3, path: "/report/transaction", actions: [1, 6] },
   { menuId: "PL000", parentId: "", menuName: "Planning", icon: "", seq: 6, path: "/planning", actions: [1, 2, 3, 4, 5, 6] },
   { menuId: "DM000", parentId: "", menuName: "Detection Model", icon: "", seq: 5, path: "/detection-model", actions: [1, 2, 3, 4, 5, 6] },
-  { menuId: "L001", parentId: "LI000", menuName: "Zone cam 1", icon: "", seq: 1, path: "", actions: [1] },
-  { menuId: "CAM1", parentId: "L001", menuName: "Mock Camera cam 1", icon: "", seq: 1, path: "/live/cam1", actions: [1] },
-  { menuId: "CAM2", parentId: "L001", menuName: "Mock Camera cam 2", icon: "", seq: 2, path: "/live/cam2", actions: [1] },
-  { menuId: "L002", parentId: "LI000", menuName: "Zone cam 2", icon: "", seq: 2, path: "", actions: [1] },
-  { menuId: "CAM3", parentId: "L002", menuName: "Mock Camera cam 3", icon: "", seq: 1, path: "/live/cam3", actions: [1] },
-  { menuId: "CAM1", parentId: "L002", menuName: "Mock Camera cam 4", icon: "", seq: 2, path: "/live/cam4", actions: [1] },
+  { menuId: "L001", parentId: "LI000", menuName: "Zone 1", icon: "", seq: 1, path: "", actions: [1] },
+  { menuId: "CAM004", parentId: "L001", menuName: "Mock Camera cam 4", icon: "", seq: 1, path: "/live/CAM004", actions: [1] },
+  // { menuId: "CAM2", parentId: "L001", menuName: "Mock Camera cam 2", icon: "", seq: 2, path: "/live/cam2", actions: [1] },
+  // { menuId: "L002", parentId: "LI000", menuName: "Zone cam 2", icon: "", seq: 2, path: "", actions: [1] },
+  // { menuId: "CAM3", parentId: "L002", menuName: "Mock Camera cam 3", icon: "", seq: 1, path: "/live/cam3", actions: [1] },
+  // { menuId: "CAM1", parentId: "L002", menuName: "Mock Camera cam 4", icon: "", seq: 2, path: "/live/cam4", actions: [1] },
 ]
 
 export const getPermissions = async (userid: string) => {
@@ -44,7 +44,7 @@ export const validateLogin = async (username: string, password: string): Promise
   if (username === "admin" && password === "admin") {
     return {
       id:"admin",
-      userid: "admin",
+      userid: "TH0001",
       fullname: "Administrator",
       email: "admin@pi.com",
     };

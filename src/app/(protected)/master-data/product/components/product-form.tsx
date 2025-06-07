@@ -16,9 +16,9 @@ const ProductSchema = z.object({
   productId: z.string().min(1, "Product ID is required"),
   productName: z.string().min(1, "Product Name is required"),
   productTypeId: z.string().min(1, "Product Type is required"),
-  // productTypeName: z.string().min(1, "Product Type is required"),
+  productTypeName: z.string().min(1, "Product Type is required"),
   serialNo: z.string().min(1, "Serial No is required"),
-  status: z.number().min(0).max(1, "Status must be 0 or 1"), 
+  status: z.boolean(),
   isCreateMode: z.boolean().optional(),
 }); 
 
@@ -45,9 +45,9 @@ export default function ProductFormModal({
     productId: '',
     productName: '',
     productTypeId: '',
-    // productTypeName: '',
+    productTypeName: '',
     serialNo: '',
-    status: 1,
+    status: true,
     isCreateMode: true,
   };
 
@@ -65,7 +65,7 @@ export default function ProductFormModal({
   });
 
   const productTypeId = watch("productTypeId");
-  // const productTypeName = watch("productTypeName");
+  const productTypeName = watch("productTypeName");
 
   useEffect(() => {
     if (editingData) {
@@ -78,6 +78,7 @@ export default function ProductFormModal({
   }, [editingData, reset]);
 
   if (!showModal) return null;
+  
 
   const onSubmit: SubmitHandler<ProductFormValues> = async (formData) => {
     try {
@@ -184,9 +185,9 @@ export default function ProductFormModal({
                 control={control}
                 render={({ field }) => (
                   <ToggleSwitch
-                    enabled={field.value === 1}
-                    onChange={(enabled: boolean) => field.onChange(enabled ? 1 : 0)}
-                    label={field.value === 1 ? "Active" : "Inactive"}
+                    enabled={field.value}
+                    onChange={(enabled: boolean) => field.onChange(enabled)}
+                    label={field.value ? "Active" : "Inactive"}
                     disabled={!canEdit}
                   />
                 )}

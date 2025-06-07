@@ -10,16 +10,16 @@ import { User } from "@/app/types/user";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
-import { getRoleOptions } from '@/app/libs/services/role';
+import { getRoleIdOptions, getRoleNameOptions } from '@/app/libs/services/role';
 
 const UserSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
-  userName: z.string().min(1, "User name is required"),
+  username: z.string().min(1, "User name is required"),
   firstname: z.string().min(1, "First name is required"),
   lastname: z.string().min(1, "Last name is required"),
   email: z.string().min(1, "Email is required"),
   roleName: z.string().min(1, "Role name is required"),
-  status: z.number(),
+  status: z.boolean(),
   isCreateMode: z.boolean().optional(),
 }); 
 
@@ -48,12 +48,12 @@ export default function UserFormModal({
   
   const defaultValues: UserFormValues = {
     userId: '',
-    userName: '',
+    username: '',
     firstname: '',
     lastname: '',
     email: '',
     roleName: '',
-    status: 1,
+    status: true,
     isCreateMode: true,
   };
 
@@ -75,15 +75,15 @@ export default function UserFormModal({
     const loadRoles = async () => {
       try {
         setIsLoadingRoles(true);
-        const roles = await getRoleOptions();
+        // const roles = await getRoleOptions();
         
-        const searchOptions: SearchOption[] = roles.map((item, index) => ({
-          id: (index + 1).toString(),
-          label: item.label,
-          value: item.value
-        }));
+        // const searchOptions: SearchOption[] = roles.map((item, index) => ({
+        //   id: (index + 1).toString(),
+        //   label: item.label,
+        //   value: item.value
+        // }));
         
-        setRoleOptions(searchOptions);
+        // setRoleOptions(searchOptions);
       } catch (error) {
         console.error('Failed to load roles:', error);
         setRoleOptions([]);
@@ -179,9 +179,9 @@ export default function UserFormModal({
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">User Name:</label>
-              <input {...register("userName")} className="border p-2 w-full mb-1" />
+              <input {...register("username")} className="border p-2 w-full mb-1" />
             </div>
-            {errors.userName && <p className="text-red-500 ml-160">{errors.userName.message}</p>}
+            {errors.username && <p className="text-red-500 ml-160">{errors.username.message}</p>}
           </div>
           
           <div className="mb-4">
@@ -255,9 +255,9 @@ export default function UserFormModal({
                 control={control}
                 render={({ field }) => (
                   <ToggleSwitch
-                    enabled={field.value === 1}
-                    onChange={(enabled: boolean) => field.onChange(enabled ? 1 : 0)}
-                    label={field.value === 1 ? "Active" : "Inactive"}
+                    enabled={field.value}
+                    onChange={(enabled: boolean) => field.onChange(enabled)}
+                    label={field.value ? "Active" : "Inactive"}
                     disabled={!canEdit}
                   />
                 )}

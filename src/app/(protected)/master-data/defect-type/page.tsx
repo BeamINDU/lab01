@@ -29,35 +29,28 @@ export default function Page() {
     handleSearch();
   }, []);
 
-const handleSearch = async () => {
-  try {
-    const formValues = getValues();
-    console.log('Defect Type search with values:', formValues); 
-    
-    const param: ParamSearch = {
-      defectTypeId: formValues.defectTypeId || '',
-      defectTypeName: formValues.defectTypeName || '',
-      status: formValues.status !== undefined ? formValues.status : undefined, 
-    };
-    
-    console.log('Defect Type search parameters:', param); 
-    
-    const defectTypes = await search(param);
-    setData(defectTypes);
-    
-    console.log('Defect Type search results:', defectTypes.length, 'items'); 
-  } catch (error) {
-    console.error("Search operation failed:", error);
-    showError('Search failed');
-    setData([]);
-  }
-};
+  const handleSearch = async () => {
+    try {
+      const formValues = getValues();
+      const param: ParamSearch = {
+        defectTypeId: formValues.defectTypeId || '',
+        defectTypeName: formValues.defectTypeName || '',
+        status: formValues.status || undefined,
+      };
+      const defectTypes = await search(param);
+      setData(defectTypes);
+    } catch (error) {
+      console.error("Search operation failed:", error);
+      showError('Search failed');
+      setData([]);
+    }
+  };
 
   const handleExport = (type: ExportType) => {
     const headers = ["Defect Type ID", "Defect Type Name", "Description"];
-    const keys: (keyof DefectType)[] = ["defectTypeId","defectTypeName", "description"];
+    const keys: (keyof DefectType)[] = ["defectTypeId", "defectTypeName", "description"];
     const fileName = "Product";
-  
+
     switch (type) {
       case ExportType.CSV:
         exportCSV(data, headers, keys, fileName);
@@ -78,7 +71,7 @@ const handleSearch = async () => {
       throw error;
     }
   };
-  
+
   const handleAddEdit = async (row?: DefectType) => {
     try {
       if (row) {
@@ -131,23 +124,22 @@ const handleSearch = async () => {
       setIsFormModalOpen(false);
     }
   };
-  
 
   return (
     <>
       <h2 className="text-2xl font-bold mb-2 ml-3">Defect Type</h2>
       <div className="p-4 mx-auto">
-      <div className="mb-6 max-w-full text-sm">
+        <div className="mb-6 max-w-full text-sm">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Filters Form */}
             <div className="md:basis-[80%]">
-              <DefectTypeFilterForm 
-                register={register} 
+              <DefectTypeFilterForm
+                register={register}
                 setValue={setValue}
-                onSearch={handleSearch} 
+                onSearch={handleSearch}
               />
             </div>
-            
+
             <div className="md:basis-[20%] flex flex-col justify-end items-end gap-4">
               <div className="flex flex-wrap justify-end gap-2">
                 {/* Upload Button */}
@@ -175,7 +167,7 @@ const handleSearch = async () => {
                 {/* Delete Button */}
                 {hasPermission(Menu.DefectType, Action.Delete) && (
                   <button
-                    className={`flex items-center gap-1 px-4 py-2 rounded ${selectedIds.length === 0 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "btn-danger" }`}
+                    className={`flex items-center gap-1 px-4 py-2 rounded ${selectedIds.length === 0 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "btn-danger"}`}
                     disabled={selectedIds.length === 0}
                     onClick={handleDelete}
                   >
@@ -193,7 +185,7 @@ const handleSearch = async () => {
           columns={DefectTypeColumns({
             showCheckbox: hasPermission(Menu.DefectType, Action.Delete),
             canEdit: hasPermission(Menu.DefectType, Action.Edit),
-            openEditModal:handleAddEdit,
+            openEditModal: handleAddEdit,
             selectedIds,
             setSelectedIds,
             data,
@@ -213,7 +205,6 @@ const handleSearch = async () => {
             onSave={handleSave}
           />
         )}
-
       </div>
     </>
   )

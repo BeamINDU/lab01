@@ -13,5 +13,5 @@ export type ProductType = {
 export type ParamSearch = {
   productTypeId?: string
   productTypeName?: string
-  status?: string
+  status?: boolean
 }

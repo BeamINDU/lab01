@@ -4,12 +4,8 @@ import { Search } from 'lucide-react'
 import { UseFormRegister, Control, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive  from '@/app/components/common/SearchField';
 import DateTimeField from '@/app/components/common/DateTimeField';
-import { 
-  getPlanningPlanOptions, 
-  getPlanningProductOptions, 
-  getPlanningLotOptions, 
-  getPlanningLineOptions 
-} from "@/app/libs/services/planning";
+import { getPlanIdOptions, getLotNoOptions, getLineNoOptions } from "@/app/libs/services/planning";
+import { getProductIdOptions } from "@/app/libs/services/product";
 
 interface PlanningFilterFormProps {
   register: UseFormRegister<any>;
@@ -50,8 +46,6 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           closeOnSelect={false}
           className="w-full"
         />
-
-
       </div>
       
       {/* Search Fields Section */}
@@ -63,7 +57,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           fieldName="planId"
           label="Plan ID"
           placeholder="Search plan ID..."
-          dataLoader={getPlanningPlanOptions}
+          // dataLoader={getPlanningPlanOptions}
           labelField="planId"
           valueField="planId"
           allowFreeText={true}
@@ -77,14 +71,12 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           fieldName="productId"
           label="Product ID"
           placeholder="Search product ID..."
-          dataLoader={getPlanningProductOptions}
+          // dataLoader={getPlanningProductOptions}
           labelField="productId"
           valueField="productId"
           allowFreeText={true}
           className="w-full"
         />
-
-
       </div>
       
       {/* Third Row */}
@@ -96,7 +88,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           fieldName="lotNo"
           label="Lot No"
           placeholder="Search lot number..."
-          dataLoader={getPlanningLotOptions}
+          // dataLoader={getPlanningLotOptions}
           labelField="lotNo"
           valueField="lotNo"
           allowFreeText={true}
@@ -110,7 +102,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           fieldName="lineId"
           label="Line ID"
           placeholder="Search line ID..."
-          dataLoader={getPlanningLineOptions}
+          // dataLoader={getPlanningLineOptions}
           labelField="lineId"
           valueField="lineId"
           allowFreeText={true}
@@ -127,8 +119,6 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           </button>
         </div>
       </div>
-
-
     </div>
   );
 }

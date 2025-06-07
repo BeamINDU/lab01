@@ -2,7 +2,7 @@ export type Camera = {
   cameraId: string
   cameraName: string
   location: string
-  status: number
+  status: boolean
   createdDate?: Date
   createdBy?: string
   updatedDate?: Date | null
@@ -14,5 +14,5 @@ export type ParamSearch = {
   cameraId?: string
   cameraName?: string
   location?: string
-  status?: string
+  status?: boolean
 }

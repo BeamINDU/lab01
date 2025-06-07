@@ -23,7 +23,7 @@ export default function ProductTypeFilterForm({ register, setValue, onSearch }: 
           fieldName="productTypeId"
           label="Product Type ID"
           placeholder="Search or enter product type ID..."
-          dataLoader={searchProductTypes}
+          // dataLoader={searchProductTypes}
           labelField="productTypeId"
           valueField="productTypeId"
           allowFreeText={true}
@@ -36,7 +36,7 @@ export default function ProductTypeFilterForm({ register, setValue, onSearch }: 
           fieldName="productTypeName"
           label="Product Type Name"
           placeholder="Search or enter product type name..."
-          dataLoader={searchProductTypes}
+          // dataLoader={searchProductTypes}
           labelField="productTypeName"
           valueField="productTypeName"
           allowFreeText={true}
@@ -54,9 +54,9 @@ export default function ProductTypeFilterForm({ register, setValue, onSearch }: 
           options={[
             { id: "all", label: "All", value: "" },
             ...ActiveStatus.map(status => ({
-              id: status.value,
+              id: String(status.value),
               label: status.label,
-              value: status.value
+              value: String(status.value),
             }))
           ]}
           allowFreeText={false}

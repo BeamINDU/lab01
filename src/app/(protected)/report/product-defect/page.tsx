@@ -65,10 +65,15 @@ export default function Page() {
   const handleDetail = async (row?: ReportProduct) => {
     try {
       if (row) {
-        // ✅ แก้ไข: เรียก detail service เพื่อได้ ProductDetail
-        const productDetail = await detail(row.productId);
-        if (productDetail) {
-          setEditingData(productDetail);
+        // const data = await detail(row.productId) ?? row;
+        const result = data.find((item) => item.productId === row.productId) ?? row;
+        if (result) {
+          setData(prev =>
+            prev.map(item =>
+              item.productId === row.productId ? result : item
+            )
+          );
+          // setEditingData(result);
           setIsFormModalOpen(true);
         } else {
           showError('Product detail not found');
@@ -87,8 +92,14 @@ export default function Page() {
   const handleSave = async (formData: ParamUpdate) => {
     try {
       if (formData.productId) {
-        const updatedData = await update(formData) as ReportProduct;
-        setData(prev => prev.map(item => (item.productId === formData.productId ? updatedData : item)));
+        const updatedData = await update(formData) as ProductDetail;
+        setData(prev => 
+          prev.map(item => 
+            item.productId === formData.productId 
+              ? { ...item, ...updatedData }
+              : item
+          )
+        );
       }
       showSuccess(`Saved successfully`)
     } catch (error) {
@@ -99,7 +110,6 @@ export default function Page() {
       setIsFormModalOpen(false);
     }
   };
-  
 
   return (
     <>

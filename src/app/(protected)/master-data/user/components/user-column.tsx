@@ -103,8 +103,8 @@ export default function UserColumns({
       accessorKey: "status",
       header: "Status",
       cell: ({ getValue }) => {
-        const value = getValue() as number;
-        const isActive = value === 1;
+        const value = getValue() as boolean;
+        const isActive = value === true;
         return (
           <span
             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium ${

@@ -27,21 +27,20 @@ export default function Page() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
   // Watch สำหรับ roleName เพื่อ debug
-  const watchedRoleName = watch("roleName");
+  // const watchedRoleName = watch("roleName");
 
   useEffect(() => {
     handleSearch();
   }, []);
 
   // Debug: แสดงค่าที่ถูก watch
-  useEffect(() => {
-    console.log('Current roleName value:', watchedRoleName);
-  }, [watchedRoleName]);
+  // useEffect(() => {
+  //   console.log('Current roleName value:', watchedRoleName);
+  // }, [watchedRoleName]);
 
   const handleSearch = async () => {
     try {
       const formValues = getValues();
-      console.log('User search with values:', formValues); 
       
       const param: ParamSearch = {
         userId: formValues.userId || '',
@@ -49,15 +48,11 @@ export default function Page() {
         firstname: formValues.firstname || '',
         lastname: formValues.lastname || '',
         roleName: formValues.roleName || '', 
-        status: formValues.status !== undefined ? formValues.status : undefined,
+        status: formValues.status || undefined,
       };
-      
-      console.log('User search parameters:', param); 
       
       const users = await search(param);
       setData(users);
-      
-      console.log('User search results:', users.length, 'items'); 
     } catch (error) {
       console.error("Error search user:", error);
       showError('Error search user');
@@ -67,7 +62,7 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     const headers = ["User ID", "User Name", "First Name","Last Name","Email", "Role Name", "Status", "Created Date", "Updated Date"];
-    const keys: (keyof User)[] = ["userId", "userName", "firstname", "lastname", "email", "roleName", "status", "createdDate", "updatedDate"];
+    const keys: (keyof User)[] = ["userId", "username", "firstname", "lastname", "email", "roleName", "status", "createdDate", "updatedDate"];
     const fileName = "User";
   
     switch (type) {
@@ -94,7 +89,8 @@ export default function Page() {
   const handleAddEdit = async (row?: User) => {
     try {
       if (row) {
-        const result = (await detail(row.userId ?? "")) ?? (row as User);
+        // const result = (await detail(row.userId ?? "")) ?? (row as User);
+        const result = data.find((item) => item.userId === row.userId) ?? row;
         const updatedRow = { ...result, isCreateMode: !row.userId };
         setEditingData(updatedRow);
       } else {

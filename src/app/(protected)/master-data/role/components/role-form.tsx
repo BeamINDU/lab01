@@ -13,7 +13,7 @@ const RoleSchema = z.object({
   roleId: z.string().min(1, "Role Id  is required"),
   roleName: z.string().min(1, "Role Name  is required"),
   description: z.string(),
-  status: z.number(),
+  status: z.boolean(),
   isCreateMode: z.boolean().optional(),
 }); 
 
@@ -40,7 +40,7 @@ export default function RoleFormModal({
     roleId: '',
     roleName: '',
     description: '',
-    status: 1,
+    status: true,
     isCreateMode: true,
   };
 
@@ -143,9 +143,9 @@ export default function RoleFormModal({
                 control={control}
                 render={({ field }) => (
                   <ToggleSwitch
-                    enabled={field.value === 1}
-                    onChange={(enabled: boolean) => field.onChange(enabled ? 1 : 0)}
-                    label={field.value === 1 ? "Active" : "Inactive"}
+                    enabled={field.value}
+                    onChange={(enabled: boolean) => field.onChange(enabled)}
+                    label={field.value ? "Active" : "Inactive"}
                     disabled={!canEdit}
                   />
                 )}

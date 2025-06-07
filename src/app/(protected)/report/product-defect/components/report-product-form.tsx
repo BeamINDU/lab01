@@ -73,7 +73,7 @@ export default function ProductFormModal({
             {/* Left Side */}
             <div className="flex flex-col items-center">
             <img
-              src="/images/logo-login.png"
+              src={editingData?.imageUrl}
               alt="Product"
               className="border-0 border-yellow-500 p-1 w-[300px] h-[200px] object-contain"
             />
@@ -107,7 +107,7 @@ export default function ProductFormModal({
                 <p><b>Serial No.: </b> {editingData?.serialNo}</p>
                 <p><b>Date: </b> {editingData?.date}</p>
                 <p><b>Time: </b> {editingData?.time}</p>
-                <p><b>Defect Type: </b> {editingData?.defectType}</p>
+                <p><b>Defect Type: </b> {editingData?.defectTypeName}</p>
                 <p><b>Camera ID: </b>{editingData?.cameraId}</p>
               </div>
 

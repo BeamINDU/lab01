@@ -67,9 +67,9 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
           options={[
             { id: "all", label: "All", value: "" },
             ...ActiveStatus.map(status => ({
-              id: status.value,
+              id: String(status.value),
               label: status.label,
-              value: status.value 
+              value: String(status.value),
             }))
           ]}
           allowFreeText={false}
@@ -81,9 +81,7 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
         {/* Search Button */}
         <div className="flex items-center justify-start pt-[2px]">
           <button
-
             className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900"
-
             onClick={onSearch}
           >
             Search

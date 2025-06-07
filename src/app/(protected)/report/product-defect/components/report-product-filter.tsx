@@ -5,9 +5,9 @@ import { Search } from 'lucide-react'
 import { UseFormRegister, Control, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive from '@/app/components/common/SearchField';
 import DateTimeField from '@/app/components/common/DateTimeField'; // ✅ ใช้ DateTimeField แทน
-import { getProductOptions } from "@/app/libs/services/product";
-import { getDefectTypeOptions } from "@/app/libs/services/defect-type";
-import { getCameraOptions } from "@/app/libs/services/camera";
+import { getProductNameOptions } from "@/app/libs/services/product";
+import { getDefectTypeNameOptions } from "@/app/libs/services/defect-type";
+import { getCameraNameOptions } from "@/app/libs/services/camera";
 
 interface ReportProductFilterFormProps {
   register: UseFormRegister<any>;
@@ -56,12 +56,12 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           fieldName="cameraName"
           label="Camera Name"
           placeholder="Search camera..."
-          dataLoader={async () => {
-            const options = await getCameraOptions();
-            return options.map(opt => ({
-              cameraName: opt.label.split(' - ')[0] 
-            }));
-          }}
+          // dataLoader={async () => {
+          //   const options = await getCameraOptions();
+          //   return options.map(opt => ({
+          //     cameraName: opt.label.split(' - ')[0] 
+          //   }));
+          // }}
           labelField="cameraName"
           valueField="cameraName"
           allowFreeText={true}
@@ -78,13 +78,13 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           fieldName="productName"
           label="Product Name"
           placeholder="Search product..."
-          dataLoader={async () => {
-            const options = await getProductOptions();
-            // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
-            return options.map(opt => ({
-              productName: opt.label
-            }));
-          }}
+          // dataLoader={async () => {
+          //   const options = await getProductOptions();
+          //   // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
+          //   return options.map(opt => ({
+          //     productName: opt.label
+          //   }));
+          // }}
           labelField="productName"
           valueField="productName"
           allowFreeText={true}
@@ -98,13 +98,13 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           fieldName="defectType"
           label="Defect Type"
           placeholder="Search defect type..."
-          dataLoader={async () => {
-            const options = await getDefectTypeOptions();
-            // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
-            return options.map(opt => ({
-              defectType: opt.label
-            }));
-          }}
+          // dataLoader={async () => {
+          //   const options = await getDefectTypeOptions();
+          //   // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
+          //   return options.map(opt => ({
+          //     defectType: opt.label
+          //   }));
+          // }}
           labelField="defectType"
           valueField="defectType"
           allowFreeText={true}

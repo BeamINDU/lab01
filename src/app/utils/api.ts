@@ -126,6 +126,14 @@ const request = async <T>(
 };
 
 // Upload helper
+const buildQueryString = (params?: Record<string, any>): string => {
+  if (!params) return '';
+  const stringified = Object.fromEntries(
+    Object.entries(params).map(([k, v]) => [k, String(v)])
+  );
+  return new URLSearchParams(stringified).toString();
+};
+
 const uploadFile = async <T>(
   url: string,
   formData: FormData,
@@ -146,6 +154,12 @@ export const api = {
   get: <T>(url: string, config?: AxiosRequestConfig) =>
     request<T>('get', url, config),
 
+  getWithParams: <T>(url: string, params?: Record<string, any>) => {
+    const queryString = buildQueryString(params);
+    const fullUrl = queryString ? `${url}?${queryString}` : url;
+    return request<T>('get', fullUrl);
+  },
+
   post: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
     request<T>('post', url, data, config),
 
@@ -154,7 +168,7 @@ export const api = {
 
   delete: <T>(url: string, config?: AxiosRequestConfig) =>
     request<T>('delete', url, config),
-  
+
   upload: uploadFile,
 };
 

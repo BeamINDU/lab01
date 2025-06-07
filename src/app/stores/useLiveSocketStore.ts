@@ -17,7 +17,7 @@ export const useLiveSocketStore = create<LiveSocketState>((set, get) => ({
     // For MockLiveWebSocket
     // const socket = new MockLiveWebSocket(cameraId) as unknown as WebSocket;
 
-    const socketUrl = process.env.NEXT_PUBLIC_LIVE_SOCKET_URL || 'ws://localhost:8010/ws/live-frame';
+    const socketUrl = `${process.env.NEXT_PUBLIC_LIVE_SOCKET_URL}/${cameraId}` || `ws://localhost:8010/live-defect/${cameraId}`;
     const socket = new WebSocket(socketUrl);
 
     socket.onopen = () => {

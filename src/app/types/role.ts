@@ -2,7 +2,7 @@ export type Role = {
   roleId: string
   roleName: string
   description: string
-  status: number,
+  status: boolean,
   createdDate?: Date
   createdBy?: string
   updatedDate?: Date | null
@@ -13,5 +13,5 @@ export type Role = {
 export type ParamSearch = {
   roleId?: string
   roleName?: string
-  status?: number,
+  status?: boolean,
 }

@@ -4,8 +4,8 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive from '@/app/components/common/SearchField';
-import { getProductTypeNameOptions } from "@/app/libs/services/product-type";
-import { getDefectTypeOptions } from "@/app/libs/services/defect-type";
+import { getProductTypeIdOptions, getProductTypeNameOptions } from "@/app/libs/services/product-type";
+import { getDefectTypeIdOptions, getDefectTypeNameOptions } from "@/app/libs/services/defect-type";
 import { search as searchReportDefects } from "@/app/libs/services/report-defect-summary";
 
 interface ReportDefectFilterFormProps {
@@ -62,13 +62,13 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
           fieldName="defectType"
           label="Defect Type"
           placeholder="Search defect type..."
-          dataLoader={async () => {
-            const options = await getDefectTypeOptions();
-            // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
-            return options.map(opt => ({
-              defectType: opt.label
-            }));
-          }}
+          // dataLoader={async () => {
+          //   const options = await getDefectTypeOptions();
+          //   // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
+          //   return options.map(opt => ({
+          //     defectType: opt.label
+          //   }));
+          // }}
           labelField="defectType"
           valueField="defectType"
           allowFreeText={true}

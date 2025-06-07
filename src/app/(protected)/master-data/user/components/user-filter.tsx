@@ -3,7 +3,7 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive  from '@/app/components/common/SearchField';
-import { getRoleOptions } from '@/app/libs/services/role';
+import { getRoleIdOptions, getRoleNameOptions } from '@/app/libs/services/role';
 import { search as searchUsers } from '@/app/libs/services/user';
 import { ActiveStatus } from '@/app/constants/status';
 
@@ -45,17 +45,17 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Role - ใช้ SearchField (เหมือนเดิมแต่ง่ายขึ้น) */}
+        {/* Role */}
         <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="roleName"
           label="Role"
           placeholder="Search role..."
-          dataLoader={async () => {
-            const options = await getRoleOptions();
-            return options; // getRoleOptions ส่ง { label, value }
-          }}
+          // dataLoader={async () => {
+          //   const options = await getRoleOptions();
+          //   return options; // getRoleOptions ส่ง { label, value }
+          // }}
           labelField="label"
           valueField="value"
           allowFreeText={true}
@@ -71,9 +71,9 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
           options={[
             { id: "all", label: "All", value: "" },
             ...ActiveStatus.map(status => ({
-              id: status.value,
+              id: String(status.value),
               label: status.label,
-              value: status.value
+              value: String(status.value),
             }))
           ]}
           allowFreeText={false}

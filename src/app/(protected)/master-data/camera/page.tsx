@@ -44,7 +44,7 @@ export default function Page() {
         cameraId: formValues.cameraId || '',
         cameraName: formValues.cameraName || '',
         location: formValues.location || '',
-        status: formValues.status !== undefined ? formValues.status : undefined,
+        status: formValues.status === '' ? undefined : formValues.status === 'true',
       };
       const cameras = await search(param);
       setData(cameras);
@@ -84,7 +84,8 @@ export default function Page() {
   const handleAddEdit = async (row?: Camera) => {
     try {
       if (row) {
-        const result = (await detail(row.cameraId ?? "")) ?? (row as Camera);
+        // const result = (await detail(row.cameraId ?? "")) ?? (row as Camera);
+        const result = data.find((item) => item.cameraId === row.cameraId) ?? row;
         const updatedRow = { ...result, isCreateMode: !row.cameraId };
         setEditingData(updatedRow);
       } else {

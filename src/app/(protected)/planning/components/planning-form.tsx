@@ -11,7 +11,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
-import { getProductIdOptions, getLineIdOptions } from '@/app/libs/services/planning';
+import { getLineNoOptions, getLotNoOptions, getPlanIdOptions } from '@/app/libs/services/planning';
 import { SearchFieldModal } from '@/app/components/common/SearchField';
 
 const PlanningSchema = z.object({
@@ -158,7 +158,7 @@ export default function PlanningFormModal({
               fieldName="productId"
               label="Product ID"
               placeholder="Select product ID..."
-              dataLoader={getProductIdOptions}
+              // dataLoader={getProductIdOptions}
               labelField="label"
               valueField="value"
               allowFreeText={true}

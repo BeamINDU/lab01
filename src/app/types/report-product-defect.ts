@@ -1,11 +1,13 @@
 export type ReportProduct = {
+  runningNo: string,
   datetime: Date
   productId: string
   productName: string
-  lotNo: string
   status: string
-  defectType: string
+  defectTypeId: string
+  defectTypeName: string
   cameraName: string
+  imageUrl: string
 }
 
 export type ProductDetail = {
@@ -15,12 +17,14 @@ export type ProductDetail = {
   date: string
   time: string
   lotNo: string
-  defectType: string
+  defectTypeId: string
+  defectTypeName: string
   cameraId: string
   cameraName: string
   history: History[]
   status: string
   comment: string
+  imageUrl: string
 }
 
 export type History = {

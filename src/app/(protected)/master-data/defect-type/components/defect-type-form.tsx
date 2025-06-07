@@ -13,7 +13,7 @@ const DefectTypeSchema = z.object({
   defectTypeId: z.string().min(1, "Defect Type Id is required"),
   defectTypeName: z.string().min(1, "Defect Type Name is required"),
   description: z.string(),
-  status: z.number(),
+  status: z.boolean(),
   isCreateMode: z.boolean().optional(),
 }); 
 
@@ -40,7 +40,7 @@ export default function DefectTypeFormModal({
     defectTypeId: '',
     defectTypeName: '',
     description: '',
-    status: 1,
+    status: true,
     isCreateMode: true,
   };
 
@@ -140,9 +140,9 @@ export default function DefectTypeFormModal({
                 control={control}
                 render={({ field }) => (
                   <ToggleSwitch
-                    enabled={field.value === 1}
-                    onChange={(enabled: boolean) => field.onChange(enabled ? 1 : 0)}
-                    label={field.value === 1 ? "Active" : "Inactive"}
+                    enabled={field.value}
+                    onChange={(enabled: boolean) => field.onChange(enabled)}
+                    label={field.value ? "Active" : "Inactive"}
                     disabled={!canEdit}
                   />
                 )}

@@ -1,11 +1,11 @@
-// src/app/(protected)/report/transaction/components/transaction-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
 import { UseFormRegister, Control, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
 import DateTimeField from '@/app/components/common/DateTimeField'; 
-import { getTransactionLotOptions, getTransactionProductOptions } from "@/app/libs/services/transaction";
+import { getProductIdOptions } from "@/app/libs/services/product";
+import { getLotNoOptions } from "@/app/libs/services/transaction";
 
 interface TransactionFilterFormProps {
   register: UseFormRegister<any>;
@@ -59,7 +59,7 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           fieldName="lotNo"
           label="Lot No"
           placeholder="Search lot number..."
-          dataLoader={getTransactionLotOptions}
+          // dataLoader={getTransactionLotOptions}
           labelField="lotNo"
           valueField="lotNo"
           allowFreeText={true}
@@ -73,7 +73,7 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           fieldName="productId"
           label="Product ID"
           placeholder="Search product ID..."
-          dataLoader={getTransactionProductOptions}
+          // dataLoader={getTransactionProductOptions}
           labelField="productId"
           valueField="productId"
           allowFreeText={true}

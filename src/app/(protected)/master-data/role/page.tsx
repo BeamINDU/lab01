@@ -49,7 +49,7 @@ export default function Page() {
       const param: ParamSearch = {
         roleId: formValues.roleId || '',
         roleName: formValues.roleName || '',
-        status: formValues.status !== undefined ? formValues.status : undefined,
+        status: formValues.status || undefined,
       };
       const products = await search(param);
       setData(products);

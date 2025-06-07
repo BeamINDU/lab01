@@ -1,4 +1,3 @@
-// src/app/components/common/SearchField.tsx - Fixed version
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -6,6 +5,7 @@ import { UseFormRegister, UseFormSetValue, Control, Controller } from "react-hoo
 import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
 
 interface SearchFieldProps {
+
   register?: UseFormRegister<any>;
   setValue?: UseFormSetValue<any>;
   control?: Control<any>; 
@@ -33,6 +33,7 @@ interface SearchFieldProps {
   layout?: 'responsive' | 'modal' | 'inline';
   labelWidth?: string;
   
+  //  เพิ่มตัวเลือกให้แสดง error ใน component
   showInternalError?: boolean;
   required?: boolean;
   
@@ -66,67 +67,35 @@ export default function SearchField({
   const [selectedValue, setSelectedValue] = useState<string>('');
   const [searchOptions, setSearchOptions] = useState<SearchOption[]>(options);
   const [loading, setLoading] = useState<boolean>(false);
-  const [loadError, setLoadError] = useState<string>('');
 
-  // Load data from dataLoader
+  // Load data if dataLoader is provided
   useEffect(() => {
     if (dataLoader && !options.length) {
       const loadData = async () => {
         try {
           setLoading(true);
-          setLoadError('');
-          
-          console.log(`Loading data for ${fieldName}...`);
           const data = await dataLoader();
-          console.log(`Raw data from ${fieldName}:`, data);
           
           let transformedOptions: SearchOption[] = [];
           
-          // ตรวจสอบว่า data เป็น array หรือไม่
-          if (!Array.isArray(data)) {
-            console.warn(`${fieldName}: Expected array but got:`, typeof data, data);
-            setLoadError('Invalid data format received');
-            setSearchOptions([]);
-            return;
+          if (Array.isArray(data) && data.length > 0) {
+            if (typeof data[0] === 'string') {
+              transformedOptions = data.map((item, index) => ({
+                id: `string-${index}-${item}`,
+                label: item,
+                value: item
+              }));
+            } else if (typeof data[0] === 'object') {
+              transformedOptions = data.map((item, index) => ({
+                id: item.id || `obj-${index}-${item[valueField] || item.value || item.id || item[labelField]}`,
+                label: item[labelField] || item.label || item.name || String(item),
+                value: item[valueField] || item.value || item.id || item[labelField]
+              }));
+            }
           }
           
-          if (data.length === 0) {
-            console.log(`${fieldName}: No data available`);
-            setSearchOptions([]);
-            return;
-          }
-          
-          // Transform data based on type
-          if (typeof data[0] === 'string') {
-            transformedOptions = data.map((item, index) => ({
-              id: `string-${index}-${item}`,
-              label: item,
-              value: item
-            }));
-          } else if (typeof data[0] === 'object' && data[0] !== null) {
-            transformedOptions = data.map((item, index) => {
-              // ตรวจสอบว่า item มี property ที่ต้องการหรือไม่
-              const label = item[labelField] || item.label || item.name || String(item);
-              const value = item[valueField] || item.value || item.id || item[labelField] || String(item);
-              const id = item.id || `obj-${index}-${value}`;
-              
-              return {
-                id: String(id),
-                label: String(label),
-                value: String(value)
-              };
-            });
-          } else {
-            console.warn(`${fieldName}: Unexpected data format:`, data[0]);
-            setLoadError('Unexpected data format');
-            setSearchOptions([]);
-            return;
-          }
-          
-          console.log(`✅ Loaded ${transformedOptions.length} options for ${fieldName}`);
           setSearchOptions(transformedOptions);
 
-          // Set initial value if provided
           if (initialValue && transformedOptions.length > 0) {
             const matchedOption = transformedOptions.find(opt => 
               opt.value === initialValue || opt.label === initialValue
@@ -140,8 +109,7 @@ export default function SearchField({
             }
           }
         } catch (error) {
-          console.error(`❌ Failed to load data for ${fieldName}:`, error);
-          setLoadError(`Failed to load data: ${(error as Error).message}`);
+          console.error(`Failed to load data for ${fieldName}:`, error);
           setSearchOptions([]);
         } finally {
           setLoading(false);
@@ -152,7 +120,6 @@ export default function SearchField({
     }
   }, [dataLoader, labelField, valueField, fieldName, options.length, initialValue, allowFreeText, setValue]);
 
-  // Handle static options
   useEffect(() => {
     if (options.length > 0) {
       const optionsWithUniqueIds = options.map((opt, index) => ({
@@ -176,7 +143,6 @@ export default function SearchField({
     }
   }, [options, initialValue, allowFreeText, fieldName, setValue]);
 
-  // Handle initial value changes
   useEffect(() => {
     if (initialValue !== undefined) {
       if (searchOptions.length > 0) {
@@ -195,7 +161,7 @@ export default function SearchField({
     }
   }, [initialValue, searchOptions, allowFreeText, fieldName, setValue]);
 
-  // Handlers for register() method
+  //  Handlers สำหรับ register() method
   const handleSelect = (option: SearchOption | null) => {
     const value = option ? option.value : '';
     setSelectedValue(value);
@@ -217,9 +183,9 @@ export default function SearchField({
     }
   };
 
-  // Render layout
+  //  เลือก layout ตาม prop
   const renderLayout = () => {
-    // Controller approach with error handling
+    //  ถ้าใช้ control และต้องการ error handling
     if (control && showInternalError) {
       const searchFieldWithController = (
         <Controller
@@ -253,7 +219,7 @@ export default function SearchField({
                 <GoogleStyleSearch
                   options={searchOptions}
                   value={field.value || ''}
-                  placeholder={loading ? "Loading..." : loadError ? "Error loading data" : placeholder}
+                  placeholder={loading ? "Loading..." : placeholder}
                   onSelect={handleControllerSelect}
                   onInputChange={handleControllerInputChange}
                   allowClear={true}
@@ -268,18 +234,12 @@ export default function SearchField({
                     {fieldState.error.message}
                   </p>
                 )}
-                {loadError && (
-                  <p className="text-orange-500 text-xs mt-1">
-                    {loadError}
-                  </p>
-                )}
               </div>
             );
           }}
         />
       );
 
-      // Return layout based on layout prop
       switch (layout) {
         case 'modal':
           return (
@@ -307,30 +267,30 @@ export default function SearchField({
             </div>
           );
 
-        case 'responsive':
-        default:
-          return (
-            <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] items-start gap-2">
-              <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[140px] sm:min-w-[160px] pt-2">
-                {label}
-                {required && <span className="text-red-500 ml-1">*</span>}
-              </label>
-              <div className="w-full min-w-0">
-                {searchFieldWithController}
-              </div>
-            </div>
-          );
+case 'responsive':
+default:
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] items-start gap-2">
+      <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[140px] sm:min-w-[160px] pt-2">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
+      <div className="w-full min-w-0">
+        {searchFieldWithController}
+      </div>
+    </div>
+  );
       }
     }
 
-    // Traditional register() approach
+    // ✅ Traditional register() approach
     const searchComponent = (
-      <div className="w-full">
+      <>
         {register && <input type="hidden" {...register(fieldName)} />}
         <GoogleStyleSearch
           options={searchOptions}
           value={selectedValue}
-          placeholder={loading ? "Loading..." : loadError ? "Error loading data" : placeholder}
+          placeholder={loading ? "Loading..." : placeholder}
           onSelect={handleSelect}
           onInputChange={handleInputChange}
           allowClear={true}
@@ -340,12 +300,7 @@ export default function SearchField({
           disabled={disabled || loading}
           className="w-full"
         />
-        {loadError && (
-          <p className="text-orange-500 text-xs mt-1">
-            {loadError}
-          </p>
-        )}
-      </div>
+      </>
     );
 
     switch (layout) {
@@ -375,19 +330,20 @@ export default function SearchField({
           </div>
         );
 
-      case 'responsive':
-      default:
-        return (
-          <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] items-start sm:items-center gap-2">
-            <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[140px] sm:min-w-[160px]">
-              {label}
-              {required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            <div className="w-full min-w-0">
-              {searchComponent}
-            </div>
-          </div>
-        );
+
+case 'responsive':
+default:
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] items-start sm:items-center gap-2">
+      <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[140px] sm:min-w-[160px]">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </label>
+      <div className="w-full min-w-0">
+        {searchComponent}
+      </div>
+    </div>
+  );
     }
   };
 
@@ -398,7 +354,7 @@ export default function SearchField({
   );
 }
 
-// Export convenience components
+//  Export convenience components สำหรับการใช้งานแต่ละแบบ
 export const SearchFieldModal = (props: Omit<SearchFieldProps, 'layout'>) => (
   <SearchField {...props} layout="modal" />
 );
@@ -411,7 +367,7 @@ export const SearchFieldResponsive = (props: Omit<SearchFieldProps, 'layout'>) =
   <SearchField {...props} layout="responsive" />
 );
 
-// Convenience components with Controller
+//  Convenience components with Controller
 export const SearchFieldModalWithController = (props: Omit<SearchFieldProps, 'layout' | 'showInternalError'>) => (
   <SearchField {...props} layout="modal" showInternalError={true} />
 );

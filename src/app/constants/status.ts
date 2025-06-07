@@ -1,6 +1,6 @@
 export const ActiveStatus = [
-  { label: 'Active', value: 'true' },   
-  { label: 'Inactive', value: 'false' },
+  { label: 'Active', value: true },
+  { label: 'Inactive', value: false },
 ];
 
 export const ModelStatusOption = [

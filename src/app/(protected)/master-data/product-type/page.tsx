@@ -29,70 +29,23 @@ export default function Page() {
     handleSearch();
   }, []);
 
-const handleSearch = async () => {
-  try {
-    const formValues = getValues();
-    
-    const param: ParamSearch = {
-      productTypeId: formValues.productTypeId || '',
-      productTypeName: formValues.productTypeName || '',
-      status: formValues.status !== undefined ? formValues.status : undefined,
-    };
-    
-    const result = await search(param);
-    
-    // ✅ การจัดการข้อมูลที่รอบคอบ
-    let processedData: ProductType[] = [];
-    
-    if (Array.isArray(result)) {
-      processedData = result;
-    } else if (result && typeof result === 'object') {
-      // ลองหา array ใน property ต่างๆ
-      if ('data' in result && Array.isArray(result.data)) {
-        processedData = result.data;
-      } else if ('items' in result && Array.isArray(result.items)) {
-        processedData = result.items;
-      } else if ('results' in result && Array.isArray(result.results)) {
-        processedData = result.results;
-      } else {
-        // ถ้าเป็น single object ให้ใส่ใน array
-        processedData = [result as ProductType];
-      }
-    } else if (result === null || result === undefined) {
-      processedData = [];
-    } else {
-      console.warn('Unexpected result format:', result);
-      processedData = [];
+  const handleSearch = async () => {
+    try {
+      const formValues = getValues();
+      const param: ParamSearch = {
+        productTypeId: formValues.productTypeId || '',
+        productTypeName: formValues.productTypeName || '',
+        status: formValues.status || undefined,
+      };
+      const products = await search(param);
+      setData(products);
+    } catch (error) {
+      console.error("Failed to search producttype:", error);
+      setData([]);
+      // const message = error instanceof Error ? error.message : String(error);
+      showError(`Search failed`);
     }
-    
-    // ✅ Client-side filtering สำหรับ status
-    if (formValues.status !== undefined && formValues.status !== '') {
-      const statusFilter = formValues.status === '1'; // ✅ แปลง string เป็ boolean
-      processedData = processedData.filter(item => item.status === statusFilter);
-    }
-    
-    // ✅ Client-side filtering สำหรับ productTypeId
-    if (formValues.productTypeId && formValues.productTypeId.trim() !== '') {
-      processedData = processedData.filter(item => 
-        item.productTypeId.toLowerCase().includes(formValues.productTypeId.toLowerCase())
-      );
-    }
-    
-    // ✅ Client-side filtering สำหรับ productTypeName
-    if (formValues.productTypeName && formValues.productTypeName.trim() !== '') {
-      processedData = processedData.filter(item => 
-        item.productTypeName.toLowerCase().includes(formValues.productTypeName.toLowerCase())
-      );
-    }
-    
-    setData(processedData);
-    
-  } catch (error) {
-    console.error("Search operation failed:", error);
-    showError('Search failed');
-    setData([]);
-  }
-};
+  };
 
   const handleExport = (type: ExportType) => {
     const headers = ["Product Type ID", "Product Type Name", "Description", "Status"];
@@ -115,44 +68,33 @@ const handleSearch = async () => {
       showSuccess(`Uploaded: ${file.name}`);
     } catch (error) {
       console.error("Upload operation failed:", error);
+      // const message = error instanceof Error ? error.message : String(error);
       showError(`Upload failed`);
       throw error;
     }
   };
   
-const handleAddEdit = async (row?: ProductType) => {
-  try {
-    if (row) {
-      // Edit mode
-      const result = (await detail(row.productTypeId ?? "")) ?? (row as ProductType);
-      const updatedRow: ProductType = { 
-        ...result, 
-        isCreateMode: false 
-      };
-      console.log('Edit mode data:', updatedRow);
-      setEditingData(updatedRow);
-    } else {
-      // Add mode - ✅ กำหนดค่าที่จำเป็นทั้งหมด
-      const newData: ProductType = {
-        productTypeId: '',
-        productTypeName: '',
-        description: '',
-        status: true, // ✅ ใช้ boolean default
-        createdDate: undefined,
-        createdBy: undefined,
-        updatedDate: null,
-        updatedBy: null,
-        isCreateMode: true
-      };
-      console.log('Add mode data:', newData);
-      setEditingData(newData);
+  const handleAddEdit = async (row?: ProductType) => {
+    try {
+      if (row) {
+        // const result = await detail(row.productTypeId ?? "");
+        const result = data.find((item) => item.productTypeId === row.productTypeId) ?? row;
+        const updatedRow: ProductType = {
+          ...result,
+          isCreateMode: !row.productTypeId,
+        };
+        setEditingData(updatedRow);
+      } else {
+        reset();
+        setEditingData(null);
+      }
+      setIsFormModalOpen(true);
+    } catch (error) {
+      console.error('Delete operation failed:', error);
+      // const message = error instanceof Error ? error.message : String(error);
+      showError(`Failed to load details`);
     }
-    setIsFormModalOpen(true);
-  } catch (error) {
-    console.error('Failed to open modal:', error);
-    showError('Failed to load product type details');
-  }
-};
+  };
 
   const handleDelete = async () => {
     const result = await showConfirm('Are you sure you want to delete these product type?')
@@ -166,7 +108,8 @@ const handleAddEdit = async (row?: ProductType) => {
         showSuccess(`Deleted successfully`)
       } catch (error) {
         console.error('Delete operation failed:', error);
-        showError(`Delete failed`)
+        // const message = error instanceof Error ? error.message : String(error);
+        showError(`Delete failed`);
       }
     }
   };
@@ -184,13 +127,13 @@ const handleAddEdit = async (row?: ProductType) => {
       showSuccess(`Saved successfully`)
     } catch (error) {
       console.error('Save operation failed:', error);
-      showError(`Save failed`)
+      const message = error instanceof Error ? error.message : String(error);
+      showError(`Save failed: ${message}`);
     } finally {
       reset();
       setIsFormModalOpen(false);
     }
   };
-  
 
   return (
     <>

@@ -12,7 +12,7 @@ const CameraSchema = z.object({
   cameraId: z.string().min(1, "Camera Id is required"),
   cameraName: z.string().min(1, "Camera Name is required"),
   location: z.string().min(1, "location is required"),
-  status: z.number(),
+  status: z.boolean(),
   isCreateMode: z.boolean().optional(),
 }); 
 
@@ -39,7 +39,7 @@ export default function CameraFormModal({
     cameraId: '',
     cameraName: '',
     location: '',
-    status: 1,
+    status: true,
     isCreateMode: true,
   };
 
@@ -142,9 +142,9 @@ export default function CameraFormModal({
                 control={control}
                 render={({ field }) => (
                   <ToggleSwitch
-                    enabled={field.value === 1}
-                    onChange={(enabled: boolean) => field.onChange(enabled ? 1 : 0)}
-                    label={field.value === 1 ? "Active" : "Inactive"}
+                    enabled={field.value}
+                    onChange={(enabled: boolean) => field.onChange(enabled)}
+                    label={field.value ? "Active" : "Inactive"}
                     disabled={!canEdit}
                   />
                 )}
