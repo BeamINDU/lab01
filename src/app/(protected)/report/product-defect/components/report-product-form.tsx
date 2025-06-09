@@ -72,11 +72,11 @@ export default function ProductFormModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left Side */}
             <div className="flex flex-col items-center">
-            <img
-              src={editingData?.imageUrl}
-              alt="Product"
-              className="border-0 border-yellow-500 p-1 w-[300px] h-[200px] object-contain"
-            />
+              <img
+                src={editingData?.imageUrl}
+                alt="Product"
+                className="border-0 border-yellow-500 p-1 w-[300px] h-[200px] object-contain"
+              />
 
               {/* Override Status */}
               <div className="mt-6 space-y-2 w-full">
@@ -107,7 +107,7 @@ export default function ProductFormModal({
                 <p><b>Serial No.: </b> {editingData?.serialNo}</p>
                 <p><b>Date: </b> {editingData?.date}</p>
                 <p><b>Time: </b> {editingData?.time}</p>
-                <p><b>Defect Type: </b> {editingData?.defectTypeName}</p>
+                <p><b>Defect Type Name: </b> {editingData?.defectTypeName}</p>
                 <p><b>Camera ID: </b>{editingData?.cameraId}</p>
               </div>
 

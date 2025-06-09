@@ -125,7 +125,7 @@ export default function CameraFormModal({
           
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">location:</label>
+              <label className="font-normal w-32">Location:</label>
               <input 
                 {...register("location")} 
                 className="border p-2 w-full mb-1"

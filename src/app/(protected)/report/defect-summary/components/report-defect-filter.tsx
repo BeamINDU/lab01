@@ -4,9 +4,9 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive from '@/app/components/common/SearchField';
-import { getProductTypeIdOptions, getProductTypeNameOptions } from "@/app/libs/services/product-type";
-import { getDefectTypeIdOptions, getDefectTypeNameOptions } from "@/app/libs/services/defect-type";
-import { search as searchReportDefects } from "@/app/libs/services/report-defect-summary";
+import { getProductTypeNameOptions } from "@/app/libs/services/product-type";
+import { getDefectTypeNameOptions } from "@/app/libs/services/defect-type";
+import { getLotNoOptions } from "@/app/libs/services/report-defect-summary";
 
 interface ReportDefectFilterFormProps {
   register: UseFormRegister<any>;
@@ -25,31 +25,22 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
           fieldName="lotNo"
           label="Lot No"
           placeholder="Search or enter lot number..."
-          dataLoader={async () => {
-            const reportData = await searchReportDefects();
-            return reportData.map(r => ({ lotNo: r.lotNo }));
-          }}
-          labelField="lotNo"
-          valueField="lotNo"
+          dataLoader={getLotNoOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
         
-        {/* Product Type - ใช้ Product Type Options */}
+        {/* Product Type Name - ใช้ Product Type Options */}
         <SearchFieldResponsive
           register={register}
           setValue={setValue}
-          fieldName="productType"
-          label="Product Type"
+          fieldName="productTypeName"
+          label="Product Type Name"
           placeholder="Search product type..."
-          // dataLoader={async () => {
-          //   const options = await getProductTypeNameOptions();
-          //   // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
-          //   return options.map(opt => ({
-          //     productType: opt.label
-          //   }));
-          // }}
-          labelField="productType"
-          valueField="productType"
+          dataLoader={getProductTypeNameOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
       </div>
@@ -59,18 +50,12 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
         <SearchFieldResponsive
           register={register}
           setValue={setValue}
-          fieldName="defectType"
-          label="Defect Type"
+          fieldName="defectTypeName"
+          label="Defect Type Name"
           placeholder="Search defect type..."
-          // dataLoader={async () => {
-          //   const options = await getDefectTypeOptions();
-          //   // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
-          //   return options.map(opt => ({
-          //     defectType: opt.label
-          //   }));
-          // }}
-          labelField="defectType"
-          valueField="defectType"
+          dataLoader={getDefectTypeNameOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
         

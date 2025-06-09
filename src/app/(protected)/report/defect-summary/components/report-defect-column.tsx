@@ -14,12 +14,12 @@ export default function ReportDefectColumns(): ColumnDef<ReportDefect>[] {
       header: "Lot No",
     },
     {
-      accessorKey: "productType",
-      header: "Production Type",
+      accessorKey: "productTypeName",
+      header: "Product Type Name",
     },
     {
-      accessorKey: "defectType",
-      header: "Defect Type",
+      accessorKey: "defectTypeName",
+      header: "Defect Type Name",
     },
     {
       accessorKey: "total",

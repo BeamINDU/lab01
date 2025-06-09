@@ -3,9 +3,9 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive  from '@/app/components/common/SearchField';
-import { getProductTypeNameOptions } from '@/app/libs/services/product-type'; 
-import { search as searchProducts } from '@/app/libs/services/product';
-import { ActiveStatus } from '@/app/constants/status'; // 
+import { getProductTypeIdOptions } from '@/app/libs/services/product-type'; 
+import { getProductIdOptions, getProductNameOptions, getSerialNoOptions  } from '@/app/libs/services/product';
+import { ActiveStatus } from '@/app/constants/status'; 
 
 interface ProductFilterFormProps {
   register: UseFormRegister<any>;
@@ -24,9 +24,9 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           fieldName="productId"
           label="Product ID"
           placeholder="Search or enter product ID..."
-          dataLoader={searchProducts}
-          labelField="productId"
-          valueField="productId"
+          dataLoader={getProductIdOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
         
@@ -37,20 +37,20 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           fieldName="productName"
           label="Product Name"
           placeholder="Search or enter product name..."
-          dataLoader={searchProducts}
-          labelField="productName"
-          valueField="productName"
+          dataLoader={getProductNameOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
         
-        {/* Product Type */}
+        {/* Product Type ID */}
         <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="productTypeId"
-          label="Product Type"
+          label="Product Type ID"
           placeholder="Search product type..."
-          // dataLoader={getProductTypeNameOptions}
+          dataLoader={getProductTypeIdOptions}
           labelField="label"
           valueField="value"
           allowFreeText={true}
@@ -65,9 +65,9 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           fieldName="serialNo"
           label="Serial No"
           placeholder="Search or enter serial number..."
-          dataLoader={searchProducts}
-          labelField="serialNo"
-          valueField="serialNo"
+          dataLoader={getSerialNoOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
         
@@ -79,9 +79,8 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           label="Status"
           placeholder="Select status..."
           options={[
-            { id: "all", label: "All", value: "" },
+            { label: "All", value: "" },
             ...ActiveStatus.map(status => ({
-              id: String(status.value),
               label: status.label,
               value: String(status.value),
             }))

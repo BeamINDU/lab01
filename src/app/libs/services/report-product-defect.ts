@@ -10,7 +10,7 @@ export const search = async (param?: ParamSearch) => {
     const mapData: ReportProduct[] = res?.product_defect_results
       ?.map((item) => ({
         runningNo: item.resultid,
-        datetime: new Date(),
+        datetime: null,
         productId: item.prodid,
         productName: item.prodname,
         defectTypeId: item.defectid,

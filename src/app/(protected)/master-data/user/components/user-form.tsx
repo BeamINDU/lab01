@@ -1,16 +1,16 @@
-// src/app/(protected)/master-data/user/components/user-form.tsx
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useForm, SubmitHandler,Controller } from 'react-hook-form';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User } from "@/app/types/user";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
-import GoogleStyleSearch, { SearchOption } from '@/app/components/common/Search';
+import GoogleStyleSearch from '@/app/components/common/Search';
 import { getRoleIdOptions, getRoleNameOptions } from '@/app/libs/services/role';
+import { SelectOption } from "@/app/types/select-option";
 
 const UserSchema = z.object({
   userId: z.string().min(1, "User ID is required"),
@@ -21,7 +21,7 @@ const UserSchema = z.object({
   roleName: z.string().min(1, "Role name is required"),
   status: z.boolean(),
   isCreateMode: z.boolean().optional(),
-}); 
+});
 
 type UserFormValues = z.infer<typeof UserSchema>;
 
@@ -43,9 +43,9 @@ export default function UserFormModal({
   const { data: session } = useSession();
   // State สำหรับ Role
   const [selectedRole, setSelectedRole] = useState<string>('');
-  const [roleOptions, setRoleOptions] = useState<SearchOption[]>([]);
+  const [roleOptions, setRoleOptions] = useState<SelectOption[]>([]);
   const [isLoadingRoles, setIsLoadingRoles] = useState<boolean>(false);
-  
+
   const defaultValues: UserFormValues = {
     userId: '',
     username: '',
@@ -76,13 +76,13 @@ export default function UserFormModal({
       try {
         setIsLoadingRoles(true);
         // const roles = await getRoleOptions();
-        
+
         // const searchOptions: SearchOption[] = roles.map((item, index) => ({
         //   id: (index + 1).toString(),
         //   label: item.label,
         //   value: item.value
         // }));
-        
+
         // setRoleOptions(searchOptions);
       } catch (error) {
         console.error('Failed to load roles:', error);
@@ -99,14 +99,14 @@ export default function UserFormModal({
     if (editingData) {
       reset(editingData);
     } else {
-      reset({...defaultValues, isCreateMode: true});
+      reset({ ...defaultValues, isCreateMode: true });
     }
   }, [editingData, reset]);
 
 
 
   // จัดการเมื่อเลือก Role
-  const handleRoleSelect = (option: SearchOption | null) => {
+  const handleRoleSelect = (option: SelectOption | null) => {
     const value = option ? option.value : '';
     setSelectedRole(value);
     setValue("roleName", value);
@@ -115,10 +115,10 @@ export default function UserFormModal({
 
   // จัดการเมื่อพิมพ์ใน Role Search Box
   const handleRoleInputChange = (inputValue: string) => {
-    const matchedOption = roleOptions.find(opt => 
+    const matchedOption = roleOptions.find(opt =>
       opt.label.toLowerCase() === inputValue.toLowerCase()
     );
-    
+
     if (!matchedOption) {
       setSelectedRole(inputValue);
       setValue("roleName", inputValue);
@@ -163,32 +163,32 @@ export default function UserFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('isCreateMode')} />
-          
+
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">User ID:</label>
-              <input 
-                {...register("userId")} 
-                className="border p-2 w-full mb-1" 
+              <input
+                {...register("userId")}
+                className="border p-2 w-full mb-1"
                 readOnly={editingData && !editingData.isCreateMode ? true : undefined}
               />
             </div>
             {errors.userId && <p className="text-red-500 ml-160">{errors.userId.message}</p>}
           </div>
-          
+
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">User Name:</label>
+              <label className="font-normal w-32">Username:</label>
               <input {...register("username")} className="border p-2 w-full mb-1" />
             </div>
             {errors.username && <p className="text-red-500 ml-160">{errors.username.message}</p>}
           </div>
-          
+
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">First Name:</label>
-              <input 
-                {...register("firstname")} 
+              <input
+                {...register("firstname")}
                 className="border p-2 w-full mb-1"
               />
             </div>
@@ -198,8 +198,8 @@ export default function UserFormModal({
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Last Name:</label>
-              <input 
-                {...register("lastname")} 
+              <input
+                {...register("lastname")}
                 className="border p-2 w-full mb-1"
               />
             </div>
@@ -209,8 +209,8 @@ export default function UserFormModal({
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Email:</label>
-              <input 
-                {...register("email")} 
+              <input
+                {...register("email")}
                 className="border p-2 w-full mb-1"
               />
             </div>
@@ -220,14 +220,14 @@ export default function UserFormModal({
           {/* Role - ใช้ Google Style Search Component */}
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">Role:</label>
+              <label className="font-normal w-32">Role Name:</label>
               <div className="relative">
                 {/* Register กับ React Hook Form */}
                 <input
                   type="hidden"
                   {...register("roleName")}
                 />
-                
+
                 {/* Google Style Search Component */}
                 <GoogleStyleSearch
                   options={roleOptions}
@@ -246,7 +246,7 @@ export default function UserFormModal({
             </div>
             {errors.roleName && <p className="text-red-500 ml-160">{errors.roleName.message}</p>}
           </div>
-          
+
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Status:</label>

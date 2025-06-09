@@ -3,7 +3,7 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive  from '@/app/components/common/SearchField';
-import { search as searchRoles } from "@/app/libs/services/role";
+import { getRoleIdOptions, getRoleNameOptions } from "@/app/libs/services/role";
 import { ActiveStatus } from '@/app/constants/status';
 
 interface RoleFilterFormProps {
@@ -23,9 +23,9 @@ export default function RoleFilterForm({ register, setValue, onSearch }: RoleFil
           fieldName="roleId"
           label="Role ID"
           placeholder="Search or enter role ID..."
-          dataLoader={searchRoles}
-          labelField="roleId"
-          valueField="roleId"
+          dataLoader={getRoleIdOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
         
@@ -36,9 +36,9 @@ export default function RoleFilterForm({ register, setValue, onSearch }: RoleFil
           fieldName="roleName"
           label="Role Name"
           placeholder="Search or enter role name..."
-          dataLoader={searchRoles}
-          labelField="roleName"
-          valueField="roleName"
+          dataLoader={getRoleNameOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
       </div>
@@ -52,9 +52,8 @@ export default function RoleFilterForm({ register, setValue, onSearch }: RoleFil
           label="Status"
           placeholder="Select status..."
           options={[
-            { id: "all", label: "All", value: "" },
+            { label: "All", value: "" },
             ...ActiveStatus.map(status => ({
-              id: String(status.value),
               label: status.label,
               value: String(status.value),
             }))

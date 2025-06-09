@@ -9,6 +9,9 @@ export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
       accessorKey: "no",
       header: "No",
       enableSorting: false,
+      meta: {
+        style: { width: "6%" },
+      },
     },
     {
       accessorKey: "startDate",
@@ -19,7 +22,7 @@ export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
         return <div className="text-center">{formattedDate}</div>;
       },
       meta: {
-        className: "w-[200px]",
+        style: { width: "12%" },
       },
     },
     {
@@ -31,7 +34,7 @@ export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
         return <div className="text-center">{formattedDate}</div>;
       },
       meta: {
-        className: "w-[200px]",
+        style: { width: "12%" },
       },
     },
     {
@@ -52,6 +55,9 @@ export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
             {formatNumber(value)}
           </div>
         );
+      },
+      meta: {
+        style: { width: "12%" },
       },
     },
   ];

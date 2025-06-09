@@ -84,6 +84,9 @@ export default function productColumns({
         const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
+      meta: {
+        style: { width: "12%" },
+      },
     },
     // {
     //   accessorKey: "productId",
@@ -97,8 +100,8 @@ export default function productColumns({
       header: "Product Name",
     },
     {
-      accessorKey: "defectType",
-      header: "Defect Type",
+      accessorKey: "defectTypeName",
+      header: "Defect Type Name",
     },
     {
       accessorKey: "cameraName",
@@ -107,6 +110,9 @@ export default function productColumns({
     {
       accessorKey: "status",
       header: "Status",
+      meta: {
+        style: { width: "8%" },
+      },
     },
     {
       id: "actions",
@@ -122,6 +128,9 @@ export default function productColumns({
           </button>
         </div>
       ),
+      meta: {
+        style: { width: "8%" },
+      },
     },
   ];
 }

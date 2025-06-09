@@ -80,25 +80,25 @@ export const upload = async (file: File) => {
   } 
 };
 
-export const getProductIdOptions = async (keyword: string) => {
+export const getProductIdOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.product.suggest_product_id}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.product.suggest_product_id}?q=${q}`);
   } catch (error) {
     throw error;
   }  
 };
 
-export const getProductNameOptions = async (keyword: string) => {
+export const getProductNameOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.product.suggest_product_name}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.product.suggest_product_name}?q=${q}`);
   } catch (error) {
     throw error;
   }  
 }
 
-export const getSerialNoOptions = async (keyword: string) => {
+export const getSerialNoOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.product.suggest_serial_no}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.product.suggest_serial_no}?q=${q}`);
   } catch (error) {
     throw error;
   }  

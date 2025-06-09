@@ -85,8 +85,8 @@ export default function productColumns({
       header: "Production Name",
     },
     {
-      accessorKey: "productTypeName",
-      header: "Production Type",
+      accessorKey: "productTypId",
+      header: "Production Type ID",
     },
     // {
     //   accessorKey: "lotNo",
@@ -155,7 +155,7 @@ export default function productColumns({
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "",
       cell: ({ row }) => (
         <div className="flex items-center justify-center gap-2">
           <button 
@@ -166,7 +166,7 @@ export default function productColumns({
             <SquarePen size={16} />
           </button>
         </div>
-      ),
+      )
     },
   ];
 }

@@ -32,7 +32,6 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           closeOnSelect={false}
           className="w-full"
         />
-        
         {/*  Date To  */}
         <DateTimeField
           control={control}
@@ -57,9 +56,9 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           fieldName="planId"
           label="Plan ID"
           placeholder="Search plan ID..."
-          // dataLoader={getPlanningPlanOptions}
-          labelField="planId"
-          valueField="planId"
+          dataLoader={getPlanIdOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
           className="w-full"
         />
@@ -71,9 +70,9 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           fieldName="productId"
           label="Product ID"
           placeholder="Search product ID..."
-          // dataLoader={getPlanningProductOptions}
-          labelField="productId"
-          valueField="productId"
+          dataLoader={getProductIdOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
           className="w-full"
         />
@@ -88,9 +87,9 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           fieldName="lotNo"
           label="Lot No"
           placeholder="Search lot number..."
-          // dataLoader={getPlanningLotOptions}
-          labelField="lotNo"
-          valueField="lotNo"
+          dataLoader={getLotNoOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
           className="w-full"
         />
@@ -102,9 +101,9 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           fieldName="lineId"
           label="Line ID"
           placeholder="Search line ID..."
-          // dataLoader={getPlanningLineOptions}
-          labelField="lineId"
-          valueField="lineId"
+          dataLoader={getLineNoOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
           className="w-full"
         />

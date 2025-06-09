@@ -97,7 +97,7 @@ export default function UserColumns({
     },
     {
       accessorKey: "roleName",
-      header: "Role",
+      header: "Role Name",
     },
     {
       accessorKey: "status",

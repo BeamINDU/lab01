@@ -1,39 +1,32 @@
-// src/app/components/common/Search.tsx
 'use client';
 
 import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Search, ChevronDown, X } from 'lucide-react';
-
-// ประเภทข้อมูลสำหรับตัวเลือก
-export interface SearchOption {
-  id: string;
-  label: string;
-  value: string;
-}
+import { SelectOption } from "@/app/types/select-option";
 
 // Props ของ Component
 interface GoogleStyleSearchProps {
   // ข้อมูลพื้นฐาน
-  options: SearchOption[];           // รายการตัวเลือกทั้งหมด
+  options: SelectOption[];          // รายการตัวเลือกทั้งหมด
   value?: string;                   // ค่าที่เลือกอยู่ปัจจุบัน
   placeholder?: string;             // ข้อความ placeholder
   label?: string;                   // ป้ายกำกับ
-  
+
   // การจัดการเหตุการณ์
-  onSelect?: (option: SearchOption | null) => void;  // เมื่อเลือกตัวเลือก
+  onSelect?: (option: SelectOption | null) => void;  // เมื่อเลือกตัวเลือก
   onInputChange?: (inputValue: string) => void;      // เมื่อพิมพ์ใน input
-  
+
   // การปรับแต่งรูปแบบ
   disabled?: boolean;               // ปิดการใช้งาน
   error?: string;                   // ข้อความ error
   className?: string;               // CSS class เพิ่มเติม
-  
+
   // ตัวเลือกการทำงาน
   allowClear?: boolean;             // อนุญาตให้ล้างค่าได้
   showDropdownIcon?: boolean;       // แสดงไอคอน dropdown
   minSearchLength?: number;         // จำนวนตัวอักษรขั้นต่ำในการค้นหา
   maxDisplayItems?: number;         // จำนวนรายการสูงสุดที่แสดง
-  
+
   // สำหรับ React Hook Form
   name?: string;
 }
@@ -57,11 +50,11 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
   // State สำหรับการทำงานของ Component
   const [isOpen, setIsOpen] = useState(false);           // เปิด/ปิด dropdown
   const [inputValue, setInputValue] = useState('');      // ค่าที่พิมพ์ใน input
-  const [filteredOptions, setFilteredOptions] = useState<SearchOption[]>([]); // ตัวเลือกที่กรองแล้ว
+  const [filteredOptions, setFilteredOptions] = useState<SelectOption[]>([]); // ตัวเลือกที่กรองแล้ว
   const [highlightedIndex, setHighlightedIndex] = useState(-1); // index ของรายการที่ highlight
-  const [selectedOption, setSelectedOption] = useState<SearchOption | null>(null); // ตัวเลือกที่เลือก
+  const [selectedOption, setSelectedOption] = useState<SelectOption | null>(null); // ตัวเลือกที่เลือก
   const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom'); // ตำแหน่ง dropdown
-  
+
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -72,7 +65,7 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
   // ค้นหา
   useEffect(() => {
     if (value) {
-      const option = options.find(opt => opt.value === value || opt.id === value);
+      const option = options.find(opt => opt.value === value);
       if (option) {
         setSelectedOption(option);
         setInputValue(option.label);
@@ -93,7 +86,7 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
         option.label.toLowerCase().includes(inputValue.toLowerCase()) ||
         option.value.toLowerCase().includes(inputValue.toLowerCase())
       ).slice(0, maxDisplayItems);
-      
+
       setFilteredOptions(filtered);
       setHighlightedIndex(-1);
     } else {
@@ -108,7 +101,7 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
       const viewportHeight = window.innerHeight;
       const spaceBelow = viewportHeight - rect.bottom;
       const spaceAbove = rect.top;
-      
+
       // ถ้าพื้นที่ด้านล่างไม่พอ และพื้นที่ด้านบนมากกว่า ให้แสดงด้านบน
       if (spaceBelow < 240 && spaceAbove > spaceBelow) {
         setDropdownPosition('top');
@@ -143,7 +136,7 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
             const viewportHeight = window.innerHeight;
             const spaceBelow = viewportHeight - rect.bottom;
             const spaceAbove = rect.top;
-            
+
             if (spaceBelow < 240 && spaceAbove > spaceBelow) {
               setDropdownPosition('top');
             } else {
@@ -181,7 +174,7 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
   };
 
   // จัดการการเลือกตัวเลือก
-  const handleSelectOption = (option: SearchOption) => {
+  const handleSelectOption = (option: SelectOption) => {
     setSelectedOption(option);
     setInputValue(option.label);
     setIsOpen(false);
@@ -200,25 +193,25 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setHighlightedIndex(prev => 
+          setHighlightedIndex(prev =>
             prev < filteredOptions.length - 1 ? prev + 1 : 0
           );
           break;
-          
+
         case 'ArrowUp':
           e.preventDefault();
-          setHighlightedIndex(prev => 
+          setHighlightedIndex(prev =>
             prev > 0 ? prev - 1 : filteredOptions.length - 1
           );
           break;
-          
+
         case 'Enter':
           e.preventDefault();
           if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
             handleSelectOption(filteredOptions[highlightedIndex]);
           }
           break;
-          
+
         case 'Escape':
           setIsOpen(false);
           setHighlightedIndex(-1);
@@ -310,9 +303,9 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
             tabIndex={-1}
             disabled={disabled}
           >
-            <ChevronDown 
-              size={16} 
-              className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+            <ChevronDown
+              size={16}
+              className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
             />
           </button>
         )}
@@ -342,25 +335,25 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
             <>
               {filteredOptions.map((option, index) => (
                 <button
-                  key={option.id}
+                  key={option.value}
                   type="button"
                   onClick={() => handleSelectOption(option)}
                   className={`
                     w-full text-left px-4 py-2 text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none
                     ${index === highlightedIndex ? 'bg-blue-50 text-blue-700' : 'text-gray-900'}
-                    ${selectedOption?.id === option.id ? 'bg-blue-50 text-blue-700 font-medium' : ''}
+                    ${selectedOption?.value === option.value ? 'bg-blue-50 text-blue-700 font-medium' : ''}
                     transition-colors duration-150 break-words
                   `}
                 >
                   {/* Highlight ส่วนที่ค้นหา */}
-                  <span 
+                  <span
                     className="block"
                     dangerouslySetInnerHTML={{
                       __html: option.label.replace(
                         new RegExp(`(${inputValue})`, 'gi'),
                         '<mark class="bg-yellow-200 px-0">$1</mark>'
                       )
-                    }} 
+                    }}
                   />
                 </button>
               ))}

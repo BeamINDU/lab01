@@ -11,8 +11,8 @@ export const search = async (param?: ParamSearch) => {
       ?.map((item) => ({
         runningNo: item.summaryid,
         lotNo: item.prodlot,
-        productType: item.prodtype,
-        defectType: item.defecttype,
+        productTypeName: item.prodtype,
+        defectTypeName: item.defecttype,
         total: item.totalprod,
         ok: item.totalok,
         ng: item.totalng,
@@ -32,9 +32,9 @@ export const detail = async (id: string) => {
   }  
 };
 
-export const getLotNoOptions = async (keyword: string) => {
+export const getLotNoOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.report_defect.suggest_lotno}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.report_defect.suggest_lotno}?q=${q}`);
   } catch (error) {
     throw error;
   }  

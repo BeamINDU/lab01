@@ -3,7 +3,7 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive  from '@/app/components/common/SearchField';
-import { search as searchDefectTypes } from "@/app/libs/services/defect-type";
+import { getDefectTypeIdOptions, getDefectTypeNameOptions } from "@/app/libs/services/defect-type";
 import { ActiveStatus } from '@/app/constants/status';
 
 interface DefectTypeFilterFormProps {
@@ -23,9 +23,9 @@ export default function DefectTypeFilterForm({ register, setValue, onSearch }: D
           fieldName="defectTypeId"
           label="Defect Type ID"
           placeholder="Search or enter defect type ID..."
-          dataLoader={searchDefectTypes}
-          labelField="defectTypeId"
-          valueField="defectTypeId"
+          dataLoader={getDefectTypeIdOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
         
@@ -36,9 +36,9 @@ export default function DefectTypeFilterForm({ register, setValue, onSearch }: D
           fieldName="defectTypeName"
           label="Defect Type Name"
           placeholder="Search or enter defect type name..."
-          dataLoader={searchDefectTypes}
-          labelField="defectTypeName"
-          valueField="defectTypeName"
+          dataLoader={getDefectTypeNameOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
       </div>
@@ -52,9 +52,8 @@ export default function DefectTypeFilterForm({ register, setValue, onSearch }: D
           label="Status"
           placeholder="Select status..."
           options={[
-            { id: "all", label: "All", value: "" },
+            { label: "All", value: "" },
             ...ActiveStatus.map(status => ({
-              id: String(status.value),
               label: status.label,
               value: String(status.value),
             }))

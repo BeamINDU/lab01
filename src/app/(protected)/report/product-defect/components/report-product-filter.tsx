@@ -71,6 +71,7 @@ export default function ReportProductFilterForm({ register, setValue, control, o
       
       {/* Search Fields Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        
         {/* Product Name - ใช้ Product Options */}
         <SearchFieldResponsive
           register={register}
@@ -78,15 +79,9 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           fieldName="productName"
           label="Product Name"
           placeholder="Search product..."
-          // dataLoader={async () => {
-          //   const options = await getProductOptions();
-          //   // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
-          //   return options.map(opt => ({
-          //     productName: opt.label
-          //   }));
-          // }}
-          labelField="productName"
-          valueField="productName"
+          dataLoader={getProductNameOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
           className="w-full"
         />
@@ -95,45 +90,27 @@ export default function ReportProductFilterForm({ register, setValue, control, o
         <SearchFieldResponsive
           register={register}
           setValue={setValue}
-          fieldName="defectType"
-          label="Defect Type"
+          fieldName="defectTypeName"
+          label="Defect Type Name"
           placeholder="Search defect type..."
-          // dataLoader={async () => {
-          //   const options = await getDefectTypeOptions();
-          //   // แปลง SelectOption เป็น format ที่ SearchField ต้องการ
-          //   return options.map(opt => ({
-          //     defectType: opt.label
-          //   }));
-          // }}
-          labelField="defectType"
-          valueField="defectType"
+          dataLoader={getDefectTypeNameOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
           className="w-full"
         />
         
-        {/* Search Button - แสดงใน desktop ที่มี 3 columns */}
+        {/* Search Button  */}
         <div className="hidden xl:flex items-center justify-start pt-[2px]">
           <button
             type="button"
-            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
+            className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
             onClick={onSearch}
           >
             Search
             <Search size={16} className="mt-1" />
           </button>
         </div>
-      </div>
-
-      {/* Mobile/Tablet Search Button - แสดงเมื่อไม่ใช่ desktop 3 columns */}
-      <div className="flex xl:hidden justify-center pt-2">
-        <button
-          type="button"
-          className="flex items-center gap-1 btn-primary-dark text-white px-6 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
-          onClick={onSearch}
-        >
-          Search
-          <Search size={16} className="mt-1" />
-        </button>
       </div>
     </div>
   );

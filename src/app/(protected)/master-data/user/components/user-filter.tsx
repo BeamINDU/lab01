@@ -3,8 +3,8 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive  from '@/app/components/common/SearchField';
-import { getRoleIdOptions, getRoleNameOptions } from '@/app/libs/services/role';
-import { search as searchUsers } from '@/app/libs/services/user';
+import { getRoleNameOptions } from '@/app/libs/services/role';
+import { getUserIdOptions, getUserNameOptions } from '@/app/libs/services/user';
 import { ActiveStatus } from '@/app/constants/status';
 
 interface UserFilterFormProps {
@@ -24,9 +24,9 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
           fieldName="userId"
           label="User ID"
           placeholder="Search or enter user ID..."
-          dataLoader={searchUsers}
-          labelField="userId"
-          valueField="userId"
+          dataLoader={getUserIdOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
         
@@ -37,9 +37,9 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
           fieldName="userName"
           label="Username"
           placeholder="Search or enter username..."
-          dataLoader={searchUsers}
-          labelField="userName"
-          valueField="userName"
+          dataLoader={getUserNameOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
       </div>
@@ -50,15 +50,12 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
           register={register}
           setValue={setValue}
           fieldName="roleName"
-          label="Role"
+          label="Role Name"
           placeholder="Search role..."
-          // dataLoader={async () => {
-          //   const options = await getRoleOptions();
-          //   return options; // getRoleOptions ส่ง { label, value }
-          // }}
+          dataLoader={getRoleNameOptions}
           labelField="label"
           valueField="value"
-          allowFreeText={true}
+          allowFreeText={false}
         />
         
         {/* Status */}
@@ -69,9 +66,8 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
           label="Status"
           placeholder="Select status..."
           options={[
-            { id: "all", label: "All", value: "" },
+            { label: "All", value: "" },
             ...ActiveStatus.map(status => ({
-              id: String(status.value),
               label: status.label,
               value: String(status.value),
             }))

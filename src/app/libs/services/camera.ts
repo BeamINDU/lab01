@@ -78,25 +78,25 @@ export const upload = async (file: File) => {
   } 
 };
 
-export const getCameraIdOptions = async (keyword: string) => {
+export const getCameraIdOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_camera_id}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_camera_id}?q=${q}`);
   } catch (error) {
     throw error;
   }  
 };
 
-export const getCameraNameOptions = async (keyword: string) => {
+export const getCameraNameOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_camera_id}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_camera_name}?q=${q}`);
   } catch (error) {
     throw error;
   }  
 }
 
-export const getCameraLocationOptions = async (keyword: string) => {
+export const getCameraLocationOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_location}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_location}?q=${q}`);
   } catch (error) {
     throw error;
   }  

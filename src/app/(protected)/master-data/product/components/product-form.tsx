@@ -9,8 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Product } from "@/app/types/product";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
-import { SearchFieldModal } from '@/app/components/common/SearchField'; 
-import { getProductTypeNameOptions } from '@/app/libs/services/product-type'; 
+import { SearchFieldModal } from '@/app/components/common/SearchField';
+import { getProductTypeIdOptions } from '@/app/libs/services/product-type';
 
 const ProductSchema = z.object({
   productId: z.string().min(1, "Product ID is required"),
@@ -20,7 +20,7 @@ const ProductSchema = z.object({
   serialNo: z.string().min(1, "Serial No is required"),
   status: z.boolean(),
   isCreateMode: z.boolean().optional(),
-}); 
+});
 
 type ProductFormValues = z.infer<typeof ProductSchema>;
 
@@ -69,30 +69,30 @@ export default function ProductFormModal({
 
   useEffect(() => {
     if (editingData) {
-      console.log('Form received editingData:', editingData); 
+      console.log('Form received editingData:', editingData);
       reset(editingData);
     } else {
-      console.log('Form reset to default values'); 
-      reset({...defaultValues, isCreateMode: true});
+      console.log('Form reset to default values');
+      reset({ ...defaultValues, isCreateMode: true });
     }
   }, [editingData, reset]);
 
   if (!showModal) return null;
-  
+
 
   const onSubmit: SubmitHandler<ProductFormValues> = async (formData) => {
     try {
       console.log('Form submitted with data:', formData);
-      
+
       const formWithMeta: Product = {
         ...formData,
         productId: formData.productId,
         createdBy: formData.isCreateMode ? session?.user?.userid : undefined,
         updatedBy: session?.user?.userid,
       };
-      
+
       await onSave(formWithMeta);
-      
+
     } catch (error) {
       console.error('Error in form submission:', error);
       alert('Error saving product: ' + (error as Error).message);
@@ -122,19 +122,19 @@ export default function ProductFormModal({
 
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('isCreateMode')} />
-          
+
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Product ID:</label>
-              <input 
-                {...register("productId")} 
+              <input
+                {...register("productId")}
                 className="border p-2 w-full mb-1"
                 readOnly={editingData && !editingData.isCreateMode ? true : undefined}
               />
             </div>
             {errors.productId && <p className="text-red-500 ml-160">{errors.productId.message}</p>}
           </div>
-          
+
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Product Name:</label>
@@ -148,13 +148,13 @@ export default function ProductFormModal({
               key={`productType-${editingData?.productId || 'new'}`}
               register={register}
               setValue={setValue}
-              fieldName="productTypeName"
-              label="Product Type"
+              fieldName="productTypeId"
+              label="Product Type ID"
               placeholder="Select product type..."
-              // dataLoader={getProductTypeNameOptions}
+              dataLoader={getProductTypeIdOptions}
               labelField="label"
               valueField="value"
-              allowFreeText={true}
+              allowFreeText={false}
               disabled={!canEdit}
               initialValue={productTypeId}
               onSelectionChange={(value, option) => {
@@ -164,19 +164,19 @@ export default function ProductFormModal({
             />
             {errors.productTypeId && <p className="text-red-500 ml-160">{errors.productTypeId.message}</p>}
           </div>
-          
+
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Serial No:</label>
-              <input 
-                {...register("serialNo")} 
-                className="border p-2 w-full mb-1" 
-                autoComplete="new-password" 
+              <input
+                {...register("serialNo")}
+                className="border p-2 w-full mb-1"
+                autoComplete="new-password"
               />
             </div>
             {errors.serialNo && <p className="text-red-500 ml-160">{errors.serialNo.message}</p>}
           </div>
-          
+
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Status:</label>

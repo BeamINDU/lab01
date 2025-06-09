@@ -46,12 +46,11 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           closeOnSelect={false}
           className="w-full"
         />
-
-
       </div>
       
       {/* Search Fields Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        
         {/* Lot No - ใช้ข้อมูลจาก Transaction ที่ดึง Lot No จาก Report Defect Summary */}
         <SearchField
           register={register}
@@ -59,9 +58,9 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           fieldName="lotNo"
           label="Lot No"
           placeholder="Search lot number..."
-          // dataLoader={getTransactionLotOptions}
-          labelField="lotNo"
-          valueField="lotNo"
+          dataLoader={getLotNoOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
           className="w-full"
         />
@@ -73,9 +72,9 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           fieldName="productId"
           label="Product ID"
           placeholder="Search product ID..."
-          // dataLoader={getTransactionProductOptions}
-          labelField="productId"
-          valueField="productId"
+          dataLoader={getProductIdOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
           className="w-full"
         />
@@ -91,7 +90,6 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           </button>
         </div>
       </div>
-
     </div>
   );
 }

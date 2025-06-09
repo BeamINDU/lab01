@@ -65,25 +65,25 @@ export const upload = async (file: File) => {
   } 
 };
 
-export const getPlanIdOptions = async (keyword: string) => {
+export const getPlanIdOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.planning.suggest_planid}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.planning.suggest_planid}?q=${q}`);
   } catch (error) {
     throw error;
   }  
 }
 
-export const getLotNoOptions = async (keyword: string) => {
+export const getLotNoOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.planning.suggest_lotno}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.planning.suggest_lotno}?q=${q}`);
   } catch (error) {
     throw error;
   }  
 }
 
-export const getLineNoOptions = async (keyword: string) => {
+export const getLineNoOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.planning.suggest_lineno}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.planning.suggest_lineno}?q=${q}`);
   } catch (error) {
     throw error;
   }  

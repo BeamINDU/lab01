@@ -65,17 +65,17 @@ export const upload = async (file: File) => {
 };
 
 
-export const getRoleIdOptions = async (keyword: string) => {
+export const getRoleIdOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.role.suggest_role_id}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.role.suggest_role_id}?q=${q}`);
   } catch (error) {
     throw error;
   }  
 };
 
-export const getRoleNameOptions = async (keyword: string) => {
+export const getRoleNameOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.role.suggest_role_name}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.role.suggest_role_name}?q=${q}`);
   } catch (error) {
     throw error;
   }  

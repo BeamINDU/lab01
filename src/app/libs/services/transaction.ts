@@ -20,9 +20,9 @@ export const detail = async (id: string) => {
   }  
 };
 
-export const getLotNoOptions = async (keyword: string) => {
+export const getLotNoOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.transaction.suggest_lotno}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.transaction.suggest_lotno}?q=${q}`);
   } catch (error) {
     throw error;
   }  

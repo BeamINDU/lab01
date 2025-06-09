@@ -37,7 +37,7 @@ export type ParamSearch = {
   dateFrom?: Date
   dateTo?: Date
   productName?: string
-  defectType?: string
+  defectTypeName?: string
   cameraName?: string
   status?: string
 }

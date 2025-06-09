@@ -64,17 +64,17 @@ export const upload = async (file: File) => {
   } 
 };
 
-export const getDefectTypeIdOptions = async (keyword: string) => {
+export const getDefectTypeIdOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.defect_type.suggest_defecttype_id}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.defect_type.suggest_defecttype_id}?q=${q}`);
   } catch (error) {
     throw error;
   }  
 };
 
-export const getDefectTypeNameOptions = async (keyword: string) => {
+export const getDefectTypeNameOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.defect_type.suggest_defecttype_name}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.defect_type.suggest_defecttype_name}?q=${q}`);
   } catch (error) {
     throw error;
   }  

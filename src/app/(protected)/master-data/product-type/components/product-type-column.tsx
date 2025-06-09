@@ -145,7 +145,7 @@ export default function ProductTypeColumns({
             <SquarePen size={16} />
           </button>
         </div>
-      ),
+      )
     },
   ];
 }

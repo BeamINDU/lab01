@@ -79,17 +79,47 @@ export const upload = async (file: File) => {
 };
 
 
-export const getProductTypeIdOptions = async (keyword: string) => {
+export const getProductTypeIdOptions = async (q: string): Promise<SelectOption[]> => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_id}?keyword=${keyword}`);
+    // return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_id}?q=${q}`);
+
+    // For Test
+    const res = await api.get<any>(`${API_ROUTES.product_type.get}`);
+
+    const result: SelectOption[] = (res?.product_types ?? [])
+      .filter((item) =>
+        !item.isdeleted &&
+        item.prodtypeid.toLowerCase().includes(q.toLowerCase())
+      )
+      .map((item) => ({
+        value: item.prodtypeid,
+        label: item.prodtypeid,
+      }));
+
+    return result;
   } catch (error) {
     throw error;
-  }  
+  }
 };
 
-export const getProductTypeNameOptions = async (keyword: string) => {
+export const getProductTypeNameOptions = async (q: string): Promise<SelectOption[]> => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_name}?keyword=${keyword}`);
+    // return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_name}?q=${q}`);
+
+    // For Test
+    const res = await api.get<any>(`${API_ROUTES.product_type.get}`);
+
+    const result: SelectOption[] = (res?.product_types ?? [])
+      .filter((item) =>
+        !item.isdeleted &&
+        item.prodtype.toLowerCase().includes(q.toLowerCase())
+      )
+      .map((item) => ({
+        value: item.prodtype,
+        label: item.prodtype,
+      }));
+
+    return result;
   } catch (error) {
     throw error;
   }  

@@ -83,17 +83,17 @@ export const upload = async (file: File) => {
   } 
 };
 
-export const getUserIdOptions = async (keyword: string) => {
+export const getUserIdOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.user.suggest_userid}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.user.suggest_userid}?q=${q}`);
   } catch (error) {
     throw error;
   }  
 };
 
-export const getUserNameOptions = async (keyword: string) => {
+export const getUserNameOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.user.suggest_username}?keyword=${keyword}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.user.suggest_username}?q=${q}`);
   } catch (error) {
     throw error;
   }  

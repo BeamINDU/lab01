@@ -3,7 +3,7 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
-import { search as searchCameras } from "@/app/libs/services/camera";
+import { getCameraIdOptions, getCameraNameOptions, getCameraLocationOptions } from "@/app/libs/services/camera";
 import { ActiveStatus } from '@/app/constants/status';
 
 interface CameraFilterFormProps {
@@ -23,9 +23,9 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
           fieldName="cameraId"
           label="Camera ID"
           placeholder="Search or enter camera ID..."
-          dataLoader={searchCameras}
-          labelField="cameraId"
-          valueField="cameraId"
+          dataLoader={getCameraIdOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
         
@@ -36,9 +36,9 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
           fieldName="cameraName"
           label="Camera Name"
           placeholder="Search or enter camera name..."
-          dataLoader={searchCameras}
-          labelField="cameraName"
-          valueField="cameraName"
+          dataLoader={getCameraNameOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
       </div>
@@ -51,9 +51,9 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
           fieldName="location"
           label="Location"
           placeholder="Search or enter location..."
-          dataLoader={searchCameras}
-          labelField="location"
-          valueField="location"
+          dataLoader={getCameraLocationOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
         />
         
@@ -65,9 +65,8 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
           label="Status"
           placeholder="Select status..."
           options={[
-            { id: "all", label: "All", value: "" },
+            { label: "All", value: "" },
             ...ActiveStatus.map(status => ({
-              id: String(status.value),
               label: status.label,
               value: String(status.value),
             }))
