@@ -126,5 +126,7 @@ export const API_ROUTES = {
     insert: "/adddetectionmodel", 
     update: "/updatedetectionmodel",
     delete: "/deletemodel",
+    suggest_model: "",
+    suggest_function: "",
   },
 };

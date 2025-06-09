@@ -5,7 +5,7 @@ import { SelectOption } from "@/app/types/select-option";
 
 export const search = async (param?: ParamSearch) => { 
   try {
-    const res =  await api.get<any>(`${API_ROUTES.product_type.get}?${param}`);
+    const res = await api.getWithParams<any>(API_ROUTES.product_type.get, param);
 
     const mapData: ProductType[] = res?.product_types
     ?.filter((item) => !item.isdeleted)

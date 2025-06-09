@@ -154,12 +154,6 @@ export const api = {
   get: <T>(url: string, config?: AxiosRequestConfig) =>
     request<T>('get', url, config),
 
-  getWithParams: <T>(url: string, params?: Record<string, any>) => {
-    const queryString = buildQueryString(params);
-    const fullUrl = queryString ? `${url}?${queryString}` : url;
-    return request<T>('get', fullUrl);
-  },
-
   post: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
     request<T>('post', url, data, config),
 
@@ -168,16 +162,12 @@ export const api = {
 
   delete: <T>(url: string, config?: AxiosRequestConfig) =>
     request<T>('delete', url, config),
+  
+  getWithParams: <T>(url: string, params?: Record<string, any>) => {
+    const queryString = buildQueryString(params);
+    const fullUrl = queryString ? `${url}?${queryString}` : url;
+    return request<T>('get', fullUrl);
+  },
 
   upload: uploadFile,
 };
-
-// Example
-// const users = await api.get<User[]>('/users');
-// const newUser = await api.post<UserResponse>('/users', data);
-// const updated = await api.put(`/users/${id}`, { name: 'Updated Name' });
-// await api.delete(`/users/${id}`);
-
-// const formData = new FormData();
-// formData.append('file', file);
-// const result = await api.upload<UploadResponse>('/upload/image', formData);

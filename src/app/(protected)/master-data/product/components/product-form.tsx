@@ -64,9 +64,6 @@ export default function ProductFormModal({
     defaultValues,
   });
 
-  const productTypeId = watch("productTypeId");
-  const productTypeName = watch("productTypeName");
-
   useEffect(() => {
     if (editingData) {
       console.log('Form received editingData:', editingData);
@@ -129,7 +126,6 @@ export default function ProductFormModal({
               <input
                 {...register("productId")}
                 className="border p-2 w-full mb-1"
-                readOnly={editingData && !editingData.isCreateMode ? true : undefined}
               />
             </div>
             {errors.productId && <p className="text-red-500 ml-160">{errors.productId.message}</p>}
@@ -156,7 +152,7 @@ export default function ProductFormModal({
               valueField="value"
               allowFreeText={false}
               disabled={!canEdit}
-              initialValue={productTypeId}
+              initialValue={editingData?.productTypeId || ''}
               onSelectionChange={(value, option) => {
                 console.log('Product Type selected:', value, option);
                 setValue("productTypeId", value, { shouldValidate: true });

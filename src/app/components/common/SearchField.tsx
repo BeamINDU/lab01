@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { UseFormRegister, UseFormSetValue, Control, Controller } from "react-hook-form";
 import GoogleStyleSearch from '@/app/components/common/Search';
 import { SelectOption } from "@/app/types/select-option";
@@ -59,19 +59,47 @@ export default function SearchField({
   required = false,
   onSelectionChange
 }: SearchFieldProps) {
-  const [selectedValue, setSelectedValue] = useState<string>('');
   const [searchOptions, setSearchOptions] = useState<SelectOption[]>(options);
   const [loading, setLoading] = useState<boolean>(false);
-  const [inputValue, setInputValue] = useState<string>('');
+  const [controlledValue, setControlledValue] = useState<string>(initialValue || '');
+  const loadingRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const lastQueryRef = useRef<string>('');
+  const isUserTypingRef = useRef(false);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Stable debounced function
+  const debouncedFetchOptions = useRef(
+    debounce(async (searchQuery: string) => {
+      if (!dataLoader || searchQuery.length < minSearchLength) {
+        setSearchOptions(options);
+        setLoading(false);
+        loadingRef.current = false;
+        return;
+      }
 
-  useEffect(() => {
-    if (!dataLoader || !inputValue || inputValue.trim().length < minSearchLength) return;
+      if (lastQueryRef.current === searchQuery) {
+        setLoading(false);
+        loadingRef.current = false;
+        return;
+      }
 
-    const fetchOptions = async () => {
       try {
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+
+        abortControllerRef.current = new AbortController();
+        
         setLoading(true);
-        const data = await dataLoader(inputValue);
+        loadingRef.current = true;
+        lastQueryRef.current = searchQuery;
+
+        const data = await dataLoader(searchQuery);
+
+        if (abortControllerRef.current?.signal.aborted) {
+          return;
+        }
 
         let transformedOptions: SelectOption[] = [];
 
@@ -89,76 +117,105 @@ export default function SearchField({
           }
         }
 
-        setSearchOptions(transformedOptions);
-      } catch (error) {
-        console.error(`Failed to load data for ${fieldName}:`, error);
-        setSearchOptions([]);
+        if (lastQueryRef.current === searchQuery && loadingRef.current) {
+          setSearchOptions(transformedOptions);
+        }
+
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'name' in error && error.name !== 'AbortError') {
+          console.error(`Failed to load data for ${fieldName}:`, error);
+          setSearchOptions([]);
+        }
       } finally {
-        setLoading(false);
-      }
-    };
-
-    const debouncedFetch = debounce(fetchOptions, 300);
-    debouncedFetch();
-
-    return () => {
-      debouncedFetch.cancel();
-    };
-  }, [inputValue, dataLoader, labelField, valueField, fieldName, minSearchLength]);
-
-
-  useEffect(() => {
-    if (options.length > 0) {
-      const optionsWithIds = options.map((opt, index) => ({
-        ...opt,
-        id: opt.value || `opt-${index}-${opt.value}`
-      }));
-      setSearchOptions(optionsWithIds);
-
-      if (initialValue) {
-        const matched = optionsWithIds.find(opt =>
-          opt.value === initialValue || opt.label === initialValue
-        );
-        if (matched) {
-          setSelectedValue(matched.value);
-          setValue?.(fieldName, matched.value);
-        } else if (allowFreeText) {
-          setSelectedValue(initialValue);
-          setValue?.(fieldName, initialValue);
+        if (lastQueryRef.current === searchQuery) {
+          setLoading(false);
+          loadingRef.current = false;
         }
       }
-    }
-  }, [options, initialValue, allowFreeText, fieldName, setValue]);
+    }, 300)
+  ).current;
 
-  useEffect(() => {
-    if (initialValue !== undefined) {
-      setSelectedValue(initialValue);
-      setInputValue(initialValue);
-      setValue?.(fieldName, initialValue);
+  // Handle input change
+  const handleInputChange = useCallback((input: string) => {
+    isUserTypingRef.current = true;
+    
+    // Clear previous timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
     }
-  }, [initialValue, allowFreeText, fieldName, setValue]);
+    
+    // Set new timeout to reset typing flag
+    typingTimeoutRef.current = setTimeout(() => {
+      isUserTypingRef.current = false;
+    }, 500);
 
-  const handleSelect = (option: SelectOption | null) => {
+    // Update controlled value immediately
+    setControlledValue(input);
+
+    // Reset options if empty input
+    if (!input.trim()) {
+      setSearchOptions(options);
+      setLoading(false);
+      loadingRef.current = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      setValue?.(fieldName, '');
+      onSelectionChange?.('', null);
+      return;
+    }
+
+    // Start loading new data
+    if (dataLoader && input.length >= minSearchLength) {
+      debouncedFetchOptions(input);
+    }
+
+    // Update form value for free text
+    if (allowFreeText) {
+      setValue?.(fieldName, input);
+      onSelectionChange?.(input, null);
+    }
+  }, [dataLoader, minSearchLength, allowFreeText, fieldName, setValue, onSelectionChange, options, debouncedFetchOptions]);
+
+  // Handle selection
+  const handleSelect = useCallback((option: SelectOption | null) => {
+    isUserTypingRef.current = false;
+    
     const value = option ? option.value : '';
-    setSelectedValue(value);
-    setInputValue(value);
+    const displayValue = option ? option.label : '';
+    
+    setControlledValue(displayValue);
     setValue?.(fieldName, value);
     onSelectionChange?.(value, option);
-  };
+  }, [fieldName, setValue, onSelectionChange]);
 
-  const handleInputChange = (input: string) => {
-    setInputValue(input);
-    if (allowFreeText) {
-      const matched = searchOptions.find(opt =>
-        opt.label.toLowerCase() === input.toLowerCase()
-      );
-      if (!matched) {
-        setSelectedValue(input);
-        setValue?.(fieldName, input);
-        onSelectionChange?.(input, null);
-      }
+  // Initialize options
+  useEffect(() => {
+    if (options.length > 0) {
+      setSearchOptions(options);
     }
-  };
+  }, [options]);
+
+  // Initialize with initialValue
+  useEffect(() => {
+    if (initialValue !== undefined && !isUserTypingRef.current) {
+      setControlledValue(initialValue);
+      setValue?.(fieldName, initialValue);
+    }
+  }, [initialValue, fieldName, setValue]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      debouncedFetchOptions.cancel();
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, [debouncedFetchOptions]);
 
   const renderLayout = () => {
     const baseSearch = (
@@ -166,17 +223,15 @@ export default function SearchField({
         {register && <input type="hidden" {...register(fieldName)} />}
         <GoogleStyleSearch
           options={searchOptions}
-          value={inputValue}
+          value={controlledValue}
           placeholder={loading ? "Loading..." : placeholder}
           onSelect={handleSelect}
-          onInputChange={(val) => {
-            setInputValue(val);
-          }}
+          onInputChange={handleInputChange}
           allowClear={true}
           showDropdownIcon={true}
           minSearchLength={minSearchLength}
           maxDisplayItems={maxDisplayItems}
-          disabled={disabled || loading}
+          disabled={disabled}
           className="w-full"
         />
       </>
@@ -191,33 +246,29 @@ export default function SearchField({
           render={({ field, fieldState }) => (
             <div className="w-full">
               <GoogleStyleSearch
-                {...field}
-                value={field.value ?? ''}
+                value={controlledValue}
                 options={searchOptions}
                 placeholder={loading ? "Loading..." : placeholder}
                 onSelect={(opt) => {
                   const value = opt?.value || '';
+                  const displayValue = opt?.label || '';
+                  
                   field.onChange(value);
-                  setInputValue(value);
+                  setControlledValue(displayValue);
                   onSelectionChange?.(value, opt);
                 }}
-                onInputChange={(val) => {
-                  setInputValue(val);
+                onInputChange={(input) => {
+                  setControlledValue(input);
+                  handleInputChange(input);
                   if (allowFreeText) {
-                    const matched = searchOptions.find(opt =>
-                      opt.label.toLowerCase() === val.toLowerCase()
-                    );
-                    if (!matched) {
-                      field.onChange(val);
-                      onSelectionChange?.(val, null);
-                    }
+                    field.onChange(input);
                   }
                 }}
                 allowClear={true}
                 showDropdownIcon={true}
                 minSearchLength={minSearchLength}
                 maxDisplayItems={maxDisplayItems}
-                disabled={disabled || loading}
+                disabled={disabled}
                 className="w-full"
               />
               {fieldState.error && (
@@ -258,6 +309,7 @@ export default function SearchField({
           return (
             <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] items-start sm:items-center gap-2">
               <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[130px] sm:min-w-[150px]">
+               {/* <label className="font-semibold w-[120px]"> */}
                 {label}
                 {required && <span className="text-red-500 ml-1">*</span>}
               </label>

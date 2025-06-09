@@ -29,7 +29,7 @@ export default function Page() {
     handleSearch();
   }, []);
 
-  const handleSearch = async () => {
+const handleSearch = async () => {
     try {
       const formValues = getValues();
       const param: ParamSearch = {
@@ -42,11 +42,9 @@ export default function Page() {
     } catch (error) {
       console.error("Failed to search producttype:", error);
       setData([]);
-      // const message = error instanceof Error ? error.message : String(error);
       showError(`Search failed`);
     }
   };
-
   const handleExport = (type: ExportType) => {
     const headers = ["Product Type ID", "Product Type Name", "Description", "Status"];
     const keys: (keyof ProductType)[] = ["productTypeId","productTypeName", "description", "status"];

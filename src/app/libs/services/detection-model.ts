@@ -1,4 +1,5 @@
 import { api } from '@/app/utils/api'
+import { API_ROUTES } from "@/app/constants/endpoint";
 import type { DetectionModel, ParamSearch, ModelPicture, FormData } from "@/app/types/detection-model"
 import { SelectOption, } from "@/app/types/select-option";
 
@@ -123,6 +124,23 @@ export const upload = async (file: File) => {
   // formData.append('file', file);
   // const response = await api.post<Camera>('/upload', formData)
 };
+
+export const getModelNameOptions = async (q: string) => {
+  try {
+    return await api.get<SelectOption[]>(`${API_ROUTES.detection_model.suggest_model}?q=${q}`);
+  } catch (error) {
+    throw error;
+  }  
+};
+
+export const getFunctionOptions = async (q: string) => {
+  try {
+    return await api.get<SelectOption[]>(`${API_ROUTES.detection_model.suggest_function}?q=${q}`);
+  } catch (error) {
+    throw error;
+  }  
+};
+
 
 export const getFunctions = async () => {
   return [

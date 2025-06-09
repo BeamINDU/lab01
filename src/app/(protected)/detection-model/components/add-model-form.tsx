@@ -8,6 +8,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DetectionModel } from "@/app/types/detection-model"
 import { ModelStatus } from "@/app/constants/status"
+import { getProductIdOptions } from "@/app/libs/services/product";
+import { SearchFieldModal } from '@/app/components/common/SearchField';
+
 
 const AddModelFormSchema = z.object({
   modelId: z.number().nullable(),
@@ -48,9 +51,9 @@ export default function DetectionModelFormModal({
     register,
     handleSubmit,
     reset,
-    // control,
-    // watch,
-    // getValues,
+    control,
+    watch,
+    getValues,
     setValue,
     formState: { errors },
   } = useForm<AddModelFormValues>({
@@ -113,10 +116,24 @@ export default function DetectionModelFormModal({
             {errors.modelName && <p className="text-red-500 ml-160">{errors.modelName.message}</p>}
           </div>
           <div className="mb-4">
-            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">Product ID:</label>
-              <input {...register("productId")} className="border p-2 w-full mb-1" />
-            </div>
+            <SearchFieldModal
+              key={`productType-${editingData?.productId || 'new'}`}
+              register={register}
+              setValue={setValue}
+              fieldName="productId"
+              label="Product ID"
+              placeholder="Select product type..."
+              //dataLoader={getProductTypeIdOptions}
+              labelField="label"
+              valueField="value"
+              allowFreeText={false}
+              disabled={!canEdit}
+              initialValue={editingData?.productId || ''}
+              onSelectionChange={(value, option) => {
+                console.log('Product ID selected:', value, option);
+                setValue("productId", value, { shouldValidate: true });
+              }}
+            />
             {errors.productId && <p className="text-red-500 ml-160">{errors.productId.message}</p>}
           </div>
           <div className="mb-4">

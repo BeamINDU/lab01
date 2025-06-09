@@ -1,4 +1,4 @@
-// src/app/components/common/DateTimeField.tsx
+
 'use client';
 
 import React from 'react';
@@ -8,6 +8,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { X } from 'lucide-react'; // เพิ่ม import icon X
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/th';
 
@@ -48,13 +49,18 @@ interface DateTimeFieldProps {
   size?: 'small' | 'medium';
   fullWidth?: boolean;
   
-  // 🎨 เพิ่มตัวเลือกปรับขนาดตัวอักษร
+  //  เพิ่มตัวเลือกปรับขนาดตัวอักษร
   fontSize?: 'xs' | 'sm' | 'md' | 'lg';
   compactMode?: boolean;
+  
+  //  เพิ่มตัวเลือกสำหรับปุ่ม Clear
+  allowClear?: boolean; // เปิด/ปิดการแสดงปุ่ม Clear
+  clearButtonPosition?: 'inside' | 'outside'; // ตำแหน่งปุ่ม Clear
   
   // Events
   onChange?: (value: Dayjs | null) => void;
   onError?: (error: any) => void;
+  onClear?: () => void; // callback เมื่อกดปุ่ม Clear
 }
 
 export default function DateTimeField({
@@ -80,8 +86,11 @@ export default function DateTimeField({
   fullWidth = true,
   fontSize = 'sm',
   compactMode = false,
+  allowClear = true, // เปิดใช้งานปุ่ม Clear เป็นค่าเริ่มต้น
+  clearButtonPosition = 'inside', // ตำแหน่งเริ่มต้นอยู่ภายใน
   onChange,
-  onError
+  onError,
+  onClear
 }: DateTimeFieldProps) {
   
   // กำหนด format ตาม variant
@@ -114,7 +123,7 @@ export default function DateTimeField({
     }
   };
 
-  // 🎨 กำหนดขนาดตัวอักษรตาม prop fontSize
+  //  กำหนดขนาดตัวอักษรตาม prop fontSize
   const getFontSizes = () => {
     switch (fontSize) {
       case 'xs':
@@ -158,7 +167,7 @@ export default function DateTimeField({
     }
   };
 
-  // 🎨 กำหนดขนาด Calendar ตาม compactMode
+  //  กำหนดขนาด Calendar ตาม compactMode
   const getCalendarSizes = () => {
     if (compactMode) {
       return {
@@ -183,6 +192,45 @@ export default function DateTimeField({
     borderRadius: '0.375rem',
     width: '100%',
     minWidth: 0,
+  };
+
+  //  ฟังก์ชันจัดการการล้างค่า
+  const handleClear = (fieldOnChange: (value: any) => void) => {
+    fieldOnChange(null); // ล้างค่าใน form
+    onChange?.(null);    // เรียก callback ถ้ามี
+    onClear?.();         // เรียก callback เฉพาะสำหรับ Clear
+  };
+
+  //  สร้าง Clear Button component
+  const ClearButton = ({ 
+    hasValue, 
+    onClearClick, 
+    position = 'inside' 
+  }: { 
+    hasValue: boolean; 
+    onClearClick: () => void;
+    position?: 'inside' | 'outside';
+  }) => {
+    if (!allowClear || !hasValue || disabled) return null;
+
+    const buttonClasses = position === 'inside' 
+      ? "absolute right-2 top-1/2 transform -translate-y-1/2 z-10 p-1 text-gray-400 hover:text-gray-600 rounded transition-colors bg-white" 
+      : "flex-shrink-0 p-1 ml-2 text-gray-400 hover:text-gray-600 rounded transition-colors";
+
+    return (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation(); 
+          onClearClick();
+        }}
+        className={buttonClasses}
+        tabIndex={-1}
+        title="Clear"
+      >
+        <X size={14} />
+      </button>
+    );
   };
 
   //   สำหรับปรับขนาดตัวอักษร
@@ -254,7 +302,7 @@ export default function DateTimeField({
       '& .MuiPaper-root': {
         fontSize: fontSizes.calendarDay
       },
-      // Clock view (สำหรับ TimePicker)
+
       '& .MuiClock-root': {
         '& .MuiClockNumber-root': {
           fontSize: fontSizes.timeItem
@@ -263,8 +311,10 @@ export default function DateTimeField({
     }
   });
 
-  // Render DateTimePicker component ตาม variant
+
   const renderPicker = (field: any) => {
+    const hasValue = field.value && dayjs(field.value).isValid();
+
     const commonProps = {
       value: field.value ? dayjs(field.value) : null,
       onChange: (date: Dayjs | null) => {
@@ -283,16 +333,21 @@ export default function DateTimeField({
             ...inputStyle,
             '& input': {
               fontSize: `${fontSizes.input} !important`,
-              padding: compactMode ? '4px 8px !important' : '6px 12px !important'
+              padding: compactMode ? '4px 8px !important' : '6px 12px !important',
+
+              paddingRight: allowClear && hasValue && clearButtonPosition === 'inside' 
+                ? '32px !important' 
+                : undefined
             },
             '& .MuiOutlinedInput-root': {
-              fontSize: `${fontSizes.input} !important`
+              fontSize: `${fontSizes.input} !important`,
+
+              position: clearButtonPosition === 'inside' ? 'relative' : undefined
             }
           },
           required,
           error: !!field.error
         },
-        // 🎨 ใช้ custom popper styles
         popper: getPopperStyles()
       },
       onError: (error: any) => {
@@ -301,36 +356,71 @@ export default function DateTimeField({
       }
     };
 
+
+    const PickerWithClearButton = ({ children }: { children: React.ReactNode }) => {
+      if (clearButtonPosition === 'outside') {
+        return (
+          <div className="flex items-center">
+            <div className="flex-1 relative">
+              {children}
+            </div>
+            <ClearButton 
+              hasValue={hasValue}
+              onClearClick={() => handleClear(field.onChange)}
+              position="outside"
+            />
+          </div>
+        );
+      }
+
+      return (
+        <div className="relative">
+          {children}
+          <ClearButton 
+            hasValue={hasValue}
+            onClearClick={() => handleClear(field.onChange)}
+            position="inside"
+          />
+        </div>
+      );
+    };
+
     switch (variant) {
       case 'date':
         return (
-          <DatePicker
-            {...commonProps}
-            minDate={minDate ? dayjs(minDate) : undefined}
-            maxDate={maxDate ? dayjs(maxDate) : undefined}
-          />
+          <PickerWithClearButton>
+            <DatePicker
+              {...commonProps}
+              minDate={minDate ? dayjs(minDate) : undefined}
+              maxDate={maxDate ? dayjs(maxDate) : undefined}
+            />
+          </PickerWithClearButton>
         );
         
       case 'time':
         return (
-          <TimePicker
-            {...commonProps}
-            ampm={ampm}
-            timeSteps={timeSteps}
-          />
+          <PickerWithClearButton>
+            <TimePicker
+              {...commonProps}
+              ampm={ampm}
+              timeSteps={timeSteps}
+            />
+          </PickerWithClearButton>
         );
         
       case 'datetime':
       default:
         return (
-          <DateTimePicker
-            {...commonProps}
-            ampm={ampm}
-            timeSteps={timeSteps}
-            closeOnSelect={closeOnSelect}
-            minDateTime={minDateTime ? dayjs(minDateTime) : undefined}
-            maxDateTime={maxDateTime ? dayjs(maxDateTime) : undefined}
-          />
+          <PickerWithClearButton>
+            <DateTimePicker
+              {...commonProps}
+              ampm={ampm}
+              timeSteps={timeSteps}
+              closeOnSelect={closeOnSelect}
+              minDateTime={minDateTime ? dayjs(minDateTime) : undefined}
+              maxDateTime={maxDateTime ? dayjs(maxDateTime) : undefined}
+            />
+          </PickerWithClearButton>
         );
     }
   };
@@ -340,7 +430,7 @@ export default function DateTimeField({
       {/* Responsive Grid Layout */}
        <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] lg:grid-cols-[auto_1fr] items-start sm:items-center gap-2">
         {/* Label */}
-        <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[140px] sm:min-w-[160px]">
+        <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[130px] sm:min-w-[150px]">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -369,52 +459,50 @@ export default function DateTimeField({
   );
 }
 
-// ======================================================================
-// Utility functions สำหรับจัดการ date/time values
 
 export const DateTimeHelpers = {
-  // แปลง string เป็น Dayjs object
+
   parseDate: (value: string | Date | null | undefined): Dayjs | null => {
     if (!value) return null;
     return dayjs(value);
   },
 
-  // แปลง Dayjs เป็น string format ที่ต้องการ
+
   formatDate: (date: Dayjs | Date | string | null, format: string = 'YYYY-MM-DD HH:mm'): string => {
     if (!date) return '';
     return dayjs(date).format(format);
   },
 
-  // เช็คว่าวันที่ถูกต้องหรือไม่
+
   isValidDate: (date: any): boolean => {
     return dayjs(date).isValid();
   },
 
-  // สร้าง date range สำหรับ validation
+
   createDateRange: (startDate: string | Date, endDate: string | Date) => ({
     minDate: dayjs(startDate),
     maxDate: dayjs(endDate)
   }),
 
-  // แปลงเป็น ISO string สำหรับ API
+
   toISOString: (date: Dayjs | Date | string | null): string | null => {
     if (!date) return null;
     return dayjs(date).toISOString();
   },
 
-  // แปลงเป็น format สำหรับแสดงผล
+ 
   toDisplayFormat: (date: Dayjs | Date | string | null, format: string = 'DD/MM/YYYY HH:mm'): string => {
     if (!date) return '';
     return dayjs(date).format(format);
   },
 
-  // เช็ค date range
+ 
   isInRange: (date: Dayjs | Date | string, startDate: Dayjs | Date | string, endDate: Dayjs | Date | string): boolean => {
     const checkDate = dayjs(date);
     return checkDate.isAfter(dayjs(startDate)) && checkDate.isBefore(dayjs(endDate));
   },
 
-  // สร้าง preset date values
+
   presets: {
     now: () => dayjs(),
     today: () => dayjs().startOf('day'),
@@ -426,7 +514,6 @@ export const DateTimeHelpers = {
     endOfMonth: () => dayjs().endOf('month'),
   }
 };
-
 
 
 interface DateTimeFieldWithValidationProps extends DateTimeFieldProps {
@@ -448,8 +535,6 @@ export function DateTimeFieldWithValidation({
     />
   );
 }
-
-
 
 export type { DateTimeFieldProps };
 export { dayjs };

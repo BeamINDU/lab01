@@ -3,10 +3,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import SelectField from "@/app/components/common/SelectField";
+// import SearchField from '@/app/components/common/SearchField';
+import SelectField from '@/app/components/common/SelectField';
 import { FormData, DetectionModel } from "@/app/types/detection-model";
 import { SelectOption } from "@/app/types/select-option";
 import { ModelStatus } from "@/app/constants/status"
+import { getCameraIdOptions } from "@/app/libs/services/camera";
 import { getCamera, detail, updateStep4 } from "@/app/libs/services/detection-model";
 import { usePopupTraining } from '@/app/contexts/popup-training-context';
 import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
@@ -35,8 +37,6 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
   const [versionOptions, setVersionOptions] = useState<SelectOption[]>([]);
   const [selectedCamera, setSelectedCamera] = useState<string>("");
   const [selectedVersion, setSelectedVersion] = useState<number>(0);
-  // const [isTraining, setIsTraining] = useState(false);
-
 
   //--------------------------------------------------------------------------------------------
   
@@ -105,24 +105,7 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
   
     return versions as SelectOption[];
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [cameraResult, versionResult] = await Promise.all([
-          getCamera(),
-          getModelVersion(),
-        ]);
-        setCameraOptions(cameraResult);
-        setVersionOptions(versionResult);
-      } catch (error) {
-        console.error("Failed to load data:", error);
-      }
-    };
   
-    fetchData();
-  }, []);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -143,6 +126,23 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
     };
     fetchData();
   }, [reset]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [cameraResult, versionResult] = await Promise.all([
+          getCamera(),
+          getModelVersion(),
+        ]);
+        setCameraOptions(cameraResult);
+        setVersionOptions(versionResult);
+      } catch (error) {
+        console.error("Failed to load data:", error);
+      }
+    };
+  
+    fetchData();
+  }, []);
 
   useEffect(() => {
     setValue("cameraId", selectedCamera);
@@ -210,8 +210,21 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
       <div className="grid grid-cols-1 gap-4 mb-6">
         <input type="hidden" {...register("modelId")} />
 
-        {/* Camera No. */}
+        {/* Camera ID */}
         <div className="flex items-center">
+          {/* <div className="w-[20%]">
+            <SearchField
+              register={register}
+              setValue={setValue}
+              fieldName="cameraId"
+              label="Camera ID"
+              placeholder="Search or enter camera ID..."
+              dataLoader={getCameraIdOptions}
+              labelField="label"
+              valueField="value"
+              allowFreeText={true}
+            />
+          </div> */}
           <label className="w-64 font-medium">Camera ID :</label>
           <div className="w-64">
             <SelectField
@@ -229,6 +242,19 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
 
         {/* Model Version */}
         <div className="flex items-center">
+          {/* <div className="w-[20%]">
+            <SearchField
+              register={register}
+              setValue={setValue}
+              fieldName="version"
+              label="Version"
+              placeholder="Search or enter Version..."
+              dataLoader={getModelVersion}
+              labelField="label"
+              valueField="value"
+              allowFreeText={true}
+            />
+          </div> */}
           <label className="w-64 font-medium">Version :</label>
           <div className="w-64">
             <SelectField
