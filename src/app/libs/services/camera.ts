@@ -52,7 +52,6 @@ export const update = async (id: string, param: Partial<Camera>) => {
     const res = await api.put<Camera>(`${API_ROUTES.camera.update}?cameraid=${id}`, param);
     return {
       ...param,
-      id: param.cameraId,
       createdDate: new Date(),
       updatedDate: new Date(),
     };

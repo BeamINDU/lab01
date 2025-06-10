@@ -44,6 +44,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           timeSteps={{ minutes: 1 }}
           closeOnSelect={false}
           className="w-full"
+          
         />
       </div>
       

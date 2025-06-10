@@ -82,7 +82,7 @@ export default function ProductFormModal({
         ...formData,
         productId: formData.productId,
         createdBy: session?.user?.userid,
-        updatedBy: session?.user?.userid,
+        updatedBy: formData.id ? session?.user?.userid : null,
       };
 
       await onSave(formWithMeta);

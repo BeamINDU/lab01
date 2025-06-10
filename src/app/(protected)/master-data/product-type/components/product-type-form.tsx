@@ -68,11 +68,8 @@ export default function ProductTypeFormModal({
   const onSubmit: SubmitHandler<ProductTypeFormValues> = async (formData) => {
     const formWithMeta: ProductType = {
       ...formData,
-      productTypeId: formData.productTypeId ?? "",
       createdBy: session?.user?.userid,
-      createdDate: new Date(),
-      updatedBy: session?.user?.userid,
-      updatedDate: new Date()
+      updatedBy: formData.id ? session?.user?.userid : null,
     };
     onSave(formWithMeta);
   };

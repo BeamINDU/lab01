@@ -7,6 +7,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { X } from 'lucide-react'; // เพิ่ม import สำหรับ X icon
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/th';
 
@@ -31,6 +32,7 @@ interface DateTimeFieldProps {
   required?: boolean;
   ampm?: boolean;
   closeOnSelect?: boolean;
+  allowClear?: boolean; // เพิ่ม prop สำหรับเปิด/ปิดปุ่ม clear
   timeSteps?: {
     hours?: number;
     minutes?: number;
@@ -54,6 +56,7 @@ interface DateTimeFieldProps {
   // Events
   onChange?: (value: Dayjs | null) => void;
   onError?: (error: any) => void;
+  onClear?: () => void; // เพิ่ม event สำหรับ clear
 }
 
 export default function DateTimeField({
@@ -70,6 +73,7 @@ export default function DateTimeField({
   required = false,
   ampm = false,
   closeOnSelect = false,
+  allowClear = true, 
   timeSteps = { minutes: 1 },
   minDate,
   maxDate,
@@ -80,7 +84,8 @@ export default function DateTimeField({
   fontSize = 'sm',
   compactMode = false,
   onChange,
-  onError
+  onError,
+  onClear
 }: DateTimeFieldProps) {
   
   // กำหนด format ตาม variant
@@ -262,8 +267,17 @@ export default function DateTimeField({
     }
   });
 
+  // ฟังก์ชันสำหรับ clear ค่า
+  const handleClear = (field: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    field.onChange(null);
+    onClear?.();
+    onChange?.(null);
+  };
 
   const renderPicker = (field: any) => {
+    const hasValue = field.value && field.value !== '';
+    
     const commonProps = {
       value: field.value ? dayjs(field.value) : null,
       onChange: (date: Dayjs | null) => {
@@ -282,16 +296,39 @@ export default function DateTimeField({
             ...inputStyle,
             '& input': {
               fontSize: `${fontSizes.input} !important`,
-              padding: compactMode ? '4px 8px !important' : '6px 12px !important'
+              padding: compactMode ? '4px 8px !important' : '6px 12px !important',
             },
             '& .MuiOutlinedInput-root': {
-              fontSize: `${fontSizes.input} !important`
-            }
+              fontSize: `${fontSizes.input} !important`,
+              position: 'relative'
+            },
+            // ซ่อนปุ่ม calendar เมื่อมีค่าและ allowClear เป็น true
+            '& .MuiInputAdornment-root': allowClear && hasValue && !disabled ? {
+              display: 'none'
+            } : undefined
           },
           required,
-          error: !!field.error
+          error: !!field.error,
+          // เพิ่ม InputProps เพื่อใส่ปุ่ม clear
+          InputProps: allowClear && hasValue && !disabled ? {
+            endAdornment: (
+              <div className="flex items-center">
+                <button
+                  type="button"
+                  onClick={(e) => handleClear(field, e)}
+                  className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+                  tabIndex={-1}
+                  title="Clear date"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            )
+          } : undefined
         },
-        popper: getPopperStyles()
+        popper: getPopperStyles(),
+        // ปรับ openPickerIcon เพื่อซ่อนเมื่อมี clear button
+        openPickerIcon: allowClear && hasValue && !disabled ? undefined : undefined
       },
       onError: (error: any) => {
         console.error('DateTimePicker error:', error);
@@ -344,13 +381,13 @@ export default function DateTimeField({
         </label>
         
         {/* DateTimePicker Container */}
-        <div className="w-full min-w-0">
+        <div className="w-full min-w-0 relative">
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <Controller
               name={fieldName}
               control={control}
               render={({ field, fieldState }) => (
-                <div className="w-full">
+                <div className="w-full relative">
                   {renderPicker(field)}
                   {fieldState.error && (
                     <p className="text-red-500 text-xs mt-1">
@@ -422,7 +459,6 @@ export const DateTimeHelpers = {
     endOfMonth: () => dayjs().endOf('month'),
   }
 };
-
 
 
 interface DateTimeFieldWithValidationProps extends DateTimeFieldProps {

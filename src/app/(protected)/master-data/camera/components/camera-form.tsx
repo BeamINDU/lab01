@@ -69,7 +69,7 @@ export default function CameraFormModal({
     const formWithMeta: Camera = {
       ...formData,
       createdBy: session?.user?.userid,
-      updatedBy: session?.user?.userid,
+      updatedBy: formData.id ? session?.user?.userid : null,
     };
     onSave(formWithMeta);
   };

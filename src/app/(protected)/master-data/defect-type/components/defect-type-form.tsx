@@ -68,9 +68,8 @@ export default function DefectTypeFormModal({
   const onSubmit: SubmitHandler<DefectTypeFormValues> = async (formData) => {
     const formWithMeta: DefectType = {
       ...formData,
-      defectTypeId: formData.defectTypeId,
       createdBy: session?.user?.userid,
-      updatedBy: session?.user?.userid,
+      updatedBy: formData.id ? session?.user?.userid : null,
     };
     onSave(formWithMeta);
   };

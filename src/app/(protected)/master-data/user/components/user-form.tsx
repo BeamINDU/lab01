@@ -131,9 +131,8 @@ export default function UserFormModal({
   const onSubmit: SubmitHandler<UserFormValues> = async (formData) => {
     const formWithMeta: User = {
       ...formData,
-      userId: formData.userId,
       createdBy: session?.user?.userid,
-      updatedBy: session?.user?.userid,
+      updatedBy: formData.id ? session?.user?.userid : null,
     };
     onSave(formWithMeta);
   };

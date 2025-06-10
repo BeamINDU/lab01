@@ -70,9 +70,8 @@ export default function RoleFormModal({
   const onSubmit: SubmitHandler<RoleFormValues> = async (formData) => {
     const formWithMeta: Role = {
       ...formData,
-      roleId: formData.roleId,
       createdBy: session?.user?.userid,
-      updatedBy: session?.user?.userid,
+      updatedBy: formData.id ? session?.user?.userid : null,
     };
     onSave(formWithMeta);
   };
