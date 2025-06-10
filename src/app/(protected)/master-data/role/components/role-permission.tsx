@@ -609,7 +609,7 @@ export default function RolePermissionModal({
 
         <div className="relative border-b">
           <h2 className="text-2xl font-semibold text-center mb-4">
-            {editingData && !editingData.isCreateMode ? 'Edit Permission' : 'Add Permission'}
+            {editingData && !editingData.id ? 'Edit Permission' : 'Add Permission'}
           </h2>
         </div>
 

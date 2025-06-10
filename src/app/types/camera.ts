@@ -1,4 +1,5 @@
 export type Camera = {
+  id?: string
   cameraId: string
   cameraName: string
   location: string
@@ -7,7 +8,6 @@ export type Camera = {
   createdBy?: string
   updatedDate?: Date | null
   updatedBy?: string | null
-  isCreateMode?: boolean
 }
 
 export type ParamSearch = {

@@ -3,6 +3,7 @@ import { showConfirm, showSuccess, showError, showWarning } from '@/app/utils/sw
 import { Check, CheckCircle, Circle, Loader2 } from "lucide-react";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { FormData, DetectionModel } from "@/app/types/detection-model";
 import { detail } from "@/app/libs/services/detection-model";
 import clsx from "clsx";

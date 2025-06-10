@@ -4,18 +4,21 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Trash2 } from 'lucide-react'
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import { exportText, exportExcel, exportWord, exportCSV } from "@/app/libs/export";
+import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { ProductType, ParamSearch } from "@/app/types/product-type"
 import { search, detail, create, update, remove, upload } from "@/app/libs/services/product-type";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
+import { extractErrorMessage } from '@/app/utils/errorHandler';
+import { formatDateTime } from "@/app/utils/date";
 import UploadButton from "@/app/components/common/UploadButton";
 import ExportButton from "@/app/components/common/ExportButton";
 import DataTable from "@/app/components/table/DataTable";
 import ProductTypeColumns from "./components/product-type-column";
 import ProductTypeFilterForm from './components/product-type-filter';
 import ProductTypeFormModal from "./components/product-type-form";
+
 
 export default function Page() {
   const { hasPermission } = usePermission();
@@ -46,17 +49,22 @@ const handleSearch = async () => {
     }
   };
   const handleExport = (type: ExportType) => {
-    const headers = ["Product Type ID", "Product Type Name", "Description", "Status"];
-    const keys: (keyof ProductType)[] = ["productTypeId","productTypeName", "description", "status"];
-    const fileName = "Product";
-  
-    switch (type) {
-      case ExportType.CSV:
-        exportCSV(data, headers, keys, fileName);
-        break;
-      case ExportType.Excel:
-        exportExcel(data, headers, keys, fileName);
-        break;
+    try {
+      const headers = ["Product Type ID", "Product Type Name", "Description", "Status"];
+      const keys: (keyof ProductType)[] = ["productTypeId","productTypeName", "description", "status"];
+      const fileName = `ProductType_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
+    
+      switch (type) {
+        case ExportType.CSV:
+          exportCSV(data, headers, keys, fileName);
+          break;
+        case ExportType.Excel:
+          exportExcel(data, headers, keys, fileName);
+          break;
+      }
+    } catch (error) {
+      console.error("Export operation failed:", error);
+      showError(`Export failed: ${extractErrorMessage(error)}`);
     }
   };
 
@@ -66,22 +74,16 @@ const handleSearch = async () => {
       showSuccess(`Uploaded: ${file.name}`);
     } catch (error) {
       console.error("Upload operation failed:", error);
-      // const message = error instanceof Error ? error.message : String(error);
-      showError(`Upload failed`);
-      throw error;
+      showError(`Upload failed: ${extractErrorMessage(error)}`);
     }
   };
   
   const handleAddEdit = async (row?: ProductType) => {
     try {
       if (row) {
-        // const result = await detail(row.productTypeId ?? "");
-        const result = data.find((item) => item.productTypeId === row.productTypeId) ?? row;
-        const updatedRow: ProductType = {
-          ...result,
-          isCreateMode: !row.productTypeId,
-        };
-        setEditingData(updatedRow);
+        // const result = await detail(row.id ?? "");
+        const result = data.find((item) => item.id === row.id) ?? row;
+        setEditingData(result);
       } else {
         reset();
         setEditingData(null);
@@ -89,7 +91,6 @@ const handleSearch = async () => {
       setIsFormModalOpen(true);
     } catch (error) {
       console.error('Delete operation failed:', error);
-      // const message = error instanceof Error ? error.message : String(error);
       showError(`Failed to load details`);
     }
   };
@@ -98,35 +99,34 @@ const handleSearch = async () => {
     const result = await showConfirm('Are you sure you want to delete these product type?')
     if (result.isConfirmed) {
       try {
-        for (const productTypeId of selectedIds) {
-          await remove(productTypeId);
+        for (const id of selectedIds) {
+          await remove(id);
         }
-        setData(prev => prev.filter(item => !selectedIds.includes(item.productTypeId ?? "")));
+        setData(prev => prev.filter(item => !selectedIds.includes(item.id ?? "")));
         setSelectedIds([]);
         showSuccess(`Deleted successfully`)
       } catch (error) {
         console.error('Delete operation failed:', error);
-        // const message = error instanceof Error ? error.message : String(error);
-        showError(`Delete failed`);
+        showError(`Delete failed: ${extractErrorMessage(error)}`);
       }
     }
   };
 
   const handleSave = async (formData: ProductType) => {
     try {
-      if (formData.isCreateMode) {
+      if (!formData.id) {
         const newData = await create(formData) as ProductType;
-        const newDataWithFlag: ProductType = { ...newData, isCreateMode: false };
-        setData(prev => [...prev, newDataWithFlag]);
+        setData(prev => [...prev, newData]);
+        // const newDataWithFlag: ProductType = { ...newData };
+        // setData(prev => [...prev, newDataWithFlag]);
       } else {
-        const updatedData = await update(formData) as ProductType;
-        setData(prev => prev.map(item => (item.productTypeId === formData.productTypeId ? updatedData : item)));
+        const updatedData = await update(formData?.id ?? "", formData) as ProductType;
+        setData(prev => prev.map(item => (item.id === formData.id ? updatedData : item)));
       }
       showSuccess(`Saved successfully`)
     } catch (error) {
       console.error('Save operation failed:', error);
-      const message = error instanceof Error ? error.message : String(error);
-      showError(`Save failed: ${message}`);
+      showError(`Save failed: ${extractErrorMessage(error)}`);
     } finally {
       reset();
       setIsFormModalOpen(false);

@@ -1,6 +1,7 @@
 import { api } from '@/app/utils/api'
 import type { UserPermission } from "@/app/types/user-permissions"
 import { Menu, Action } from "@/app/constants/menu"
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 // Sample menu
 const allMenuData: UserPermission[] = [
@@ -29,31 +30,39 @@ const allMenuData: UserPermission[] = [
 
 
 export const getAllMenus = async (): Promise<UserPermission[]> => {
-  
-  return allMenuData;
-};
+  try {
+    return allMenuData;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
+}
 
 
 export const getRolePermissions = async (roleId: string): Promise<{menuId: string, actions: number[]}[]> => {
-  return [
-    { menuId: "DB000", actions: [1] },
-    { menuId: "LI000", actions: [1] },
-    { menuId: "MD001", actions: [1, 2, 3, 4, 5] },
-    { menuId: "MD002", actions: [1] },
-    { menuId: "RP001", actions: [1] },
-    { menuId: "DM000", actions: [2,3,4] }
-  ];
+  try {
+    return [
+      { menuId: "DB000", actions: [1] },
+      { menuId: "LI000", actions: [1] },
+      { menuId: "MD001", actions: [1, 2, 3, 4, 5] },
+      { menuId: "MD002", actions: [1] },
+      { menuId: "RP001", actions: [1] },
+      { menuId: "DM000", actions: [2,3,4] }
+    ];
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
 };
 
 
-export const saveRolePermissions = async (
-  roleId: string, 
-  permissions: {menuId: string, actions: number[]}[]
+export const saveRolePermissions = async ( roleId: string, permissions: {menuId: string, actions: number[]}[]
 ): Promise<{roleId: string, permissions: {menuId: string, actions: number[]}[]}> => {
   console.log("Saving permissions for role", roleId, permissions);
-  
-  return {
-    roleId,
-    permissions
-  };
+  try {
+    return {
+      roleId,
+      permissions
+    };
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
 };

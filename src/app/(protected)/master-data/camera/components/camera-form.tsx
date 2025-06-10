@@ -9,11 +9,11 @@ import { Camera } from "@/app/types/camera";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 const CameraSchema = z.object({
+  id: z.string().optional(),
   cameraId: z.string().min(1, "Camera Id is required"),
   cameraName: z.string().min(1, "Camera Name is required"),
   location: z.string().min(1, "location is required"),
   status: z.boolean(),
-  isCreateMode: z.boolean().optional(),
 }); 
 
 type CameraFormValues = z.infer<typeof CameraSchema>;
@@ -36,11 +36,11 @@ export default function CameraFormModal({
   const { data: session } = useSession();
 
   const defaultValues: CameraFormValues = {
+    id: '',
     cameraId: '',
     cameraName: '',
     location: '',
     status: true,
-    isCreateMode: true,
   };
 
   const {
@@ -59,19 +59,16 @@ export default function CameraFormModal({
     if (editingData) {
       reset(editingData);
     } else {
-      reset({...defaultValues, isCreateMode: true});
+      reset(defaultValues);
     }
   }, [editingData, reset]);
-
-
 
   if (!showModal) return null;
 
   const onSubmit: SubmitHandler<CameraFormValues> = async (formData) => {
     const formWithMeta: Camera = {
       ...formData,
-      cameraId: formData.cameraId,
-      createdBy: formData.isCreateMode ? session?.user?.userid : undefined,
+      createdBy: session?.user?.userid,
       updatedBy: session?.user?.userid,
     };
     onSave(formWithMeta);
@@ -91,7 +88,7 @@ export default function CameraFormModal({
 
         <h2 className="text-2xl font-semibold text-center mb-6">
           {editingData
-            ? editingData.isCreateMode
+            ? editingData.id
               ? 'Add Camera'
               : canEdit
                 ? 'Edit Camera'
@@ -101,7 +98,7 @@ export default function CameraFormModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
-          <input type="hidden" {...register('isCreateMode')} />
+          <input type="hidden" {...register('id')} />
           
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
@@ -109,7 +106,6 @@ export default function CameraFormModal({
               <input 
                 {...register("cameraId")} 
                 className="border p-2 w-full mb-1" 
-                readOnly={editingData && !editingData.isCreateMode ? true : undefined}
               />
             </div>
             {errors.cameraId && <p className="text-red-500 ml-160">{errors.cameraId.message}</p>}

@@ -1,6 +1,7 @@
 import { api } from '@/app/utils/api'
 import type { User, UserPermission } from "@/app/types/user-permissions"
 import { Menu, Action } from "@/app/constants/menu"
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 // Action
 // View = 1,      // view
@@ -36,18 +37,24 @@ const mockData: UserPermission[] =
 ]
 
 export const getPermissions = async (userid: string) => {
-  return mockData;
-  // return await apiClient<Transaction>(`${apiUrl}/permission/${userId}`, "GET");
-};
+  try {
+    return mockData;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+}
 
-export const validateLogin = async (username: string, password: string): Promise<User | null>  => {
-  if (username === "admin" && password === "admin") {
-    return {
-      id:"admin",
-      userid: "TH0001",
-      fullname: "Administrator",
-      email: "admin@pi.com",
-    };
-  }
-  return null;
+export const validateLogin = async (username: string, password: string) => {
+  try {
+    if (username === "admin" && password === "admin") {
+      return {
+        id:"admin",
+        userid: "TH0001",
+        fullname: "Administrator",
+        email: "admin@pi.com",
+      };
+    }
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
 };

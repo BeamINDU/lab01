@@ -17,7 +17,6 @@ const AddModelFormSchema = z.object({
   modelName: z.string().min(1, "Model Name is required"),
   productId: z.string().min(1, "Product ID is required"),
   description: z.string(),
-  isCreateMode: z.boolean(), 
 }); 
 
 type AddModelFormValues = z.infer<typeof AddModelFormSchema>;
@@ -44,7 +43,6 @@ export default function DetectionModelFormModal({
     modelName: '',
     productId: '',
     description: '',
-    isCreateMode: true,
   };
 
   const {
@@ -65,7 +63,7 @@ export default function DetectionModelFormModal({
     if (editingData) {
       reset(editingData);
     } else {
-      reset({...defaultValues, isCreateMode: true});
+      reset(defaultValues);
     }
   }, [editingData, reset]);
 
@@ -100,7 +98,8 @@ export default function DetectionModelFormModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
-          <input type="hidden" {...register('isCreateMode')} />
+          <input type="hidden" {...register('modelId')} />
+
           {/* <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Model ID</label>
@@ -123,7 +122,7 @@ export default function DetectionModelFormModal({
               fieldName="productId"
               label="Product ID"
               placeholder="Select product type..."
-              //dataLoader={getProductTypeIdOptions}
+              dataLoader={getProductIdOptions}
               labelField="label"
               valueField="value"
               allowFreeText={false}

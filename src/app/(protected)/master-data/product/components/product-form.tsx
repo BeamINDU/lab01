@@ -13,13 +13,13 @@ import { SearchFieldModal } from '@/app/components/common/SearchField';
 import { getProductTypeIdOptions } from '@/app/libs/services/product-type';
 
 const ProductSchema = z.object({
+  id: z.string().optional(),
   productId: z.string().min(1, "Product ID is required"),
   productName: z.string().min(1, "Product Name is required"),
   productTypeId: z.string().min(1, "Product Type is required"),
   productTypeName: z.string().min(1, "Product Type is required"),
   serialNo: z.string().min(1, "Serial No is required"),
   status: z.boolean(),
-  isCreateMode: z.boolean().optional(),
 });
 
 type ProductFormValues = z.infer<typeof ProductSchema>;
@@ -42,13 +42,13 @@ export default function ProductFormModal({
   const { data: session } = useSession();
 
   const defaultValues: ProductFormValues = {
+    id: '',
     productId: '',
     productName: '',
     productTypeId: '',
     productTypeName: '',
     serialNo: '',
     status: true,
-    isCreateMode: true,
   };
 
   const {
@@ -66,16 +66,13 @@ export default function ProductFormModal({
 
   useEffect(() => {
     if (editingData) {
-      console.log('Form received editingData:', editingData);
       reset(editingData);
     } else {
-      console.log('Form reset to default values');
-      reset({ ...defaultValues, isCreateMode: true });
+      reset(defaultValues);
     }
   }, [editingData, reset]);
 
   if (!showModal) return null;
-
 
   const onSubmit: SubmitHandler<ProductFormValues> = async (formData) => {
     try {
@@ -84,12 +81,11 @@ export default function ProductFormModal({
       const formWithMeta: Product = {
         ...formData,
         productId: formData.productId,
-        createdBy: formData.isCreateMode ? session?.user?.userid : undefined,
+        createdBy: session?.user?.userid,
         updatedBy: session?.user?.userid,
       };
 
       await onSave(formWithMeta);
-
     } catch (error) {
       console.error('Error in form submission:', error);
       alert('Error saving product: ' + (error as Error).message);
@@ -109,7 +105,7 @@ export default function ProductFormModal({
 
         <h2 className="text-2xl font-semibold text-center mb-6">
           {editingData
-            ? editingData.isCreateMode
+            ? editingData.id
               ? 'Add Product'
               : canEdit
                 ? 'Edit Product'
@@ -118,7 +114,7 @@ export default function ProductFormModal({
         </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
-          <input type="hidden" {...register('isCreateMode')} />
+          <input type="hidden" {...register('id')} />
 
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">

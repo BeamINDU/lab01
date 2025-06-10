@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Trash2 } from 'lucide-react'
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import { exportText, exportExcel, exportWord, exportCSV } from "@/app/libs/export";
+import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { ReportProduct, ProductDetail, ParamSearch, ParamUpdate } from "@/app/types/report-product-defect"
 import { search, detail, update } from "@/app/libs/services/report-product-defect";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
+import { extractErrorMessage } from '@/app/utils/errorHandler';
+import { formatDateTime } from "@/app/utils/date";
 import ExportButton from "@/app/components/common/ExportButton";
 import DataTable from "@/app/components/table/DataTable";
 import ReportProductColumns from "./components/report-product-column";
@@ -48,17 +50,22 @@ export default function Page() {
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["Datetime", "Product Name", "Status", "Defect Type Name", "Camera Name"];
-    const keys: (keyof ReportProduct)[] = ["datetime", "productName", "status", "defectTypeName", "cameraName"];
-    const fileName = "Report_Product";
-  
-    switch (type) {
-      case ExportType.CSV:
-        exportCSV(data, headers, keys, fileName);
-        break;
-      case ExportType.Excel:
-        exportExcel(data, headers, keys, fileName);
-        break;
+    try {
+      const headers = ["Datetime", "Product Name", "Status", "Defect Type Name", "Camera Name"];
+      const keys: (keyof ReportProduct)[] = ["datetime", "productName", "status", "defectTypeName", "cameraName"];
+      const fileName = `ReportProductDefect_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
+    
+      switch (type) {
+        case ExportType.CSV:
+          exportCSV(data, headers, keys, fileName);
+          break;
+        case ExportType.Excel:
+          exportExcel(data, headers, keys, fileName);
+          break;
+      }
+    } catch (error) {
+      console.error("Export operation failed:", error);
+      showError(`Export failed: ${extractErrorMessage(error)}`);
     }
   };
   
@@ -67,22 +74,21 @@ export default function Page() {
       if (row) {
         // const data = await detail(row.productId) ?? row;
         const result = data.find((item) => item.productId === row.productId) ?? row;
-        if (result) {
-          setData(prev =>
-            prev.map(item =>
-              item.productId === row.productId ? result : item
-            )
-          );
-          // setEditingData(result);
-          setIsFormModalOpen(true);
-        } else {
-          showError('Product detail not found');
-        }
+        const dataDetail: ProductDetail = {
+          ...result,
+          serialNo: '',
+          date: '',
+          time: '',
+          lotNo: '',
+          history: [],
+          comment: '',
+        };
+        setEditingData(dataDetail); 
       } else {
         reset();
         setEditingData(null);
-        setIsFormModalOpen(true);
       }
+      setIsFormModalOpen(true);
     } catch (error) {
       console.error('Failed to load product detail:', error);
       showError('Failed to load product details');
@@ -91,20 +97,16 @@ export default function Page() {
 
   const handleSave = async (formData: ParamUpdate) => {
     try {
-      if (formData.productId) {
-        const updatedData = await update(formData) as ProductDetail;
+      if (formData.id) {
+        const updatedData = await update(formData.id, formData) as ProductDetail;
         setData(prev => 
-          prev.map(item => 
-            item.productId === formData.productId 
-              ? { ...item, ...updatedData }
-              : item
-          )
+          prev.map(item => item.id === formData.id ? { ...item, ...updatedData } : item)
         );
       }
       showSuccess(`Saved successfully`)
     } catch (error) {
       console.error('Save operation failed:', error);
-      showError('Save failed')
+      showError(`Save failed: ${extractErrorMessage(error)}`);
     } finally {
       reset();
       setIsFormModalOpen(false);

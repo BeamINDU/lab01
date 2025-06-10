@@ -2,32 +2,32 @@ import { api } from '@/app/utils/api'
 import { API_ROUTES } from "@/app/constants/endpoint";
 import { User, ParamSearch } from "@/app/types/user"
 import { SelectOption } from "@/app/types/select-option";
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 export const search = async (param?: ParamSearch) => { 
   try {
     const res =  await api.get<any>(`${API_ROUTES.user.get}?${param}`);
 
-    const mapData: User[] = res?.users
-      ?.filter((item) => !item.isdeleted)
-      ?.map((item) => ({
-        userId: item.userid,
-        username: item.username,
-        firstname: item.ufname,
-        lastname: item.ulname,
-        location: item.username,
-        password: item.upassword,
-        email: item.email,
-        roleName: item.roleid,
-        status: item.userstatus,
-        createdDate: item.createddate,
-        createdBy: item.createdby,
-        updatedDate: item.updateddate,
-        updatedBy: item.updatedby,
+    const mapData: User[] = res?.users?.map((item) => ({
+      id: item.userid,
+      userId: item.userid,
+      username: item.username,
+      firstname: item.ufname,
+      lastname: item.ulname,
+      location: item.username,
+      password: item.upassword,
+      email: item.email,
+      roleName: item.roleid,
+      status: item.userstatus,
+      createdDate: item.createddate,
+      createdBy: item.createdby,
+      updatedDate: item.updateddate,
+      updatedBy: item.updatedby,
     }));
     
     return mapData;
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
@@ -35,7 +35,7 @@ export const detail = async (id: string) => {
   try {
     return await api.get<User>(`${API_ROUTES.user.detail}/${id}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
@@ -44,22 +44,25 @@ export const create = async (param: Partial<User>) => {
     const res = await api.post<any>(`${API_ROUTES.user.insert}`, param);
     return {
       ...param,
+      id: param.userId,
       createdDate: new Date(),
     };
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
-export const update = async (param: Partial<User>) => {
+export const update = async (id: string, param: Partial<User>) => {
   try {
-    const res = await api.put<User>(`${API_ROUTES.user.update}?userId=${param.userId}`, param);
+    const res = await api.put<User>(`${API_ROUTES.user.update}?userId=${id}`, param);
     return {
       ...param,
+      id: param.userId,
+      createdDate: new Date(),
       updatedDate: new Date(),
     };
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   } 
 };
 
@@ -67,7 +70,7 @@ export const remove = async (id: string) => {
   try {
     return await api.delete<User>(`${API_ROUTES.user.delete}?userId=${id}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
@@ -79,7 +82,7 @@ export const upload = async (file: File) => {
     const res = await api.upload<User[]>(`${API_ROUTES.user.upload}`, formData);
     return res;
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   } 
 };
 
@@ -87,7 +90,7 @@ export const getUserIdOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.user.suggest_userid}?q=${q}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
@@ -95,6 +98,6 @@ export const getUserNameOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.user.suggest_username}?q=${q}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 }

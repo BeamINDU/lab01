@@ -22,9 +22,9 @@ export default function productColumns({
   canEdit
 }: ProductColumnProps): ColumnDef<ReportProduct>[] {
 
-  const toggleSelect = (productId: string) => {
+  const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(productId) ? prev.filter((selectedId) => selectedId !== productId) : [...prev, productId]
+      prev.includes(id) ? prev.filter((selectedId) => selectedId !== id) : [...prev, id]
     );
   };
 
@@ -33,8 +33,8 @@ export default function productColumns({
       prev.length === data.length
         ? [] // If all items are selected, unselect all
         : data
-          .map((item) => item.productId) // Map to ids
-          .filter((productId): productId is string => productId !== undefined) // Filter out undefined values
+          .map((item) => item.id) // Map to ids
+          .filter((id): id is string => id !== undefined) // Filter out undefined values
     );
   };
 
@@ -47,7 +47,7 @@ export default function productColumns({
               <div className="flex justify-center items-center">
                 <input
                   type="checkbox"
-                  checked={selectedIds.length === data.length && data.every(item => selectedIds.includes(item.productId ?? ""))}
+                  checked={selectedIds.length === data.length && data.every(item => selectedIds.includes(item.id ?? ""))}
                   onChange={toggleSelectAll}
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
                 />
@@ -57,8 +57,8 @@ export default function productColumns({
               <div className="flex items-center justify-center">
                 <input
                   type="checkbox"
-                  checked={selectedIds.includes(row.original.productId)} 
-                  onChange={() => toggleSelect(row.original.productId)} 
+                  checked={selectedIds.includes(row.original.id)} 
+                  onChange={() => toggleSelect(row.original.id)} 
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
                 />
               </div>

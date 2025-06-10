@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import { exportText, exportExcel, exportWord, exportCSV } from "@/app/libs/export";
+import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { Transaction, ParamSearch } from "@/app/types/transaction"
-import { search, detail } from "@/app/libs/services/transaction";
+import { search } from "@/app/libs/services/transaction";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
+import { extractErrorMessage } from '@/app/utils/errorHandler';
+import { formatDateTime } from "@/app/utils/date";
 import ExportButton from "@/app/components/common/ExportButton";
 import DataTable from "@/app/components/table/DataTable";
 import TransactionColumns from "./components/transaction-column";
@@ -43,17 +45,22 @@ export default function Page() {
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["Lot ID", "Product Name", "Quantity"];
-    const keys: (keyof Transaction)[] = ["lotNo","productId", "quantity"];
-    const fileName = "Transaction";
-  
-    switch (type) {
-      case ExportType.CSV:
-        exportCSV(data, headers, keys, fileName);
-        break;
-      case ExportType.Excel:
-        exportExcel(data, headers, keys, fileName);
-        break;
+    try {
+      const headers = ["Lot ID", "Product Name", "Quantity"];
+      const keys: (keyof Transaction)[] = ["lotNo","productId", "quantity"];
+      const fileName = `Transaction_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
+    
+      switch (type) {
+        case ExportType.CSV:
+          exportCSV(data, headers, keys, fileName);
+          break;
+        case ExportType.Excel:
+          exportExcel(data, headers, keys, fileName);
+          break;
+      }
+    } catch (error) {
+      console.error("Export operation failed:", error);
+      showError(`Export failed: ${extractErrorMessage(error)}`);
     }
   };
 

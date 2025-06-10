@@ -1,16 +1,17 @@
-// src/app/(protected)/master-data/user/page.tsx
 'use client'
 
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Trash2 } from 'lucide-react'
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import { exportText, exportExcel, exportWord, exportCSV } from "@/app/libs/export";
+import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { User, ParamSearch } from "@/app/types/user"
 import { search, detail, create, update, remove, upload } from "@/app/libs/services/user";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
+import { extractErrorMessage } from '@/app/utils/errorHandler';
+import { formatDateTime } from "@/app/utils/date";
 import UploadButton from "@/app/components/common/UploadButton";
 import ExportButton from "@/app/components/common/ExportButton";
 import DataTable from "@/app/components/table/DataTable";
@@ -61,17 +62,22 @@ export default function Page() {
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["User ID", "User Name", "First Name","Last Name","Email", "Role Name", "Status", "Created Date", "Updated Date"];
-    const keys: (keyof User)[] = ["userId", "username", "firstname", "lastname", "email", "roleName", "status", "createdDate", "updatedDate"];
-    const fileName = "User";
-  
-    switch (type) {
-      case ExportType.CSV:
-        exportCSV(data, headers, keys, fileName);
-        break;
-      case ExportType.Excel:
-        exportExcel(data, headers, keys, fileName);
-        break;
+    try {
+      const headers = ["User ID", "User Name", "First Name","Last Name","Email", "Role Name", "Status", "Created Date", "Updated Date"];
+      const keys: (keyof User)[] = ["userId", "username", "firstname", "lastname", "email", "roleName", "status", "createdDate", "updatedDate"];
+      const fileName = `User_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
+    
+      switch (type) {
+        case ExportType.CSV:
+          exportCSV(data, headers, keys, fileName);
+          break;
+        case ExportType.Excel:
+          exportExcel(data, headers, keys, fileName);
+          break;
+      }
+    } catch (error) {
+      console.error("Export operation failed:", error);
+      showError(`Export failed: ${extractErrorMessage(error)}`);
     }
   };
 
@@ -81,18 +87,16 @@ export default function Page() {
       showSuccess(`Uploaded: ${file.name}`);
     } catch (error) {
       console.error("Upload operation failed:", error);
-      showError("Upload failed");
-      throw error;
+      showError(`Upload failed: ${extractErrorMessage(error)}`);
     }
   };
   
   const handleAddEdit = async (row?: User) => {
     try {
       if (row) {
-        // const result = (await detail(row.userId ?? "")) ?? (row as User);
-        const result = data.find((item) => item.userId === row.userId) ?? row;
-        const updatedRow = { ...result, isCreateMode: !row.userId };
-        setEditingData(updatedRow);
+        // const result = (await detail(row.id ?? "")) ?? (row as User);
+        const result = data.find((item) => item.id === row.id) ?? row;
+        setEditingData(result); 
       } else {
         reset();
         setEditingData(null);
@@ -108,32 +112,32 @@ export default function Page() {
     const result = await showConfirm('Are you sure you want to delete these users?')
     if (result.isConfirmed) {
       try {
-        for (const userId of selectedIds) {
-          await remove(userId);
+        for (const id of selectedIds) {
+          await remove(id);
         }
-        setData(prev => prev.filter(item => !selectedIds.includes(item.userId ?? "")));
+        setData(prev => prev.filter(item => !selectedIds.includes(item.id ?? "")));
         setSelectedIds([]);
         showSuccess(`Deleted successfully`)
       } catch (error) {
         console.error('Delete operation failed:', error);
-        showError('Delete failed')
+        showError(`Delete failed: ${extractErrorMessage(error)}`);
       }
     }
   };
 
   const handleSave = async (formData: User) => {
     try {
-      if (formData.isCreateMode) {
+      if (!formData.id) {
         const newData = await create(formData) as User;
         setData(prev => [...prev, newData]);
       } else {
-        const updatedData = await update(formData) as User;
-        setData(prev => prev.map(item => (item.userId === formData.userId ? updatedData : item)));
+        const updatedData = await update(formData?.id ?? "", formData) as User;
+        setData(prev => prev.map(item => (item.id === formData.id ? updatedData : item)));
       }
       showSuccess(`Saved successfully`)
     } catch (error) {
       console.error('Save operation failed:', error);
-      showError('Save failed')
+      showError(`Save failed: ${extractErrorMessage(error)}`);
     } finally {
       reset();
       setIsFormModalOpen(false);

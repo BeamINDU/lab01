@@ -1,16 +1,19 @@
 export type ReportProduct = {
   runningNo: string,
   datetime: Date
+  id: string
   productId: string
   productName: string
   status: string
   defectTypeId: string
   defectTypeName: string
+  cameraId: string
   cameraName: string
   imageUrl: string
 }
 
 export type ProductDetail = {
+  id: string
   productId: string
   productName: string
   serialNo: string
@@ -43,7 +46,7 @@ export type ParamSearch = {
 }
 
 export type ParamUpdate = {
-  productId?: string
+  id?: string
   status?: string
   comment?: string,
   updatedBy?: string

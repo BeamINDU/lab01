@@ -151,8 +151,11 @@ const uploadFile = async <T>(
 
 // API
 export const api = {
-  get: <T>(url: string, config?: AxiosRequestConfig) =>
-    request<T>('get', url, config),
+  get: <T>(url: string, params?: Record<string, any>, config?: AxiosRequestConfig) => {
+    const queryString = buildQueryString(params);
+    const fullUrl = queryString ? `${url}?${queryString}` : url;
+    return request<T>('get', fullUrl, undefined, config);
+  },
 
   post: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
     request<T>('post', url, data, config),
@@ -162,12 +165,6 @@ export const api = {
 
   delete: <T>(url: string, config?: AxiosRequestConfig) =>
     request<T>('delete', url, config),
-  
-  getWithParams: <T>(url: string, params?: Record<string, any>) => {
-    const queryString = buildQueryString(params);
-    const fullUrl = queryString ? `${url}?${queryString}` : url;
-    return request<T>('get', fullUrl);
-  },
 
   upload: uploadFile,
 };

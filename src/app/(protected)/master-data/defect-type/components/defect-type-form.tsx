@@ -10,11 +10,11 @@ import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 
 const DefectTypeSchema = z.object({
+  id: z.string().optional(),
   defectTypeId: z.string().min(1, "Defect Type Id is required"),
   defectTypeName: z.string().min(1, "Defect Type Name is required"),
   description: z.string(),
   status: z.boolean(),
-  isCreateMode: z.boolean().optional(),
 }); 
 
 type DefectTypeFormValues = z.infer<typeof DefectTypeSchema>;
@@ -37,11 +37,11 @@ export default function DefectTypeFormModal({
   const { data: session } = useSession();
 
   const defaultValues: DefectTypeFormValues = {
+    id: '',
     defectTypeId: '',
     defectTypeName: '',
     description: '',
     status: true,
-    isCreateMode: true,
   };
 
   const {
@@ -59,7 +59,7 @@ export default function DefectTypeFormModal({
     if (editingData) {
       reset(editingData);
     } else {
-      reset({...defaultValues, isCreateMode: true});
+      reset(defaultValues);
     }
   }, [editingData, reset]);
 
@@ -69,7 +69,7 @@ export default function DefectTypeFormModal({
     const formWithMeta: DefectType = {
       ...formData,
       defectTypeId: formData.defectTypeId,
-      createdBy: formData.isCreateMode ? session?.user?.userid : undefined,
+      createdBy: session?.user?.userid,
       updatedBy: session?.user?.userid,
     };
     onSave(formWithMeta);
@@ -89,7 +89,7 @@ export default function DefectTypeFormModal({
 
         <h2 className="text-2xl font-semibold text-center mb-6">
           {editingData
-            ? editingData.isCreateMode
+            ? editingData.id
               ? 'Add Defect Type'
               : canEdit
                 ? 'Edit Defect Type'
@@ -99,7 +99,7 @@ export default function DefectTypeFormModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
-          <input type="hidden" {...register('isCreateMode')} />
+          <input type="hidden" {...register('id')} />
           
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">

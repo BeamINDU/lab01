@@ -2,6 +2,7 @@ import { api } from '@/app/utils/api'
 import { API_ROUTES } from "@/app/constants/endpoint";
 import type { DetectionModel, ParamSearch, ModelPicture, FormData } from "@/app/types/detection-model"
 import { SelectOption, } from "@/app/types/select-option";
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 const mockData: DetectionModel[] = Array.from({ length: 5 }, (_, i) => ({
   modelId: i+1,
@@ -37,99 +38,150 @@ const mockFormData = (id: number): FormData => {
 };
 
 export const search = async (param?: ParamSearch) => { 
-  if (!param) return mockData;
+  try {
+    return mockData;
 
-  return mockData.filter(item => {
-    return (
-      (!param.modelName || item.modelName.toLowerCase().includes(param.modelName.toLowerCase())) &&
-      // (!param.function || item.function?.toLowerCase().includes(param.function.toLowerCase())) &&
-      // (!param.version || item.currentVersion === param.version) &&
-      (!param.statusId || item.statusId === param.statusId)
-    );
-  });
-  // const detectionModel = await api.get<DetectionModel[]>('/search')
+    // const res =  await api.get<any>(`${API_ROUTES.detection_model.get}?${param}`);
+
+    // const mapData: DetectionModel[] = res?.models?.map((item) => ({
+    //   id: item.modelId,
+    //   modelId: item.modelId,
+    //   modelName: item.modelname,
+    //   productId: item.productid,
+    //   description: item.description,
+    //   function: item.function,
+    //   statusId: item.statusid,
+    //   currentVersion: item.currentversion,
+    //   currentStep: item.currentstep,
+    //   createdDate: item.createddate,
+    //   createdBy: item.createdby,
+    //   updatedDate: item.updateddate,
+    //   updatedBy: item.updatedby,
+    // }));
+    
+    // return mapData;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
 };
 
 export const detail = async (id: number) => {
-  return mockFormData(id);
-  // mockData.find(item => item.modelId === id);
-  // return await apiClient<DetectionModel>(`${apiUrl}/detail/${id}`, "GET");
+  try {
+    return mockFormData(id);
+
+    // return await api.get<ModelPicture>(`${API_ROUTES.detection_model.detail}/${id}`);
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
 };
 
 export const create = async (param: Partial<DetectionModel>) => {
-  return param;
-  // const newData = await api.post<DetectionModel>('/create', param)
+  try {
+    const res = await api.post<any>(`${API_ROUTES.detection_model.insert}`, param);
+    return {
+      ...param,
+      createdDate: new Date(),
+    };
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
 };
 
-export const updateStep1 = async (param: Partial<FormData>) => {
-  // modelId: id,
-  // functions: [1, 2, 3],
-  // currentStep: 1,
-  // updateBy: 'admin',
-
-  return param;
-  // const updated = await api.put<FormData>(`/update/${param.id}`, param)
+export const updateStep1 = async (id: number, param: Partial<FormData>) => {
+  try {
+    // modelId: id,
+    // functions: [1, 2, 3],
+    // currentStep: 1,
+    // updateBy: 'admin',
+    
+    const res = await api.put<FormData>(`${API_ROUTES.defect_type.update}?modelid=${id}`, param);
+    return {
+      ...param,
+      createdDate: new Date(),
+      updatedDate: new Date(),
+    };
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
 };
 
-export const updateStep2 = async (param: Partial<FormData>) => {
-  // modelId: id,
-  // Picture: [
-  //   name: ''
-  //   file: File
-  //   data: {}
-  // ]
-  // currentStep: 2,
-  // updateBy: 'admin',
+export const updateStep2 = async (id: number, param: Partial<FormData>) => {
+  try {
+    // modelId: id,
+    // Picture: [
+    //   name: ''
+    //   file: File
+    //   data: {}
+    // ]
+    // currentStep: 2,
+    // updateBy: 'admin',
 
-  return param;
-  // const updated = await api.put<FormData>(`/update/${param.id}`, param)
+    const res = await api.put<FormData>(`${API_ROUTES.detection_model.update}?modelid=${id}`, param);
+    return {
+      ...param,
+      createdDate: new Date(),
+      updatedDate: new Date(),
+    };
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
 };
 
-export const updateStep3 = async (param: Partial<FormData>) => {
-  // modelId: id,
-  // modelName: '',
-  // description: '',
-  // trainDataset: 0,
-  // testDataset: 0,
-  // validationDataset: 0,
-  // epochs: 0,
-  // currentStep: 3,
-  // updateBy: 'admin',
+export const updateStep3 = async (id: number, param: Partial<FormData>) => {
+  try {
+    // modelId: id,
+    // modelName: '',
+    // description: '',
+    // trainDataset: 0,
+    // testDataset: 0,
+    // validationDataset: 0,
+    // epochs: 0,
+    // currentStep: 3,
+    // updateBy: 'admin',
 
-  return param;
-  // const updated = await api.put<FormData>(`/update/${param.id}`, param)
+    const res = await api.put<FormData>(`${API_ROUTES.detection_model.update}?modelid=${id}`, param);
+    return {
+      ...param,
+      createdDate: new Date(),
+      updatedDate: new Date(),
+    };
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
 };
 
-export const updateStep4 = async (param: Partial<FormData>) => {
-  // modelId: id,
-  // cameraId: '',
-  // Version: '',
-  // currentStep: 4,
-  // updateBy: 'admin',
+export const updateStep4 = async (id: number, param: Partial<FormData>) => {
+  try {
+    // modelId: id,
+    // cameraId: '',
+    // Version: '',
+    // currentStep: 4,
+    // updateBy: 'admin',
 
-  return param;
-  // const updated = await api.put<FormData>(`/update/${param.id}`, param)
+    const res = await api.put<FormData>(`${API_ROUTES.detection_model.update}?modelid=${id}`, param);
+    return {
+      ...param,
+      createdDate: new Date(),
+      updatedDate: new Date(),
+    };
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
 };
 
 export const remove = async (id: number) => {
-  return {};
-  // await api.delete(`/remove/${id}`)
-};
-
-export const upload = async (file: File) => {
-  await new Promise(resolve => setTimeout(resolve, 3000));
-  return {};
-
-  // const formData = new FormData();
-  // formData.append('file', file);
-  // const response = await api.post<Camera>('/upload', formData)
+   try {
+    return await api.delete<DetectionModel>(`${API_ROUTES.detection_model.delete}?modelid=${id}`);
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
 };
 
 export const getModelNameOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.detection_model.suggest_model}?q=${q}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
@@ -137,110 +189,116 @@ export const getFunctionOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.detection_model.suggest_function}?q=${q}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
-
 export const getFunctions = async () => {
-  return [
-    { label: "Color Check", value: "1" },
-    { label: "Classification Type", value: "2" },
-    { label: "Barcode Text Ocr", value: "3" },
-    { label: "Missing Component Check", value: "4" },
-    { label: "Object Counting", value: "5" },
-    // { label: "Surface Defect Detection", value: "6" },
-    // { label: "Dimension Check", value: "7" },
-    // { label: "Uniform Color Check", value: "8" },
-    // { label: "Print Quality Check", value: "9" },
-    // { label: "Logo Detection", value: "10" },
-    // { label: "Seal Integrity Check", value: "11" },
-    // { label: "Shape Anomaly Check", value: "12" },
-  ] as SelectOption[];
-};
-
-export const getCamera = async () => {
-  return [
-    { label: "CAM 1", value: "CAM1" },
-    { label: "CAM 2", value: "CAM2" },
-  ] as SelectOption[];
+  try {
+    // return await api.get<Function>(`${API_ROUTES.detection_model.function}`);
+    return [
+      { label: "Color Check", value: "1" },
+      { label: "Classification Type", value: "2" },
+      { label: "Barcode Text Ocr", value: "3" },
+      { label: "Missing Component Check", value: "4" },
+      { label: "Object Counting", value: "5" },
+      // { label: "Surface Defect Detection", value: "6" },
+      // { label: "Dimension Check", value: "7" },
+      // { label: "Uniform Color Check", value: "8" },
+      // { label: "Print Quality Check", value: "9" },
+      // { label: "Logo Detection", value: "10" },
+      // { label: "Seal Integrity Check", value: "11" },
+      // { label: "Shape Anomaly Check", value: "12" },
+    ] as SelectOption[];
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
 };
 
 export const getPicture = async () => {
-  return [
-    { 
-      id: 1, 
-      refId: `1`,
-      name: "photos-random-1.png", 
-      url: "https://picsum.photos/800/600?random=1",
-      // url: "/images/takumi-pic.png",
-      // file:  await urlToFile("https://picsum.photos/800/600?random=1", "photos-random-1.png"),
-      annotations: [
-        {
-          "id": "annotation-1748887785393",
-          "type": "rect",
-          "color": "#FF5722",
-          "points": [
-            116,
-            95.125
-          ],
-          "startX": 116,
-          "startY": 95.125,
-          "width": 122,
-          "height": 93,
-          "radius": 0,
-          "label": {
-            "id": "1",
-            "name": "defect"
+  try {
+    return [
+      { 
+        id: 1, 
+        refId: `1`,
+        name: "photos-random-1.png", 
+        url: "https://picsum.photos/800/600?random=1",
+        // url: "/images/takumi-pic.png",
+        // file:  await urlToFile("https://picsum.photos/800/600?random=1", "photos-random-1.png"),
+        annotations: [
+          {
+            "id": "annotation-1748887785393",
+            "type": "rect",
+            "color": "#FF5722",
+            "points": [
+              116,
+              95.125
+            ],
+            "startX": 116,
+            "startY": 95.125,
+            "width": 122,
+            "height": 93,
+            "radius": 0,
+            "label": {
+              "id": "1",
+              "name": "defect"
+            }
+          },
+          {
+            "id": "annotation-1748887794637",
+            "type": "circle",
+            "color": "#00ff58",
+            "points": [
+              392,
+              146.125
+            ],
+            "startX": 343,
+            "startY": 265.125,
+            "width": 0,
+            "height": 0,
+            "radius": 59.54829972383762,
+            "label": {
+              "id": "2",
+              "name": "scratch"
+            }
+          },
+          {
+            "id": "annotation-1748887803991",
+            "type": "rect",
+            "color": "#ff00ef",
+            "points": [
+              581,
+              101.125
+            ],
+            "startX": 581,
+            "startY": 101.125,
+            "width": 97,
+            "height": 82,
+            "radius": 0,
+            "label": {
+              "id": "2",
+              "name": "dent"
+            }
           }
-        },
-        {
-          "id": "annotation-1748887794637",
-          "type": "circle",
-          "color": "#00ff58",
-          "points": [
-            392,
-            146.125
-          ],
-          "startX": 343,
-          "startY": 265.125,
-          "width": 0,
-          "height": 0,
-          "radius": 59.54829972383762,
-          "label": {
-            "id": "2",
-            "name": "scratch"
-          }
-        },
-        {
-          "id": "annotation-1748887803991",
-          "type": "rect",
-          "color": "#ff00ef",
-          "points": [
-            581,
-            101.125
-          ],
-          "startX": 581,
-          "startY": 101.125,
-          "width": 97,
-          "height": 82,
-          "radius": 0,
-          "label": {
-            "id": "2",
-            "name": "dent"
-          }
-        }
-      ]
-    },
-    // { id: 2, name: "photos-random-2.png", url: "https://picsum.photos/800/600?random=2" },
-    // { id: 3, name: "photos-random-3.png", url: "https://picsum.photos/800/600?random=3" },
-    // { id: 4, name: "photos-random-4.png", url: "https://picsum.photos/800/600?random=4" },
-    // { id: 5, name: "photos-random-5.png", url: "https://picsum.photos/800/600?random=5" },
-  ] as ModelPicture[];
+        ]
+      },
+      // { id: 2, name: "photos-random-2.png", url: "https://picsum.photos/800/600?random=2" },
+      // { id: 3, name: "photos-random-3.png", url: "https://picsum.photos/800/600?random=3" },
+      // { id: 4, name: "photos-random-4.png", url: "https://picsum.photos/800/600?random=4" },
+      // { id: 5, name: "photos-random-5.png", url: "https://picsum.photos/800/600?random=5" },
+    ] as ModelPicture[];
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
 };
 
-async function urlToFile(url: string, filename: string, mimeType: string = 'image/png'): Promise<File> {
-  const res = await fetch(url);
-  const blob = await res.blob();
-  return new File([blob], filename, { type: mimeType });
-}
+export const getCamera = async () => {
+  try {
+    return [
+      { label: "CAM 1", value: "CAM1" },
+      { label: "CAM 2", value: "CAM2" },
+    ] as SelectOption[];
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
+};

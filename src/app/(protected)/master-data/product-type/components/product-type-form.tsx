@@ -10,11 +10,11 @@ import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 
 const ProductTypeSchema = z.object({
+  id: z.string().optional(),
   productTypeId: z.string().min(1, "Production Type Id is required"),
   productTypeName: z.string().min(1, "Product Type Name is required"),
   description: z.string(),
   status: z.boolean(),
-  isCreateMode: z.boolean().optional(),
 }); 
 
 type ProductTypeFormValues = z.infer<typeof ProductTypeSchema>;
@@ -37,11 +37,11 @@ export default function ProductTypeFormModal({
   const { data: session } = useSession();
 
   const defaultValues: ProductTypeFormValues = {
+    id: '',
     productTypeId: '',
     productTypeName: '',
     description: '',
     status: true, 
-    isCreateMode: true,
   };
 
   const {
@@ -61,7 +61,7 @@ export default function ProductTypeFormModal({
     if (editingData) {
       reset(editingData);
     } else {
-      reset({...defaultValues, isCreateMode: true});
+      reset(defaultValues);
     }
   }, [editingData, reset]);
 
@@ -95,7 +95,7 @@ export default function ProductTypeFormModal({
 
         <h2 className="text-2xl font-semibold text-center mb-6">
           {editingData
-            ? editingData.isCreateMode
+            ? editingData.id
               ? 'Add Product Type'
               : canEdit
                 ? 'Edit Product Type'
@@ -105,7 +105,7 @@ export default function ProductTypeFormModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
-          <input type="hidden" {...register('isCreateMode')} />
+          <input type="hidden" {...register('id')} />
           
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">  

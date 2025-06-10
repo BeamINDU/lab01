@@ -10,11 +10,11 @@ import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 
 const RoleSchema = z.object({
+  id: z.string().optional(),
   roleId: z.string().min(1, "Role Id  is required"),
   roleName: z.string().min(1, "Role Name  is required"),
   description: z.string(),
   status: z.boolean(),
-  isCreateMode: z.boolean().optional(),
 }); 
 
 type RoleFormValues = z.infer<typeof RoleSchema>;
@@ -35,13 +35,13 @@ export default function RoleFormModal({
   canEdit
 }: RoleModalProps) {
   const { data: session } = useSession();
-  const [isActive, setIsActive] = useState(true);
+ 
   const defaultValues: RoleFormValues = {
+    id: '',
     roleId: '',
     roleName: '',
     description: '',
     status: true,
-    isCreateMode: true,
   };
 
   const {
@@ -60,7 +60,7 @@ export default function RoleFormModal({
     if (editingData) {
       reset(editingData);
     } else {
-      reset({...defaultValues, isCreateMode: true});
+      reset(defaultValues);
     }
   }, [editingData, reset]);
 
@@ -71,7 +71,7 @@ export default function RoleFormModal({
     const formWithMeta: Role = {
       ...formData,
       roleId: formData.roleId,
-      createdBy: formData.isCreateMode ? session?.user?.userid : undefined,
+      createdBy: session?.user?.userid,
       updatedBy: session?.user?.userid,
     };
     onSave(formWithMeta);
@@ -91,7 +91,7 @@ export default function RoleFormModal({
 
         <h2 className="text-2xl font-semibold text-center mb-6">
           {editingData
-            ? editingData.isCreateMode
+            ? editingData.id
               ? 'Add Role'
               : canEdit
                 ? 'Edit Role'
@@ -101,7 +101,7 @@ export default function RoleFormModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
-          <input type="hidden" {...register('isCreateMode')} />
+          <input type="hidden" {...register('id')} />
           
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
@@ -109,7 +109,6 @@ export default function RoleFormModal({
               <input 
                 {...register("roleId")} 
                 className="border p-2 w-full mb-1" 
-                readOnly={editingData && !editingData.isCreateMode ? true : undefined}
               />
             </div>
             {errors.roleId && <p className="text-red-500 ml-160">{errors.roleId.message}</p>}

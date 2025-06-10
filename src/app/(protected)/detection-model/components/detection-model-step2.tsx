@@ -8,6 +8,7 @@ import { Eye, SquarePen, Trash2, Plus } from "lucide-react";
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { SelectOption } from "@/app/types/select-option";
 import { ShapeType } from "@/app/constants/shape-type";
 import { FormData, DetectionModel, ModelPicture, Annotation } from "@/app/types/detection-model";
@@ -283,7 +284,7 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
   
   const onSubmitHandler = async () => {
     // console.log("Submit data2:", data);
-    // await updateStep2(data);
+    // await updateStep2(modelId, data);
     
     const updatedFormData: FormData = {
       ...formData,

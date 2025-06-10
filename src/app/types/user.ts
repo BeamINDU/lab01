@@ -1,4 +1,5 @@
 export type User = {
+  id?: string
   userId: string
   username: string
   firstname: string
@@ -11,7 +12,6 @@ export type User = {
   createdBy?: string
   updatedDate?: Date | null
   updatedBy?: string | null
-  isCreateMode?: boolean
 }
 
 export type ParamSearch = {

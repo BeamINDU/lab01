@@ -1,5 +1,6 @@
 import { api } from '@/app/utils/api'
 import { DashboardData, DashboardFilters, TrendData, DefectTypeData, DefectCameraData, NgDistributionData } from '@/app/types/dashboard'
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 export type ProductOption = {
   productId: string
@@ -275,7 +276,7 @@ export const getProducts = async (): Promise<ProductOption[]> => {
     return mockProducts;
   } catch (error) {
     console.error('Failed to fetch products:', error);
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }
 }
 
@@ -286,7 +287,7 @@ export const getCameras = async (): Promise<CameraOption[]> => {
     return mockCameras;
   } catch (error) {
     console.error('Failed to fetch cameras:', error);
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }
 }
 
@@ -297,7 +298,7 @@ export const getLines = async (): Promise<LineOption[]> => {
     return mockLines;
   } catch (error) {
     console.error('Failed to fetch lines:', error);
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }
 }
 
@@ -309,6 +310,6 @@ export const getDashboardData = async (filters: DashboardFilters): Promise<Dashb
     return generateMockDashboardData(filters);
   } catch (error) {
     console.error('Failed to fetch dashboard data:', error);
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }
 }

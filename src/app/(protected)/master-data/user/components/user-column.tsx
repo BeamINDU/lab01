@@ -21,9 +21,9 @@ export default function UserColumns({
   canEdit
 }: UserColumnProps): ColumnDef<User>[] {
 
-  const toggleSelect = (userId: string) => {
+  const toggleSelect = (id: string) => {
     setSelectedIds((prev) =>
-      prev.includes(userId) ? prev.filter((selectedId) => selectedId !== userId) : [...prev, userId]
+      prev.includes(id) ? prev.filter((selectedId) => selectedId !== id) : [...prev, id]
     );
   };
 
@@ -32,8 +32,8 @@ export default function UserColumns({
       prev.length === data.length
         ? [] // If all items are selected, unselect all
         : data
-          .map((item) => item.userId) // Map to ids
-          .filter((userId): userId is string => userId !== undefined) // Filter out undefined values
+          .map((item) => item.id) // Map to ids
+          .filter((id): id is string => id !== undefined) // Filter out undefined values
     );
   };
 
@@ -46,7 +46,7 @@ export default function UserColumns({
               <div className="flex justify-center items-center">
                 <input
                   type="checkbox"
-                  checked={selectedIds.length === data.length && data.every(item => selectedIds.includes(item.userId ?? ""))}
+                  checked={selectedIds.length === data.length && data.every(item => selectedIds.includes(item.id ?? ""))}
                   onChange={toggleSelectAll}
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
                 />
@@ -56,8 +56,8 @@ export default function UserColumns({
               <div className="flex items-center justify-center">
                 <input
                   type="checkbox"
-                  checked={selectedIds.includes(row.original.userId)} 
-                  onChange={() => toggleSelect(row.original.userId)} 
+                  checked={selectedIds.includes(row.original.id)} 
+                  onChange={() => toggleSelect(row.original.id)} 
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
                 />
               </div>

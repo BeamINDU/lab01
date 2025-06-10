@@ -1,4 +1,5 @@
 export type Role = {
+  id?: string
   roleId: string
   roleName: string
   description: string
@@ -7,7 +8,6 @@ export type Role = {
   createdBy?: string
   updatedDate?: Date | null
   updatedBy?: string | null
-  isCreateMode?: boolean
 }
 
 export type ParamSearch = {

@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Trash2 } from 'lucide-react'
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import { exportText, exportExcel, exportWord, exportCSV } from "@/app/libs/export";
+import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { Product, ParamSearch } from "@/app/types/product"
 import { search, detail, create, update, remove, upload } from "@/app/libs/services/product";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
+import { extractErrorMessage } from '@/app/utils/errorHandler';
+import { formatDateTime } from "@/app/utils/date";
 import UploadButton from "@/app/components/common/UploadButton";
 import ExportButton from "@/app/components/common/ExportButton";
 import DataTable from "@/app/components/table/DataTable";
@@ -53,17 +55,22 @@ export default function Page() {
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["Product ID", "Product Name", "Product Type", "Serial No", "Status"];
-    const keys: (keyof Product)[] = ["productId", "productName", "productTypeName", "serialNo", "status"];
-    const fileName = "Product";
-  
-    switch (type) {
-      case ExportType.CSV:
-        exportCSV(data, headers, keys, fileName);
-        break;
-      case ExportType.Excel:
-        exportExcel(data, headers, keys, fileName);
-        break;
+    try {
+      const headers = ["Product ID", "Product Name", "Product Type", "Serial No", "Status"];
+      const keys: (keyof Product)[] = ["productId", "productName", "productTypeName", "serialNo", "status"];
+      const fileName = `Product_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
+    
+      switch (type) {
+        case ExportType.CSV:
+          exportCSV(data, headers, keys, fileName);
+          break;
+        case ExportType.Excel:
+          exportExcel(data, headers, keys, fileName);
+          break;
+      }
+    } catch (error) {
+      console.error("Export operation failed:", error);
+      showError(`Export failed: ${extractErrorMessage(error)}`);
     }
   };
 
@@ -74,21 +81,16 @@ export default function Page() {
       handleSearch(); 
     } catch (error) {
       console.error("Upload operation failed:", error);
-      showError("Upload failed");
-      throw error;
+      showError(`Upload failed: ${extractErrorMessage(error)}`);
     }
   };
   
   const handleAddEdit = async (row?: Product) => {
     try {
       if (row) {
-        // const result = (await detail(row.productId ?? "")) ?? (row as Product);
-        const result = data.find((item) => item.productId === row.productId) ?? row;
-        const updatedRow = { 
-          ...result, 
-          isCreateMode: false 
-        };
-        setEditingData(updatedRow);
+        // const result = (await detail(row.id ?? "")) ?? (row as Product);
+        const result = data.find((item) => item.id === row.id) ?? row;
+        setEditingData(result);
       } else {
         reset();
         setEditingData(null);
@@ -104,37 +106,33 @@ export default function Page() {
     const result = await showConfirm('Are you sure you want to delete these products?')
     if (result.isConfirmed) {
       try {
-        for (const productId of selectedIds) {
-          await remove(productId);
+        for (const id of selectedIds) {
+          await remove(id);
         }
-        setData(prev => prev.filter(item => !selectedIds.includes(item.productId ?? "")));
+        setData(prev => prev.filter(item => !selectedIds.includes(item.id ?? "")));
         setSelectedIds([]);
         showSuccess(`Deleted successfully`)
       } catch (error) {
         console.error('Delete operation failed:', error);
-        showError('Delete failed')
+        showError(`Delete failed: ${extractErrorMessage(error)}`);
       }
     }
   };
 
   const handleSave = async (formData: Product) => {
     try {
-      if (formData.isCreateMode) {
+      if (!formData.id) {
         const newData = await create(formData) as Product;
-        setData(prev => [...prev, { ...newData, isCreateMode: false }]);
+        setData(prev => [...prev, newData]);
       } else {
-        const updatedData = await update(formData) as Product;
-        setData(prev => 
-          prev.map(item => item.productId === formData.productId 
-            ? { ...updatedData, isCreateMode: false } 
-            : item
-        ));
+        const updatedData = await update(formData?.id ?? "", formData) as Product;
+        setData(prev => prev.map(item => item.id === formData.id ? updatedData : item ));
         showSuccess('Product updated successfully');
       }
       setIsFormModalOpen(false);
     } catch (error) {
-      console.error('=== handleSave ERROR ===', error);
-      showError('Save failed: ' + (error as Error).message);
+      console.error('Save operation failed:', error);
+      showError(`Save failed: ${extractErrorMessage(error)}`);
     }
   };
 

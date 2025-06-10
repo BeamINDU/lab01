@@ -1,4 +1,5 @@
 export type Product = {
+  id?: string
   productId: string
   productName: string
   productTypeId: string
@@ -9,7 +10,6 @@ export type Product = {
   createdBy?: string
   updatedDate?: Date | null
   updatedBy?: string | null
-  isCreateMode?: boolean
 }
 
 export type ParamSearch = {

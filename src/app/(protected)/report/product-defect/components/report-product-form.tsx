@@ -42,7 +42,6 @@ export default function ProductFormModal({
 
   const onSubmit: SubmitHandler<ProductDetail> = async (formData) => {
     const formWithMeta: ParamUpdate = {
-      productId: formData.productId,
       status: formData.status,
       comment: formData.comment,
       updatedBy: session?.user?.userid,
@@ -69,6 +68,7 @@ export default function ProductFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('productId')} />
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left Side */}
             <div className="flex flex-col items-center">

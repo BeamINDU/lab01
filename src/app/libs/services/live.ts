@@ -1,5 +1,6 @@
 import { api } from '@/app/utils/api'
 import type { LiveInspectionView } from "@/app/types/live"
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 export const detail = async (cameraId: string): Promise<LiveInspectionView> => {
   return {
@@ -20,7 +21,4 @@ export const detail = async (cameraId: string): Promise<LiveInspectionView> => {
     totalPlanning: 5000,
     actualPlanning: 4000,
   };
-
-// const response = await fetch(`http://127.0.0.1:8001/live-defect/${cameraId}`);
-
 };

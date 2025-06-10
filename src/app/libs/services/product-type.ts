@@ -2,14 +2,14 @@ import { api } from '@/app/utils/api'
 import { API_ROUTES } from "@/app/constants/endpoint";
 import { ProductType, ParamSearch } from "@/app/types/product-type"
 import { SelectOption } from "@/app/types/select-option";
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 export const search = async (param?: ParamSearch) => { 
   try {
-    const res = await api.getWithParams<any>(API_ROUTES.product_type.get, param);
+    const res = await api.get<any>(API_ROUTES.product_type.get, param);
 
-    const mapData: ProductType[] = res?.product_types
-    ?.filter((item) => !item.isdeleted)
-    ?.map((item) => ({
+    const mapData: ProductType[] = res?.product_types?.map((item) => ({
+      id: item.prodtypeid,
       productTypeId: item.prodtypeid,
       productTypeName: item.prodtype,
       description: item.proddescription,
@@ -22,7 +22,7 @@ export const search = async (param?: ParamSearch) => {
 
     return mapData;
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
@@ -30,7 +30,7 @@ export const detail = async (id: string) => {
   try {
     return await api.get<ProductType>(`${API_ROUTES.product_type.detail}/${id}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
@@ -39,22 +39,25 @@ export const create = async (param: Partial<ProductType>) => {
     const res = await api.post<any>(`${API_ROUTES.product_type.insert}`, param);
     return {
       ...param,
+      id: param.productTypeId,
       createdDate: new Date(),
     };
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
-export const update = async (param: Partial<ProductType>) => {
+export const update = async (id: string, param: Partial<ProductType>) => {
   try {
-    const res = await api.put<ProductType>(`${API_ROUTES.product_type.update}?prodtypeid=${param.productTypeId}`, param);
+    const res = await api.put<ProductType>(`${API_ROUTES.product_type.update}?prodtypeid=${id}`, param);
     return {
       ...param,
+      id: param.productTypeId,
+      createdDate: new Date(),
       updatedDate: new Date(),
     };
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   } 
 };
 
@@ -62,7 +65,7 @@ export const remove = async (id: string) => {
   try {
     return await api.delete<ProductType>(`${API_ROUTES.product_type.delete}?prodtypeid=${id}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
@@ -74,7 +77,7 @@ export const upload = async (file: File) => {
     const res = await api.upload<ProductType[]>(`${API_ROUTES.product_type.upload}`, formData);
     return res;
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   } 
 };
 
@@ -98,7 +101,7 @@ export const getProductTypeIdOptions = async (q: string): Promise<SelectOption[]
 
     return result;
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }
 };
 
@@ -121,6 +124,6 @@ export const getProductTypeNameOptions = async (q: string): Promise<SelectOption
 
     return result;
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 }

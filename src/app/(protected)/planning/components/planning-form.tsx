@@ -12,9 +12,11 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
 import { getLineNoOptions, getLotNoOptions, getPlanIdOptions } from '@/app/libs/services/planning';
+import { getProductIdOptions } from '@/app/libs/services/product';
 import { SearchFieldModal } from '@/app/components/common/SearchField';
 
 const PlanningSchema = z.object({
+  id: z.string().optional(),
   planId: z.string().min(1, "Plan ID is required"),
   productId: z.string().min(1, "Product ID is required"),
   lotNo: z.string().min(1, "Lot No is required"),
@@ -22,7 +24,6 @@ const PlanningSchema = z.object({
   quantity: z.number(),
   startDate: z.string().min(1, "Start Date is required"),
   endDate: z.string().min(1, "End Date is required"),
-  isCreateMode: z.boolean().optional(),
 });
 
 type PlanningFormValues = z.infer<typeof PlanningSchema>;
@@ -43,6 +44,7 @@ export default function PlanningFormModal({
   canEdit
 }: PlanningModalProps) {
   const { data: session } = useSession();
+
   const dateFormat = 'YYYY-MM-DD HH:mm';
   
   const inputStyle = {
@@ -51,6 +53,7 @@ export default function PlanningFormModal({
   };
 
   const defaultValues: PlanningFormValues = {
+    id: '',
     planId: '',
     productId: '',
     lotNo: '',
@@ -58,7 +61,6 @@ export default function PlanningFormModal({
     quantity: 0,
     startDate: '',
     endDate: '',
-    isCreateMode: true,
   };
 
   const {
@@ -74,9 +76,7 @@ export default function PlanningFormModal({
     defaultValues,
   });
 
-
   const productId = watch("productId");
-  const lineId = watch("lineId");
 
   useEffect(() => {
     if (editingData) {
@@ -96,7 +96,6 @@ export default function PlanningFormModal({
         ...editingData,
         startDate: startDateString,
         endDate: endDateString,
-        isCreateMode: !editingData.productId
       });
     } else {
       reset(defaultValues);
@@ -110,7 +109,7 @@ export default function PlanningFormModal({
       ...formData,
       startDate: new Date(formData.startDate), 
       endDate: new Date(formData.endDate),     
-      createdBy: formData.isCreateMode ? session?.user?.userid : undefined,
+      createdBy: session?.user?.userid,
       updatedBy: session?.user?.userid,
     };
     onSave(formWithMeta);
@@ -129,12 +128,12 @@ export default function PlanningFormModal({
         </button>
 
         <h2 className="text-2xl font-semibold text-center mb-6">
-          {editingData && !editingData.isCreateMode ? 'Edit Planning' : 'Add Planning'}
+          {editingData && !editingData.id ? 'Edit Planning' : 'Add Planning'}
         </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
-          <input type="hidden" {...register('isCreateMode')} />
+          <input type="hidden" {...register('id')} />
           
           {/* Plan ID */}
           <div className="mb-4">
@@ -143,7 +142,7 @@ export default function PlanningFormModal({
               <input 
                 {...register("planId")} 
                 className="border p-2 w-full mb-1 bg-white"
-                readOnly={editingData && !editingData.isCreateMode ? true : undefined}
+                readOnly={editingData && !editingData.id ? true : undefined}
               />
             </div>
             {errors.planId && <p className="text-red-500 ml-160">{errors.planId.message}</p>}
@@ -158,7 +157,7 @@ export default function PlanningFormModal({
               fieldName="productId"
               label="Product ID"
               placeholder="Select product ID..."
-              // dataLoader={getProductIdOptions}
+              dataLoader={getProductIdOptions}
               labelField="label"
               valueField="value"
               allowFreeText={true}
@@ -187,7 +186,7 @@ export default function PlanningFormModal({
               <label className="font-normal w-32">Line ID:</label>
               <input {...register("lineId")} className="border p-2 w-full mb-1 bg-white" />
             </div>
-            {errors.lotNo && <p className="text-red-500 ml-160">{errors.lotNo.message}</p>}
+            {errors.lineId && <p className="text-red-500 ml-160">{errors.lineId.message}</p>}
           </div>
 
           {/* Quantity */}

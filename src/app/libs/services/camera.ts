@@ -2,14 +2,14 @@ import { api } from '@/app/utils/api'
 import { API_ROUTES } from "@/app/constants/endpoint";
 import { Camera, ParamSearch } from "@/app/types/camera"
 import { SelectOption } from "@/app/types/select-option";
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 export const search = async (param?: ParamSearch) => { 
   try {
     const res =  await api.get<any>(`${API_ROUTES.camera.get}?${param}`);
 
-    const mapData: Camera[] = res?.cameras
-      ?.filter((item) => !item.isdeleted)
-      ?.map((item) => ({
+    const mapData: Camera[] = res?.cameras?.map((item) => ({
+        id: item.cameraid,
         cameraId: item.cameraid,
         cameraName: item.cameraname,
         location: item.cameralocation,
@@ -22,7 +22,7 @@ export const search = async (param?: ParamSearch) => {
     
     return mapData;
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
@@ -30,39 +30,42 @@ export const detail = async (id: string) => {
   try {
     return await api.get<Camera>(`${API_ROUTES.camera.detail}/${id}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
-export const create = async (param: Partial<Camera>) => {
+export const create = async ( param: Partial<Camera>) => {
   try {
     const res = await api.post<any>(`${API_ROUTES.camera.insert}`, param);
     return {
       ...param,
+      id: param.cameraId,
       createdDate: new Date(),
     };
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
-export const update = async (param: Partial<Camera>) => {
+export const update = async (id: string, param: Partial<Camera>) => {
   try {
-    const res = await api.put<Camera>(`${API_ROUTES.camera.update}?cameraId=${param.cameraId}`, param);
+    const res = await api.put<Camera>(`${API_ROUTES.camera.update}?cameraid=${id}`, param);
     return {
       ...param,
+      id: param.cameraId,
+      createdDate: new Date(),
       updatedDate: new Date(),
     };
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   } 
 };
 
 export const remove = async (id: string) => {
   try {
-    return await api.delete<Camera>(`${API_ROUTES.camera.delete}?cameraId=${id}`);
+    return await api.delete<Camera>(`${API_ROUTES.camera.delete}?cameraid=${id}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
@@ -74,7 +77,7 @@ export const upload = async (file: File) => {
     const res = await api.upload<Camera[]>(`${API_ROUTES.camera.upload}`, formData);
     return res;
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   } 
 };
 
@@ -82,7 +85,7 @@ export const getCameraIdOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_camera_id}?q=${q}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 };
 
@@ -90,7 +93,7 @@ export const getCameraNameOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_camera_name}?q=${q}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 }
 
@@ -98,6 +101,6 @@ export const getCameraLocationOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_location}?q=${q}`);
   } catch (error) {
-    throw error;
+    throw new Error(extractErrorMessage(error));
   }  
 }

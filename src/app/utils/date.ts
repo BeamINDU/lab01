@@ -10,17 +10,17 @@ const toValidDate = (raw: DateInput): Date | null => {
   return isValid(date) ? date : null;
 };
 
-export const formatDateTime = (value: DateInput): string => {
+export const formatDateTime = (value: DateInput, formatStr: string = 'yyyy-MM-dd HH:mm:ss'): string => {
   const date = toValidDate(value);
-  return date ? format(date, 'yyyy-MM-dd HH:mm:ss', { locale: enUS }) : '';
+  return date ? format(date, formatStr, { locale: enUS }) : '';
 };
 
-export const formatDate = (value: DateInput): string => {
+export const formatDate = (value: DateInput, formatStr: string = 'yyyy-MM-dd'): string => {
   const date = toValidDate(value);
-  return date ? format(date, 'yyyy-MM-dd', { locale: enUS }) : '';
+  return date ? format(date, formatStr, { locale: enUS }) : '';
 };
 
-export const formatTime = (value: DateInput): string => {
+export const formatTime = (value: DateInput, formatStr: string = 'HH:mm'): string => {
   const date = toValidDate(value);
-  return date ? format(date, 'HH:mm', { locale: enUS }) : '';
+  return date ? format(date, formatStr, { locale: enUS }) : '';
 };

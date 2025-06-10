@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Trash2 } from 'lucide-react'
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import { exportText, exportExcel, exportWord, exportCSV } from "@/app/libs/export";
+import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { Role, ParamSearch } from "@/app/types/role"
 import { search, detail, create, update, remove, upload } from "@/app/libs/services/role";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
+import { extractErrorMessage } from '@/app/utils/errorHandler';
+import { formatDateTime } from "@/app/utils/date";
 import UploadButton from "@/app/components/common/UploadButton";
 import ExportButton from "@/app/components/common/ExportButton";
 import DataTable from "@/app/components/table/DataTable";
@@ -27,15 +29,15 @@ export default function Page() {
   const [editingData, setEditingData] = useState<Role | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
+
   useEffect(() => {
     handleSearch();
   }, []);
+  
   const handleSavePermission = async (data: {roleId: string, permissions: {menuId: string, actions: number[]}[]}) => {
     try {
       console.log('Save permission data:', data);
-
       await saveRolePermissions(data.roleId, data.permissions);
-
       showSuccess('Permissions saved successfully');
       setIsPermissionModalOpen(false);
     } catch (error) {
@@ -61,17 +63,22 @@ export default function Page() {
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["Role ID", "Role Name", "Description", "Status", "Created Date", "Updated Date"];
-    const keys: (keyof Role)[] = ["roleId", "roleName", "description", "status", "createdDate", "updatedDate"];
-    const fileName = "Product";
-  
-    switch (type) {
-      case ExportType.CSV:
-        exportCSV(data, headers, keys, fileName);
-        break;
-      case ExportType.Excel:
-        exportExcel(data, headers, keys, fileName);
-        break;
+    try {
+      const headers = ["Role ID", "Role Name", "Description", "Status", "Created Date", "Updated Date"];
+      const keys: (keyof Role)[] = ["roleId", "roleName", "description", "status", "createdDate", "updatedDate"];
+      const fileName = `Role_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
+    
+      switch (type) {
+        case ExportType.CSV:
+          exportCSV(data, headers, keys, fileName);
+          break;
+        case ExportType.Excel:
+          exportExcel(data, headers, keys, fileName);
+          break;
+      }
+    } catch (error) {
+      console.error("Export operation failed:", error);
+      showError(`Export failed: ${extractErrorMessage(error)}`);
     }
   };
 
@@ -81,17 +88,15 @@ export default function Page() {
       showSuccess(`Uploaded: ${file.name}`);
     } catch (error) {
       console.error("Upload operation failed:", error);
-      showError("Upload failed");
-      throw error;
+      showError(`Upload failed: ${extractErrorMessage(error)}`);
     }
   };
   
   const handleAddEdit = async (row?: Role) => {
     try {
       if (row) {
-        const result = (await detail(row.roleId ?? "")) ?? (row as Role);
-        const updatedRow = { ...result, isCreateMode: !row.roleId };
-        setEditingData(updatedRow);
+        const result = (await detail(row.id ?? "")) ?? (row as Role);
+        setEditingData(result);
       } else {
         reset();
         setEditingData(null);
@@ -102,40 +107,42 @@ export default function Page() {
       showError('Failed to load role details');
     }
   };
+
   const handlePermission = async (row?: Role) => {
     setEditingData(row || null);
     setIsPermissionModalOpen(true);
   };
+
   const handleDelete = async () => {
     const result = await showConfirm('Are you sure you want to delete these product role?')
     if (result.isConfirmed) {
       try {
-        for (const roleId of selectedIds) {
-          await remove(roleId);
+        for (const id of selectedIds) {
+          await remove(id);
         }
-        setData(prev => prev.filter(item => !selectedIds.includes(item.roleId ?? "")));
+        setData(prev => prev.filter(item => !selectedIds.includes(item.id ?? "")));
         setSelectedIds([]);
         showSuccess(`Deleted successfully`)
       } catch (error) {
         console.error('Delete operation failed:', error);
-        showError('Delete failed')
+        showError(`Delete failed: ${extractErrorMessage(error)}`);
       }
     }
   };
 
   const handleSave = async (formData: Role) => {
     try {
-      if (formData.isCreateMode) {
+      if (!formData.id) {
         const newData = await create(formData) as Role;
         setData(prev => [...prev, newData]);
       } else {
-        const updatedData = await update(formData) as Role;
-        setData(prev => prev.map(item => (item.roleId === formData.roleId ? updatedData : item)));
+        const updatedData = await update(formData?.id ?? "", formData) as Role;
+        setData(prev => prev.map(item => (item.id === formData.id ? updatedData : item)));
       }
       showSuccess(`Saved successfully`)
     } catch (error) {
       console.error('Save operation failed:', error);
-      showError('Save failed')
+      showError(`Save failed: ${extractErrorMessage(error)}`);
     } finally {
       reset();
       setIsFormModalOpen(false);

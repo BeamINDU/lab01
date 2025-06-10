@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { detail, updateStep1 } from "@/app/libs/services/detection-model";
 import { getFunctions } from "@/app/libs/services/detection-model";
 import { SelectOption } from "@/app/types/select-option";
@@ -85,7 +86,7 @@ export default function DetectionModelStep1({ next, modelId, formData }: Props) 
 
   const onSubmitHandler = async (data: Step1Data) => {
     console.log("Submit data1:", data);
-    await updateStep1(data);
+    await updateStep1(modelId, data);
 
     const updatedFormData: FormData = {
       ...formData,

@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Plus, Trash2 } from 'lucide-react'
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import { toastSuccess, toastError } from '@/app/utils/toast';
-import { exportText, exportExcel, exportWord, exportCSV } from "@/app/libs/export";
+import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { ReportDefect, ParamSearch } from "@/app/types/report-defect-summary"
-import { search, detail } from "@/app/libs/services/report-defect-summary";
+import { search } from "@/app/libs/services/report-defect-summary";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
-import UploadButton from "@/app/components/common/UploadButton";
+import { extractErrorMessage } from '@/app/utils/errorHandler';
+import { formatDateTime } from "@/app/utils/date";
 import ExportButton from "@/app/components/common/ExportButton";
 import DataTable from "@/app/components/table/DataTable";
 import ReportDefectColumns from "./components/report-defect-column";
@@ -41,37 +41,31 @@ export default function Page() {
       setData(products);
     } catch (error) {
       console.error("Error search report-defect:", error);
-      showError('Error search report-defect');
+      showError(`Search failed`);
       setData([]);
     }
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["Lot No", "Product Type", "Defect Type", "Total", "OK", "NG"];
-    const keys: (keyof ReportDefect)[] = ["lotNo", "productTypeName", "defectTypeName", "total", "ok", "ng"];
-    const fileName = "Report_Defect_Summary";
-  
-    switch (type) {
-      case ExportType.CSV:
-        exportCSV(data, headers, keys, fileName);
-        break;
-      case ExportType.Excel:
-        exportExcel(data, headers, keys, fileName);
-        break;
+    try {
+      const headers = ["Lot No", "Product Type", "Defect Type", "Total", "OK", "NG"];
+      const keys: (keyof ReportDefect)[] = ["lotNo", "productTypeName", "defectTypeName", "total", "ok", "ng"];
+      const fileName = `ReportDefectSummary_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
+        
+      switch (type) {
+        case ExportType.CSV:
+          exportCSV(data, headers, keys, fileName);
+          break;
+        case ExportType.Excel:
+          exportExcel(data, headers, keys, fileName);
+          break;
+      }
+    } catch (error) {
+      console.error("Export operation failed:", error);
+      showError(`Export failed: ${extractErrorMessage(error)}`);
     }
   };
 
-  const handleUpload = async (file: File) => {
-    try {
-      // await upload(file);
-      showSuccess(`Uploaded: ${file.name}`);
-    } catch (error) {
-      console.error("Upload operation failed:", error);
-      showError("Upload failed");
-      throw error;
-    }
-  };
-  
   return (
     <>
       <h2 className="text-2xl font-bold mb-2 ml-3">Report Defect Summary</h2>

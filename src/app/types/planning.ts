@@ -1,4 +1,5 @@
 export type Planning = {
+  id?: string,
   planId: string,
   productId: string,
   lotNo: string,
@@ -10,7 +11,6 @@ export type Planning = {
   createdBy?: string,
   updatedDate?: Date | string,
   updatedBy?: string | null,
-  isCreateMode?: boolean
 }
 
 export type ParamSearch = {

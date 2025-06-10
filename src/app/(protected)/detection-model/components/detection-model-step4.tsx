@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 // import SearchField from '@/app/components/common/SearchField';
 import SelectField from '@/app/components/common/SelectField';
@@ -180,7 +181,7 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
     }
 
     console.log("Submit data4:", data);
-    await updateStep4(data);
+    await updateStep4(modelId, data);
 
     const updatedFormData: FormData = {
       ...formData,

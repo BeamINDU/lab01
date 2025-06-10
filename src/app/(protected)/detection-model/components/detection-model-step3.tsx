@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { FormData, DetectionModel } from "@/app/types/detection-model";
 import { detail, updateStep3 } from "@/app/libs/services/detection-model";
@@ -85,7 +86,7 @@ export default function DetectionModelStep3Page({ next, prev, modelId, formData 
   
   const onSubmitHandler = async (data: Step3Data) => {
     console.log("Submit data3:", data);
-    await updateStep3(data);
+    await updateStep3(modelId, data);
 
     const updatedFormData: FormData = {
       ...formData,

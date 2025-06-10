@@ -13,6 +13,7 @@ import { getRoleIdOptions, getRoleNameOptions } from '@/app/libs/services/role';
 import { SelectOption } from "@/app/types/select-option";
 
 const UserSchema = z.object({
+  id: z.string().optional(),
   userId: z.string().min(1, "User ID is required"),
   username: z.string().min(1, "User name is required"),
   firstname: z.string().min(1, "First name is required"),
@@ -20,7 +21,6 @@ const UserSchema = z.object({
   email: z.string().min(1, "Email is required"),
   roleName: z.string().min(1, "Role name is required"),
   status: z.boolean(),
-  isCreateMode: z.boolean().optional(),
 });
 
 type UserFormValues = z.infer<typeof UserSchema>;
@@ -47,6 +47,7 @@ export default function UserFormModal({
   const [isLoadingRoles, setIsLoadingRoles] = useState<boolean>(false);
 
   const defaultValues: UserFormValues = {
+    id: '',
     userId: '',
     username: '',
     firstname: '',
@@ -54,7 +55,6 @@ export default function UserFormModal({
     email: '',
     roleName: '',
     status: true,
-    isCreateMode: true,
   };
 
   const {
@@ -99,7 +99,7 @@ export default function UserFormModal({
     if (editingData) {
       reset(editingData);
     } else {
-      reset({ ...defaultValues, isCreateMode: true });
+      reset(defaultValues);
     }
   }, [editingData, reset]);
 
@@ -132,7 +132,7 @@ export default function UserFormModal({
     const formWithMeta: User = {
       ...formData,
       userId: formData.userId,
-      createdBy: formData.isCreateMode ? session?.user?.userid : undefined,
+      createdBy: session?.user?.userid,
       updatedBy: session?.user?.userid,
     };
     onSave(formWithMeta);
@@ -152,7 +152,7 @@ export default function UserFormModal({
 
         <h2 className="text-2xl font-semibold text-center mb-6">
           {editingData
-            ? editingData.isCreateMode
+            ? editingData.id
               ? 'Add User'
               : canEdit
                 ? 'Edit User'
@@ -162,7 +162,7 @@ export default function UserFormModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
-          <input type="hidden" {...register('isCreateMode')} />
+          <input type="hidden" {...register('id')} />
 
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
@@ -170,7 +170,6 @@ export default function UserFormModal({
               <input
                 {...register("userId")}
                 className="border p-2 w-full mb-1"
-                readOnly={editingData && !editingData.isCreateMode ? true : undefined}
               />
             </div>
             {errors.userId && <p className="text-red-500 ml-160">{errors.userId.message}</p>}

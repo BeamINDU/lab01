@@ -11,6 +11,7 @@ import { DetectionModel, ParamSearch } from "@/app/types/detection-model"
 import { search, create, remove } from "@/app/libs/services/detection-model";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 import ExportButton from "@/app/components/common/ExportButton";
 import DataTable from "@/app/components/table/DataTable";
 import DetectionModelColumns from "./components/detection-model-column";
@@ -20,7 +21,7 @@ import AddModelFormModal from "./components/add-model-form";
 export default function Page() {
   const router = useRouter();
   const { hasPermission } = usePermission();
-  const { register, getValues, setValue, reset } = useForm();
+  const { register, getValues, setValue, reset, control } = useForm();
   const [data, setData] = useState<DetectionModel[]>([]);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [editingData, setEditingData] = useState<DetectionModel | null>(null);
@@ -63,17 +64,6 @@ export default function Page() {
     }
   };
 
-  // const handleUpload = async (file: File) => {
-  //   try {
-  //     await upload(file);
-  //     showSuccess(`Uploaded: ${file.name}`);
-  //   } catch (error) {
-  //     console.error("Upload operation failed:", error);
-  //     showError("Upload failed");
-  //     throw error;
-  //   }
-  // };
-  
   const handleAdd = async (row?: DetectionModel | null) => {
     try {
       if (row) {
@@ -138,7 +128,9 @@ export default function Page() {
             {/* Filters Form */}
             <div className="md:basis-[80%]">
               <DetectionModelFilterForm 
+                setValue={setValue}
                 register={register} 
+                control={control}
                 onSearch={handleSearch} 
               />
             </div>
