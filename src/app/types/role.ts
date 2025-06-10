@@ -3,7 +3,8 @@ export type Role = {
   roleId: string
   roleName: string
   description: string
-  status: boolean,
+  status: boolean
+  statusName: boolean
   createdDate?: Date
   createdBy?: string
   updatedDate?: Date | null

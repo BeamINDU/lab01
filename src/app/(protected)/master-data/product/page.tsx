@@ -57,7 +57,7 @@ export default function Page() {
   const handleExport = (type: ExportType) => {
     try {
       const headers = ["Product ID", "Product Name", "Product Type", "Serial No", "Status"];
-      const keys: (keyof Product)[] = ["productId", "productName", "productTypeName", "serialNo", "status"];
+      const keys: (keyof Product)[] = ["productId", "productName", "productTypeName", "serialNo", "statusName"];
       const fileName = `Product_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
     
       switch (type) {

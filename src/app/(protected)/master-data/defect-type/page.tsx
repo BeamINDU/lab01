@@ -50,8 +50,8 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     try {
-      const headers = ["Defect Type ID", "Defect Type Name", "Description"];
-      const keys: (keyof DefectType)[] = ["defectTypeId", "defectTypeName", "description"];
+      const headers = ["Defect Type ID", "Defect Type Name", "Description", "Status"];
+      const keys: (keyof DefectType)[] = ["defectTypeId", "defectTypeName", "description", "statusName"];
       const fileName = `DefectType_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
 
       switch (type) {

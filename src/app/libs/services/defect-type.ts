@@ -14,6 +14,7 @@ export const search = async (param?: ParamSearch) => {
     //   defectTypeName: item.defecttypename,
     //   description: item.description,
     //   status: item.camerastatus,
+    //   statusName: item.camerastatus ? 'Active' : 'Inactive',
     //   createdDate: item.createddate,
     //   createdBy: item.createdby,
     //   updatedDate: item.updateddate,

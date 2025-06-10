@@ -4,6 +4,7 @@ export type Camera = {
   cameraName: string
   location: string
   status: boolean
+  statusName: boolean
   createdDate?: Date
   createdBy?: string
   updatedDate?: Date | null

@@ -6,6 +6,7 @@ export type Product = {
   productTypeName?: string
   serialNo: string
   status: boolean
+  statusName: boolean
   createdDate?: Date | null
   createdBy?: string
   updatedDate?: Date | null

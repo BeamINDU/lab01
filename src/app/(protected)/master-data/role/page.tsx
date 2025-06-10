@@ -64,8 +64,8 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     try {
-      const headers = ["Role ID", "Role Name", "Description", "Status", "Created Date", "Updated Date"];
-      const keys: (keyof Role)[] = ["roleId", "roleName", "description", "status", "createdDate", "updatedDate"];
+      const headers = ["Role ID", "Role Name", "Description", "Status"];
+      const keys: (keyof Role)[] = ["roleId", "roleName", "description", "statusName"];
       const fileName = `Role_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
     
       switch (type) {

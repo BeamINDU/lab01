@@ -51,7 +51,7 @@ const handleSearch = async () => {
   const handleExport = (type: ExportType) => {
     try {
       const headers = ["Product Type ID", "Product Type Name", "Description", "Status"];
-      const keys: (keyof ProductType)[] = ["productTypeId","productTypeName", "description", "status"];
+      const keys: (keyof ProductType)[] = ["productTypeId","productTypeName", "description", "statusName"];
       const fileName = `ProductType_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
     
       switch (type) {

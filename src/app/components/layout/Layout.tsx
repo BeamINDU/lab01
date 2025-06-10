@@ -1,14 +1,13 @@
+'use client'
+
 import NextTopLoader from "nextjs-toploader";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import ToastNotifications from '@/app/components/toastify/ToastNotifications'; 
 import { PopupTraining } from '@/app/components/common/PopupTraining';
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
+export default function Layout({ children }: { children: React.ReactNode }) {
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <>
       <ToastNotifications /> 
@@ -34,4 +33,3 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   );
 };
  
-export default Layout;

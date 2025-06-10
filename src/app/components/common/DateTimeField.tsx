@@ -7,7 +7,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { X } from 'lucide-react'; // เพิ่ม import สำหรับ X icon
+import { X } from 'lucide-react'; 
 import dayjs, { Dayjs } from 'dayjs';
 import 'dayjs/locale/th';
 
@@ -32,7 +32,7 @@ interface DateTimeFieldProps {
   required?: boolean;
   ampm?: boolean;
   closeOnSelect?: boolean;
-  allowClear?: boolean; // เพิ่ม prop สำหรับเปิด/ปิดปุ่ม clear
+  allowClear?: boolean; 
   timeSteps?: {
     hours?: number;
     minutes?: number;
@@ -56,7 +56,7 @@ interface DateTimeFieldProps {
   // Events
   onChange?: (value: Dayjs | null) => void;
   onError?: (error: any) => void;
-  onClear?: () => void; // เพิ่ม event สำหรับ clear
+  onClear?: () => void; 
 }
 
 export default function DateTimeField({
@@ -119,50 +119,50 @@ export default function DateTimeField({
   };
 
   // กำหนดขนาดตัวอักษรตาม prop fontSize
-  const getFontSizes = () => {
-    switch (fontSize) {
-      case 'xs':
-        return {
-          input: '10px',
-          calendarDay: '11px',
-          calendarHeader: '13px',
-          weekLabel: '9px',
-          timeItem: '11px',
-          actionButton: '10px'
-        };
-      case 'sm':
-        return {
-          input: '12px',
-          calendarDay: '13px',
-          calendarHeader: '15px',
-          weekLabel: '11px',
-          timeItem: '13px',
-          actionButton: '12px'
-        };
-      case 'md':
-        return {
-          input: '14px',
-          calendarDay: '15px',
-          calendarHeader: '17px',
-          weekLabel: '13px',
-          timeItem: '15px',
-          actionButton: '14px'
-        };
-      case 'lg':
-        return {
-          input: '16px',
-          calendarDay: '17px',
-          calendarHeader: '19px',
-          weekLabel: '15px',
-          timeItem: '17px',
-          actionButton: '16px'
-        };
-      default:
-        return getFontSizes(); // fallback to 'sm'
-    }
-  };
+const getFontSizes = () => {
+  switch (fontSize) {
+    case 'xs':
+      return {
+        input: '12px',           
+        calendarDay: '13px',     
+        calendarHeader: '15px',  
+        weekLabel: '11px',       
+        timeItem: '13px',        
+        actionButton: '12px'     
+      };
+    case 'sm':
+      return {
+        input: '14px',           
+        calendarDay: '14px',     
+        calendarHeader: '16px',  
+        weekLabel: '12px',       
+        timeItem: '14px',        
+        actionButton: '13px'     
+      };
+    case 'md':
+      return {
+        input: '16px',          
+        calendarDay: '16px',     
+        calendarHeader: '18px',  
+        weekLabel: '14px',       
+        timeItem: '16px',        
+        actionButton: '15px'     
+      };
+    case 'lg':
+      return {
+        input: '18px',         
+        calendarDay: '18px',    
+        calendarHeader: '20px',  
+        weekLabel: '16px',       
+        timeItem: '18px',       
+        actionButton: '17px'     
+      };
+    default:
+      return getFontSizes(); 
+  }
+};
 
-  // กำหนดขนาด Calendar ตาม compactMode
+  
   const getCalendarSizes = () => {
     if (compactMode) {
       return {
@@ -189,83 +189,53 @@ export default function DateTimeField({
     minWidth: 0,
   };
 
-  //   สำหรับปรับขนาดตัวอักษร
-  const getPopperStyles = () => ({
-    sx: {
-      // Calendar Days (ตัวเลขวันที่)
-      '& .MuiPickersDay-root': {
-        fontSize: fontSizes.calendarDay,
-        width: calendarSizes.dayWidth,
-        height: calendarSizes.dayHeight,
-        minWidth: calendarSizes.dayWidth,
-        fontWeight: '500'
+  //  สำหรับปรับขนาดตัวอักษร
+const getPopperStyles = () => ({
+  sx: {
+    // Calendar Days
+    '& .MuiPickersDay-root': {
+      fontSize: fontSizes.calendarDay,
+      width: calendarSizes.dayWidth,
+      height: calendarSizes.dayHeight,
+      minWidth: calendarSizes.dayWidth,
+      fontWeight: '500'
+    },
+    // Selected day
+    '& .MuiPickersDay-root.Mui-selected': {
+      fontSize: fontSizes.calendarDay,
+      fontWeight: 'bold'
+    },
+    // Header (June 2025)
+    '& .MuiPickersCalendarHeader-label': {
+      fontSize: fontSizes.calendarHeader,
+      fontWeight: '600'
+    },
+    // Week day labels (S M T W T F S)
+    '& .MuiDayCalendar-weekDayLabel': {
+      fontSize: fontSizes.weekLabel,
+      fontWeight: '500',
+      width: calendarSizes.dayWidth,
+      height: calendarSizes.dayHeight
+    },
+    // Time picker digits  
+    '& .MuiMultiSectionDigitalClock-root': {
+      '& .MuiMenuItem-root': {
+        fontSize: fontSizes.timeItem,
+        minHeight: calendarSizes.minHeight,
+        paddingTop: compactMode ? '4px' : '8px',   
+        paddingBottom: compactMode ? '4px' : '8px',
+        fontWeight: '400'                        
       },
-      // Selected day
-      '& .MuiPickersDay-root.Mui-selected': {
-        fontSize: fontSizes.calendarDay,
-        fontWeight: 'bold'
-      },
-      // Today's date
-      '& .MuiPickersDay-root.MuiPickersDay-today': {
-        fontSize: fontSizes.calendarDay,
-        fontWeight: '600'
-      },
-      // Month buttons
-      '& .MuiPickersMonth-monthButton': {
-        fontSize: fontSizes.calendarDay,
-        padding: compactMode ? '6px' : '8px'
-      },
-      // Year buttons  
-      '& .MuiPickersYear-yearButton': {
-        fontSize: fontSizes.calendarDay,
-        padding: compactMode ? '6px' : '8px'
-      },
-      // Header (June 2025)
-      '& .MuiPickersCalendarHeader-label': {
-        fontSize: fontSizes.calendarHeader,
-        fontWeight: '600'
-      },
-      // Week day labels (S M T W T F S)
-      '& .MuiDayCalendar-weekDayLabel': {
-        fontSize: fontSizes.weekLabel,
-        fontWeight: '500',
-        width: calendarSizes.dayWidth,
-        height: calendarSizes.dayHeight
-      },
-      // Navigation arrows
-      '& .MuiPickersArrowSwitcher-button': {
-        '& .MuiSvgIcon-root': {
-          fontSize: compactMode ? '16px' : '20px'
-        }
-      },
-      // Time picker digits
-      '& .MuiMultiSectionDigitalClock-root': {
-        '& .MuiMenuItem-root': {
-          fontSize: fontSizes.timeItem,
-          minHeight: calendarSizes.minHeight,
-          paddingTop: compactMode ? '4px' : '6px',
-          paddingBottom: compactMode ? '4px' : '6px'
-        }
-      },
-      // Action buttons (CANCEL, OK)
-      '& .MuiDialogActions-root': {
-        '& .MuiButton-root': {
-          fontSize: fontSizes.actionButton,
-          padding: compactMode ? '4px 8px' : '6px 12px'
-        }
-      },
-      // Overall popup sizing
-      '& .MuiPaper-root': {
-        fontSize: fontSizes.calendarDay
-      },
-      // Clock view (สำหรับ TimePicker)
-      '& .MuiClock-root': {
-        '& .MuiClockNumber-root': {
-          fontSize: fontSizes.timeItem
-        }
+    },
+    // Action buttons
+    '& .MuiDialogActions-root': {
+      '& .MuiButton-root': {
+        fontSize: fontSizes.actionButton,
+        padding: compactMode ? '4px 8px' : '8px 16px'  
       }
     }
-  });
+  }
+});
 
   // ฟังก์ชันสำหรับ clear ค่า
   const handleClear = (field: any, e: React.MouseEvent) => {
@@ -302,14 +272,12 @@ export default function DateTimeField({
               fontSize: `${fontSizes.input} !important`,
               position: 'relative'
             },
-            // ซ่อนปุ่ม calendar เมื่อมีค่าและ allowClear เป็น true
             '& .MuiInputAdornment-root': allowClear && hasValue && !disabled ? {
               display: 'none'
             } : undefined
           },
           required,
           error: !!field.error,
-          // เพิ่ม InputProps เพื่อใส่ปุ่ม clear
           InputProps: allowClear && hasValue && !disabled ? {
             endAdornment: (
               <div className="flex items-center">
@@ -327,7 +295,6 @@ export default function DateTimeField({
           } : undefined
         },
         popper: getPopperStyles(),
-        // ปรับ openPickerIcon เพื่อซ่อนเมื่อมี clear button
         openPickerIcon: allowClear && hasValue && !disabled ? undefined : undefined
       },
       onError: (error: any) => {

@@ -63,8 +63,8 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     try {
-      const headers = ["User ID", "User Name", "First Name","Last Name","Email", "Role Name", "Status", "Created Date", "Updated Date"];
-      const keys: (keyof User)[] = ["userId", "username", "firstname", "lastname", "email", "roleName", "status", "createdDate", "updatedDate"];
+      const headers = ["User ID", "User Name", "First Name","Last Name","Email", "Role Name", "Status"];
+      const keys: (keyof User)[] = ["userId", "username", "firstname", "lastname", "email", "roleName", "statusName"];
       const fileName = `User_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
     
       switch (type) {

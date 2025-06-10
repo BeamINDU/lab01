@@ -7,6 +7,7 @@ export type User = {
   email: string
   roleName?: string
   status: boolean
+  statusName: boolean
   password?: string
   createdDate?: Date
   createdBy?: string

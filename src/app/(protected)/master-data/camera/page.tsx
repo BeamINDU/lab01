@@ -53,7 +53,7 @@ export default function Page() {
   const handleExport = (type: ExportType) => {
     try {
       const headers = ["Camera ID", "Camera Name", "Location", "Status", "Created Date"];
-      const keys: (keyof Camera)[] = ["cameraId", "cameraName", "location", "status", "createdDate"];
+      const keys: (keyof Camera)[] = ["cameraId", "cameraName", "location", "statusName", "createdDate"];
       const fileName = `Camera_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
 
       switch (type) {

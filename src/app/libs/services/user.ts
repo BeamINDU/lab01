@@ -19,6 +19,7 @@ export const search = async (param?: ParamSearch) => {
       email: item.email,
       roleName: item.roleid,
       status: item.userstatus,
+      statusName: item.camerastatus ? 'Active' : 'Inactive',
       createdDate: item.createddate,
       createdBy: item.createdby,
       updatedDate: item.updateddate,

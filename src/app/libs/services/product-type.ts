@@ -14,6 +14,7 @@ export const search = async (param?: ParamSearch) => {
       productTypeName: item.prodtype,
       description: item.proddescription,
       status: item.prodstatus,
+      statusName: item.camerastatus ? 'Active' : 'Inactive',
       createdDate: item.createddate,
       createdBy: item.createdby,
       updatedDate: item.updateddate,

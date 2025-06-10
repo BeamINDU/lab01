@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from 'next/navigation';
 import { useForm } from "react-hook-form";
 import { Plus, Trash2 } from 'lucide-react'
@@ -17,6 +17,7 @@ import DataTable from "@/app/components/table/DataTable";
 import DetectionModelColumns from "./components/detection-model-column";
 import DetectionModelFilterForm from './components/detection-model-filter';
 import AddModelFormModal from "./components/add-model-form";
+import NextTopLoader from 'nextjs-toploader';
 
 export default function Page() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export default function Page() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [editingData, setEditingData] = useState<DetectionModel | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const loaderRef = useRef<any>(null);
 
   useEffect(() => {
     handleSearch();
@@ -81,6 +83,7 @@ export default function Page() {
 
   const handleEdit = async (modelId: number) => {
     try {
+      loaderRef.current?.start();
       router.push(`/detection-model/${modelId}`);
     } catch (error) {
       console.error('Failed to open modal:', error);
@@ -121,6 +124,7 @@ export default function Page() {
 
   return (
     <>
+      <NextTopLoader />
       <h2 className="text-2xl font-bold mb-2 ml-3">Detection Model</h2>
       <div className="p-4 mx-auto">
         <div className="mb-6 max-w-full text-sm">

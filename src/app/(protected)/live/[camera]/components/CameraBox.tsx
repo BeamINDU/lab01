@@ -18,11 +18,19 @@ export default function CameraBox({ cameraName, liveStream, loading }: Props) {
           <div className="w-full h-full bg-gray-400 animate-pulse" />
         ) : (
           // "640 × 480"
-          <img
-            className="w-full h-full object-cover"
-            src={`data:image/jpeg;base64,${liveStream}`}
-            alt="Live stream"
-          />
+          <>
+            {/* <div className={`relative w-full`}>
+              <div className="absolute top-2 right-2 z-20 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
+                <span className="text-sm">🔴</span>
+                <span>LIVE</span>
+              </div> */}
+              <img
+                className="w-full h-full object-cover"
+                src={`data:image/jpeg;base64,${liveStream}`}
+                alt="Live stream"
+              />
+            {/* </div> */}
+          </>
         )}
         </div>
     </div>

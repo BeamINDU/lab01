@@ -4,6 +4,7 @@ export type DefectType = {
   defectTypeName: string
   description: string
   status: boolean
+  statusName: boolean
   createdDate?: Date
   createdBy?: string
   updatedDate?: Date | null

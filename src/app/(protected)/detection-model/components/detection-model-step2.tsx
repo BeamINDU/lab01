@@ -110,7 +110,6 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
             fill={ann.color + '33'}
             stroke={ann.color}
             strokeWidth={2}
-            draggable
             onDragEnd={(e) => {
               const node = e.target;
               const updatedAnn = {
@@ -132,7 +131,6 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
             fill={ann.color + '33'}
             stroke={ann.color}
             strokeWidth={2}
-            draggable
             onDragEnd={(e) => {
               const node = e.target;
               const updatedAnn = {
@@ -153,7 +151,6 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
             stroke={ann.color}
             strokeWidth={2}
             closed
-            draggable
           />
         )}
 

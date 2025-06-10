@@ -24,13 +24,14 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           control={control}
           fieldName="dateFrom"
           label="Date From"
-          placeholder="YYYY-MM-DD HH:mm"
+          //placeholder="YYYY-MM-DD HH:mm"
           variant="datetime"
           format="YYYY-MM-DD HH:mm"
           ampm={false}
           timeSteps={{ minutes: 1 }}
           closeOnSelect={false}
           className="w-full"
+          
         />
         {/*  Date To  */}
         <DateTimeField
