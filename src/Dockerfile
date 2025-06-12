@@ -1,68 +1,47 @@
-# ---------- Step 1 : Build stage ----------
+# Step 1: Build stage
 FROM node:22-alpine AS builder
+
+# Set working directory inside container
 WORKDIR /app
 
-RUN set -eux; \
-    echo "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d. -f1,2 /etc/alpine-release)/community" \
-        >> /etc/apk/repositories && \
-    apk update && apk add --no-cache \
-        build-base pkgconf cairo-dev pango-dev pixman-dev \
-        jpeg-dev giflib-dev \
-        libreoffice fontconfig ttf-freefont \
-        bash python3 curl \
-    && rm -rf /var/cache/apk/*
+# Install Python and build dependencies (Alpine uses apk, not apt-get)
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    build-base \
+    pkgconfig \
+    pixman-dev \
+    cairo-dev \
+    pango-dev \
+    jpeg-dev \
+    giflib-dev \
+    libjpeg-turbo-dev \
+    librsvg-dev
 
-# ---------- dependency files ----------
-COPY package*.json ./
-COPY tsconfig*.json ./
-COPY tailwind.config.ts .
-COPY next.config.ts .
-COPY .eslintrc.json .
-COPY postcss.config.mjs .
-COPY fontawesome.js .
+# Create a symbolic link for python
+RUN ln -sf /usr/bin/python3 /usr/bin/python
 
-# ---------- Install npm deps ----------
-RUN npm install --legacy-peer-deps \
-  && npm install chart.js react-chartjs-2 chartjs-plugin-datalabels recharts \
-  && npm install @mui/x-date-pickers @mui/material @emotion/react @emotion/styled dayjs \
-  && npm install react-hook-form @hookform/resolvers zod \
-  && npm install file-saver exceljs papaparse @types/papaparse \
-  && npm install react-select react-dropzone lodash @types/lodash \
-  && npm install socket.io-client zustand \
-  && npm install sweetalert2 react-toastify \
-  && npm install next-auth nextjs-toploader react-color \
-  && npm install canvas \
-  && npm install konva react-konva lucide-react date-fns mammoth
+# Copy the package.json and package-lock.json from the root of the project
+COPY ../package*.json ./
+COPY ../tsconfig*.json ./
+COPY ../tailwind.config.ts ./
+COPY ../next.config.ts ./
+COPY ../.eslintrc.json ./ 
+COPY ../postcss.config.mjs ./  
+COPY ../fontawesome.js ./ 
 
-# ---------- source ----------
-COPY src ./src
-COPY public ./public
+# Install dependencies
+RUN npm install --legacy-peer-deps
 
-RUN chmod +x node_modules/.bin/next
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
+# Copy the rest of the source code from the src folder
+COPY . .
+
+# Build the Next.js application (optional for development, you can remove this if not needed)
 RUN npm run build
 
-
-# ---------- Step 2 : Runtime stage ----------
-FROM node:22-alpine AS runner
-WORKDIR /app
-
-# runtime libs ???????? – ????????? dev headers ????
-RUN echo "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d. -f1,2 /etc/alpine-release)/community" \
-        >> /etc/apk/repositories && \
-    apk update && apk add --no-cache \
-        libreoffice fontconfig ttf-freefont cairo pango pixman \
-    && rm -rf /var/cache/apk/*
-
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/src ./src
-
-RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
-USER nextjs
-
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
+# Expose the port Next.js runs on (default is 3000)
 EXPOSE 3000
-CMD ["npm","start"]
+
+# Start the Next.js application
+CMD ["npm", "run", "dev"]
