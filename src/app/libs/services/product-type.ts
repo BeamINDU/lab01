@@ -85,9 +85,7 @@ export const upload = async (file: File) => {
 
 export const getProductTypeIdOptions = async (q: string): Promise<SelectOption[]> => {
   try {
-    // return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_id}?q=${q}`);
 
-    // For Test
     const res = await api.get<any>(`${API_ROUTES.product_type.get}`);
 
     const result: SelectOption[] = (res?.product_types ?? [])
