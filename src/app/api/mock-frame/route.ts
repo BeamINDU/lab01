@@ -4,7 +4,7 @@ import path from "path";
 
 export async function GET() {
   try {
-    const filePath = path.join(process.cwd(), "public/images/takumi-pic.png");
+    const filePath = path.join(process.cwd(), "public/videos/2025-01-24_15-05-49.mp4");
     const imageBuffer = fs.readFileSync(filePath);
     const base64 = imageBuffer.toString("base64");
     const dataUrl = `data:image/png;base64,${base64}`;

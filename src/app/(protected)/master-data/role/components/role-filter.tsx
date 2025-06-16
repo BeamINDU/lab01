@@ -3,7 +3,7 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive  from '@/app/components/common/SearchField';
-import { getRoleIdOptions, getRoleNameOptions } from "@/app/libs/services/role";
+import { getRoleNameOptions } from "@/app/libs/services/role";
 import { ActiveStatus } from '@/app/constants/status';
 
 interface RoleFilterFormProps {
@@ -17,7 +17,7 @@ export default function RoleFilterForm({ register, setValue, onSearch }: RoleFil
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Role ID */}
-        <SearchFieldResponsive 
+        {/* <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="roleId"
@@ -27,7 +27,7 @@ export default function RoleFilterForm({ register, setValue, onSearch }: RoleFil
           labelField="label"
           valueField="value"
           allowFreeText={true}
-        />
+        /> */}
         
         {/* Role Name  */}
         <SearchFieldResponsive 
@@ -41,9 +41,7 @@ export default function RoleFilterForm({ register, setValue, onSearch }: RoleFil
           valueField="value"
           allowFreeText={true}
         />
-      </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Status */}
         <SearchFieldResponsive 
           register={register}

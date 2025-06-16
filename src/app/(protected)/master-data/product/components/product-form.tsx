@@ -17,7 +17,6 @@ const ProductSchema = z.object({
   productId: z.string().min(1, "Product ID is required"),
   productName: z.string().min(1, "Product Name is required"),
   productTypeId: z.string().min(1, "Product Type is required"),
-  productTypeName: z.string().min(1, "Product Type is required"),
   serialNo: z.string().min(1, "Serial No is required"),
   status: z.boolean(),
 });
@@ -46,7 +45,6 @@ export default function ProductFormModal({
     productId: '',
     productName: '',
     productTypeId: '',
-    productTypeName: '',
     serialNo: '',
     status: true,
   };
@@ -72,7 +70,6 @@ export default function ProductFormModal({
     }
   }, [editingData, reset]);
 
-  if (!showModal) return null;
 
   const onSubmit: SubmitHandler<ProductFormValues> = async (formData) => {
     try {
@@ -80,7 +77,6 @@ export default function ProductFormModal({
 
       const formWithMeta: Product = {
         ...formData,
-        productId: formData.productId,
         createdBy: session?.user?.userid,
         updatedBy: formData.id ? session?.user?.userid : null,
       };
@@ -93,7 +89,7 @@ export default function ProductFormModal({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded shadow-lg w-1/3 relative">
         <button
           type="button"
@@ -137,7 +133,6 @@ export default function ProductFormModal({
 
           <div className="mb-4">
             <SearchFieldModal
-              key={`productType-${editingData?.productId || 'new'}`}
               register={register}
               setValue={setValue}
               fieldName="productTypeId"
@@ -150,7 +145,6 @@ export default function ProductFormModal({
               disabled={!canEdit}
               initialValue={editingData?.productTypeId || ''}
               onSelectionChange={(value, option) => {
-                console.log('Product Type selected:', value, option);
                 setValue("productTypeId", value, { shouldValidate: true });
               }}
             />

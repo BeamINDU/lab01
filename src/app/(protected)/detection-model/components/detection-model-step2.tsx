@@ -13,6 +13,7 @@ import { SelectOption } from "@/app/types/select-option";
 import { ShapeType } from "@/app/constants/shape-type";
 import { FormData, DetectionModel, ModelPicture, Annotation } from "@/app/types/detection-model";
 import { getPicture } from "@/app/libs/services/detection-model";
+import { useSession } from "next-auth/react";
 import ImageLoading from "@/app/components/loading/ImageLoading";
 import SpinnerLoading from "@/app/components/loading/SpinnerLoading";
 import AnnotationModal from "./annotation-modal";
@@ -34,7 +35,7 @@ type Props = {
 
 export default function DetectionModelStep2Page({ next, prev, modelId, formData }: Props) {
   // console.log("formData:", formData);
-  
+  const { data: session } = useSession();
   const { hasPermission } = usePermission();
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [pictureList, setPictureList] = useState<ModelPicture[]>([]);
@@ -223,14 +224,24 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
   };
   
   const handleDelete = async (index: number) => {
-    const result = await showConfirm('Are you sure you want to delete this image?')
+    const result = await showConfirm('Are you sure you want to delete this image?');
     if (result.isConfirmed) {
       // Call API
-      setPictureList((prev) => prev.filter((_, i) => i !== index));
-      setSelectedPicture(null);
+
+      setPictureList((prev) => {
+        const toDelete = prev[index];
+        const newList = prev.filter((_, i) => i !== index);
+
+        if (imageObj?.src === toDelete.url) {
+          setImageObj(null);
+          setSelectedPicture(null);
+        }
+
+        return newList;
+      });
     }
   };
-  
+
   const handlePreview = (image: ModelPicture) => {
     setSelectedPicture(image);
     setIsImageLoading(true);
@@ -239,7 +250,10 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
     img.onload = () => {
       setImageObj(img);
     };
+
+    if (!image.url) return;
     img.src = image.url;
+    
     setIsImageLoading(false);
 
     setAnnotations(image.annotations ?? []);
@@ -263,10 +277,28 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
     }
 
     // exportJson(editData);
+
     setIsOpenAnnotation(false);
   };
 
   const exportJson = async (exportDate: ModelPicture[]) => {
+    // const _exportData = exportDate?.map((img) => ({
+    //   id: img.id,
+    //   name: img.name,
+    //   annotations: img.annotations?.map((ann) => ({
+    //     id: ann.id,
+    //     type: ann.type,
+    //     color: ann.color,
+    //     label: ann.label,
+    //     coordinates:
+    //       ann.type === 'rect'
+    //         ? { x: ann.startX, y: ann.startY, width: ann.width, height: ann.height }
+    //         : ann.type === 'circle'
+    //         ? { x: ann.startX, y: ann.startY, radius: ann.radius }
+    //         : { points: ann.points }, 
+    //   })),
+    // }));
+
     const dataStr = JSON.stringify(exportDate, null, 2);
     console.log("dataStr:", dataStr);
 
@@ -280,13 +312,15 @@ export default function DetectionModelStep2Page({ next, prev, modelId, formData 
   }
   
   const onSubmitHandler = async () => {
-    // console.log("Submit data2:", data);
-    // await updateStep2(modelId, data);
-    
     const updatedFormData: FormData = {
       ...formData,
       currentStep: 2,
+      updatedBy: session?.user?.userid,
     };
+
+    console.log("Submit data2:", updatedFormData);
+    await updateStep2(modelId, updatedFormData);
+
     next(updatedFormData);
   }
   

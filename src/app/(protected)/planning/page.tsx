@@ -42,8 +42,8 @@ export default function Page() {
         lotNo: formValues.lotNo || '',
         lineId: formValues.lineId || '',
       };
-      const products = await search(param);
-      setData(products);
+      const plans = await search(param);
+      setData(Array.isArray(plans) ? plans : []);
     } catch (error) {
       console.error("Search operation failed:", error);
       showError('Search failed');
@@ -84,7 +84,8 @@ export default function Page() {
   const handleAddEdit = async (row?: Planning) => {
     try {
       if (row) {
-        const updatedRow = await detail(row.id ?? "") as Planning;
+        // const updatedRow = await detail(row.id ?? "") as Planning;
+        const updatedRow = data.find((item) => item.id === row.id) ?? row;
         setEditingData(updatedRow);
       } else {
         reset();

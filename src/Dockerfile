@@ -1,47 +1,69 @@
-# Step 1: Build stage
+# ---------- Step 1 : Build stage ----------
 FROM node:22-alpine AS builder
-
-# Set working directory inside container
 WORKDIR /app
 
-# Install Python and build dependencies (Alpine uses apk, not apt-get)
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    build-base \
-    pkgconfig \
-    pixman-dev \
-    cairo-dev \
-    pango-dev \
-    jpeg-dev \
-    giflib-dev \
-    libjpeg-turbo-dev \
-    librsvg-dev
+RUN set -eux; \
+    echo "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d. -f1,2 /etc/alpine-release)/community" \
+        >> /etc/apk/repositories && \
+    apk update && apk add --no-cache \
+        build-base pkgconf cairo-dev pango-dev pixman-dev \
+        jpeg-dev giflib-dev \
+        libreoffice fontconfig ttf-freefont \
+        bash python3 curl \
+    && rm -rf /var/cache/apk/*
 
-# Create a symbolic link for python
-RUN ln -sf /usr/bin/python3 /usr/bin/python
+# ---------- dependency files ----------
+COPY package*.json ./
+COPY tsconfig*.json ./
+COPY tailwind.config.ts ./
+COPY next.config.ts ./
+COPY .eslintrc.json ./
+COPY postcss.config.mjs ./
+COPY fontawesome.js ./
 
-# Copy the package.json and package-lock.json from the root of the project
-COPY ../package*.json ./
-COPY ../tsconfig*.json ./
-COPY ../tailwind.config.ts ./
-COPY ../next.config.ts ./
-COPY ../.eslintrc.json ./ 
-COPY ../postcss.config.mjs ./  
-COPY ../fontawesome.js ./ 
+# ---------- Install npm deps ----------
+RUN npm ci --legacy-peer-deps
 
-# Install dependencies
-RUN npm install --legacy-peer-deps
+# ---------- source ----------
+COPY src ./src
+COPY public ./public
 
-# Copy the rest of the source code from the src folder
-COPY . .
+# Build the application
+RUN chmod +x node_modules/.bin/next
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1
+# Skip TypeScript checking during build
+ENV NEXT_PUBLIC_DISABLE_ESLINT=true
+RUN npx next build --no-lint
 
-# Build the Next.js application (optional for development, you can remove this if not needed)
-RUN npm run build
 
-# Expose the port Next.js runs on (default is 3000)
+# ---------- Step 2 : Runtime stage ----------
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+# Install runtime dependencies only
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v$(cut -d. -f1,2 /etc/alpine-release)/community" \
+        >> /etc/apk/repositories && \
+    apk update && apk add --no-cache \
+        libreoffice fontconfig ttf-freefont cairo pango pixman \
+    && rm -rf /var/cache/apk/*
+
+# Copy built application and dependencies
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/src ./src
+
+# Create user for security
+RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
+RUN chown -R nextjs:nodejs /app
+USER nextjs
+
+# Environment variables
+ENV NODE_ENV=production 
+ENV NEXT_TELEMETRY_DISABLED=1 
+ENV PORT=3000 
+ENV HOSTNAME=0.0.0.0
+
 EXPOSE 3000
-
-# Start the Next.js application
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]

@@ -7,8 +7,8 @@ interface RoleColumnProps {
   showCheckbox?: boolean;
   openEditModal: (row?: Role) => void;
   openPermissionModal: (row?: Role) => void;
-  selectedIds: string[];
-  setSelectedIds: (updater: (prevState: string[]) => string[]) => void; 
+  selectedIds: number[];
+  setSelectedIds: (updater: (prevState: number[]) => number[]) => void; 
   data: Role[];
   canEdit: boolean
 }
@@ -23,19 +23,19 @@ export default function RoleColumns({
   canEdit
 }: RoleColumnProps): ColumnDef<Role>[] {
 
-  const toggleSelect = (id: string) => {
+  const toggleSelect = (id: number) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((selectedId) => selectedId !== id) : [...prev, id]
     );
   };
 
   const toggleSelectAll = () => {
-    setSelectedIds((prev: string[]) =>
+    setSelectedIds((prev: number[]) =>
       prev.length === data.length
         ? [] // If all items are selected, unselect all
         : data
           .map((item) => item.id) // Map to ids
-          .filter((id): id is string => id !== undefined) // Filter out undefined values
+          .filter((id): id is number => id !== undefined) // Filter out undefined values
     );
   };
 
@@ -48,7 +48,7 @@ export default function RoleColumns({
               <div className="flex justify-center items-center">
                 <input
                   type="checkbox"
-                  checked={selectedIds.length === data.length && data.every(item => selectedIds.includes(item.id ?? ""))}
+                  checked={selectedIds.length === data.length && data.every(item => selectedIds.includes(item.id ?? 0))}
                   onChange={toggleSelectAll}
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
                 />
@@ -76,10 +76,6 @@ export default function RoleColumns({
       accessorKey: "no",
       header: "No",
       enableSorting: false,
-    },
-    {
-      accessorKey: "roleId",
-      header: "Role ID",
     },
     {
       accessorKey: "roleName",

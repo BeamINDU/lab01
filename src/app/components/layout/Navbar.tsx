@@ -21,11 +21,6 @@ const Navbar = () => {
     <nav className="flex justify-between items-center shadow-md bg-white p-2">
       {/* Left: Logo */}
       <div className="cursor-pointer" onClick={navigateToDashboard}>
-        {/* <img 
-          src="/images/logo-navbar.png" 
-          alt="Logo" 
-          className="ml-5 h-[60px] object-contain" 
-        /> */}
         <div className="flex items-center space-x-2">
           <Image src="/images/logo-takumi.png" alt="TAKUMI Logo" width={55} height={55} />
           <div className="flex flex-col leading-tight">

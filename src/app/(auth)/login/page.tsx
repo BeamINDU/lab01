@@ -27,7 +27,7 @@ export default function LoginPage() {
     if (res?.error) {
       setError("Invalid username or password");
     } else {
-      router.push("/ocr");
+      router.push("/dashboard");
     }
   };
 
@@ -53,7 +53,7 @@ export default function LoginPage() {
             />
             <div className="ml-0">
               <h1 className="text-2xl font-bold text-black">TAKUMI</h1>
-              <p className="text-black text-sm font-bold">(OCR)</p>
+              <p className="text-black text-sm font-bold">(Product Inspection)</p>
             </div>
           </div>
 
@@ -121,16 +121,16 @@ export default function LoginPage() {
           />
           <div className="absolute top-2 right-1 bg-black bg-opacity-20 text-white p-4 rounded-lg shadow-lg max-w-md">
             <h1 className="text-lg font-bold mb-2">
-              TAKUMI <span className="text-sm font-normal ">(OCR)</span>
+              {/* TAKUMI <span className="text-sm font-normal ">(Product Inspection)</span> */}
             </h1>
 
             <p className="text-xs leading-5 text-justify">
-              &emsp;เหมาะสำหรับธุรกิจเกี่ยวกับการผลิต โลจิสติกส์ และการเงิน <br />
+              {/* &emsp;เหมาะสำหรับธุรกิจเกี่ยวกับการผลิต โลจิสติกส์ และการเงิน <br />
               ด้วยความสามารถในการเลือกโมดูลตามความต้องการสำหรับอุตสาหกรรมการผลิต <br />
               ได้แก่ฟีเจอร์การตรวจจับความผิดพลาด แจ้งเตือนการบำรุงรักษา <br />
               การตรวจสอบคุณภาพโดยภาพและเสียง สำหรับธุรกิจโลจิสติกส์ ได้แก่ <br />
               การแนะนำการจัดวางสินค้าในพาเลท <br />
-              และฟังก์ชันการพยากรณ์การขายและการวางบิลสำหรับธุรกิจการเงิน
+              และฟังก์ชันการพยากรณ์การขายและการวางบิลสำหรับธุรกิจการเงิน */}
             </p>
           </div>
         </div>

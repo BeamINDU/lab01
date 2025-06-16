@@ -59,7 +59,7 @@ export default function UploadButton({ onUpload }: UploadButtonProps) {
       </button>
 
       {isUploadModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/50">
           <div className="w-full max-w-xl bg-white rounded-xl p-8 shadow-xl relative animate-fade-in">
             {/* Close button */}
             <button

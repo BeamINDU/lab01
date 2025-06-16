@@ -35,8 +35,8 @@ export default function Page() {
         lotNo: formValues.lotNo || '',
         productId: formValues.productId || '',
       };
-      const products = await search(param);
-      setData(products);
+      const transactions = await search(param);
+      setData(Array.isArray(transactions) ? transactions : []);
     } catch (error) {
       console.error("Search operation failed:", error);
       showError('Search failed');
@@ -97,7 +97,6 @@ export default function Page() {
         <DataTable
           columns={TransactionColumns()}
           data={data}
-          selectedIds={selectedIds}
           defaultSorting={[{ id: "lotNo", desc: false }]}
         />
 

@@ -40,13 +40,11 @@ export default function Page() {
         productName: formValues.productName || '',
         productTypeName: formValues.productTypeName || '', 
         serialNo: formValues.serialNo || '',
-        status: formValues.status === '' ? undefined : formValues.status === 'true',
+        status: formValues.status,
       };
       
       const products = await search(param);
-      setData(products);
-      
-      console.log('Search results:', products.length, 'items');
+      setData(Array.isArray(products) ? products : []);
     } catch (error) {
       console.error("Search operation failed:", error);
       showError('Search failed');

@@ -44,11 +44,10 @@ export const search = async (param?: ParamSearch) => {
     // const res =  await api.get<any>(`${API_ROUTES.detection_model.get}?${param}`);
 
     // const mapData: DetectionModel[] = res?.models?.map((item) => ({
-    //   id: item.modelId,
-    //   modelId: item.modelId,
+    //   modelId: item.modelid,
     //   modelName: item.modelname,
-    //   productId: item.productid,
-    //   description: item.description,
+    //   productId: item.prodid,
+    //   description: item.modeldescription,
     //   function: item.function,
     //   statusId: item.statusid,
     //   currentVersion: item.currentversion,
@@ -80,6 +79,7 @@ export const create = async (param: Partial<DetectionModel>) => {
     const res = await api.post<any>(`${API_ROUTES.detection_model.insert}`, param);
     return {
       ...param,
+      modelId: res.modelid,
       createdDate: new Date(),
     };
   } catch (error) {
@@ -89,7 +89,6 @@ export const create = async (param: Partial<DetectionModel>) => {
 
 export const updateStep1 = async (id: number, param: Partial<FormData>) => {
   try {
-    // modelId: id,
     // functions: [1, 2, 3],
     // currentStep: 1,
     // updateBy: 'admin',
@@ -107,12 +106,7 @@ export const updateStep1 = async (id: number, param: Partial<FormData>) => {
 
 export const updateStep2 = async (id: number, param: Partial<FormData>) => {
   try {
-    // modelId: id,
-    // Picture: [
-    //   name: ''
-    //   file: File
-    //   data: {}
-    // ]
+    // PictureList: [],
     // currentStep: 2,
     // updateBy: 'admin',
 
@@ -129,7 +123,6 @@ export const updateStep2 = async (id: number, param: Partial<FormData>) => {
 
 export const updateStep3 = async (id: number, param: Partial<FormData>) => {
   try {
-    // modelId: id,
     // modelName: '',
     // description: '',
     // trainDataset: 0,
@@ -152,7 +145,6 @@ export const updateStep3 = async (id: number, param: Partial<FormData>) => {
 
 export const updateStep4 = async (id: number, param: Partial<FormData>) => {
   try {
-    // modelId: id,
     // cameraId: '',
     // Version: '',
     // currentStep: 4,
@@ -196,19 +188,14 @@ export const getFunctionOptions = async (q: string) => {
 export const getFunctions = async () => {
   try {
     // return await api.get<Function>(`${API_ROUTES.detection_model.function}`);
+
+
     return [
       { label: "Color Check", value: "1" },
       { label: "Classification Type", value: "2" },
       { label: "Barcode Text Ocr", value: "3" },
       { label: "Missing Component Check", value: "4" },
       { label: "Object Counting", value: "5" },
-      // { label: "Surface Defect Detection", value: "6" },
-      // { label: "Dimension Check", value: "7" },
-      // { label: "Uniform Color Check", value: "8" },
-      // { label: "Print Quality Check", value: "9" },
-      // { label: "Logo Detection", value: "10" },
-      // { label: "Seal Integrity Check", value: "11" },
-      // { label: "Shape Anomaly Check", value: "12" },
     ] as SelectOption[];
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -223,22 +210,18 @@ export const getPicture = async () => {
         refId: `1`,
         name: "photos-random-1.png", 
         url: "https://picsum.photos/800/600?random=1",
-        // url: "/images/takumi-pic.png",
         // file:  await urlToFile("https://picsum.photos/800/600?random=1", "photos-random-1.png"),
         annotations: [
           {
             "id": "annotation-1748887785393",
             "type": "rect",
             "color": "#FF5722",
-            "points": [
-              116,
-              95.125
-            ],
             "startX": 116,
             "startY": 95.125,
             "width": 122,
             "height": 93,
             "radius": 0,
+            "points": [],
             "label": {
               "id": "1",
               "name": "defect"
@@ -248,44 +231,19 @@ export const getPicture = async () => {
             "id": "annotation-1748887794637",
             "type": "circle",
             "color": "#00ff58",
-            "points": [
-              392,
-              146.125
-            ],
             "startX": 343,
             "startY": 265.125,
             "width": 0,
             "height": 0,
             "radius": 59.54829972383762,
+            "points": [],
             "label": {
               "id": "2",
               "name": "scratch"
             }
-          },
-          {
-            "id": "annotation-1748887803991",
-            "type": "rect",
-            "color": "#ff00ef",
-            "points": [
-              581,
-              101.125
-            ],
-            "startX": 581,
-            "startY": 101.125,
-            "width": 97,
-            "height": 82,
-            "radius": 0,
-            "label": {
-              "id": "2",
-              "name": "dent"
-            }
           }
         ]
       },
-      // { id: 2, name: "photos-random-2.png", url: "https://picsum.photos/800/600?random=2" },
-      // { id: 3, name: "photos-random-3.png", url: "https://picsum.photos/800/600?random=3" },
-      // { id: 4, name: "photos-random-4.png", url: "https://picsum.photos/800/600?random=4" },
-      // { id: 5, name: "photos-random-5.png", url: "https://picsum.photos/800/600?random=5" },
     ] as ModelPicture[];
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -302,3 +260,5 @@ export const getCamera = async () => {
     throw new Error(extractErrorMessage(error));
   } 
 };
+
+

@@ -41,7 +41,7 @@ const handleSearch = async () => {
         status: formValues.status || undefined,
       };
       const products = await search(param);
-      setData(products);
+      setData(Array.isArray(products) ? products : []);
     } catch (error) {
       console.error("Failed to search producttype:", error);
       setData([]);

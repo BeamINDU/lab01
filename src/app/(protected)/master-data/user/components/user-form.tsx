@@ -7,10 +7,10 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User } from "@/app/types/user";
 import { useSession } from "next-auth/react";
+import { SelectOption } from "@/app/types/select-option";
+import { search as getRoleOptions, getRoleNameOptions } from '@/app/libs/services/role';
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 import GoogleStyleSearch from '@/app/components/common/Search';
-import { getRoleIdOptions, getRoleNameOptions } from '@/app/libs/services/role';
-import { SelectOption } from "@/app/types/select-option";
 
 const UserSchema = z.object({
   id: z.string().optional(),
@@ -19,8 +19,9 @@ const UserSchema = z.object({
   firstname: z.string().min(1, "First name is required"),
   lastname: z.string().min(1, "Last name is required"),
   email: z.string().min(1, "Email is required"),
-  roleName: z.string().min(1, "Role name is required"),
   status: z.boolean(),
+  userRoles: z.array(z.number()).optional()
+  // userRoles: z.array(z.number()).min(1, "Role name is required"),
 });
 
 type UserFormValues = z.infer<typeof UserSchema>;
@@ -41,10 +42,8 @@ export default function UserFormModal({
   canEdit
 }: UserModalProps) {
   const { data: session } = useSession();
-  // State สำหรับ Role
-  const [selectedRole, setSelectedRole] = useState<string>('');
   const [roleOptions, setRoleOptions] = useState<SelectOption[]>([]);
-  const [isLoadingRoles, setIsLoadingRoles] = useState<boolean>(false);
+  const [selectedRole, setSelectedRole] = useState<number[]>([]);
 
   const defaultValues: UserFormValues = {
     id: '',
@@ -53,7 +52,6 @@ export default function UserFormModal({
     firstname: '',
     lastname: '',
     email: '',
-    roleName: '',
     status: true,
   };
 
@@ -70,67 +68,43 @@ export default function UserFormModal({
     defaultValues,
   });
 
-  // โหลดข้อมูล Role
   useEffect(() => {
     const loadRoles = async () => {
       try {
-        setIsLoadingRoles(true);
         // const roles = await getRoleOptions();
 
-        // const searchOptions: SearchOption[] = roles.map((item, index) => ({
-        //   id: (index + 1).toString(),
+        // const roleOptions: SelectOption[] = roles?.map((item) => ({
         //   label: item.label,
         //   value: item.value
         // }));
 
-        // setRoleOptions(searchOptions);
+        // setRoleOptions(roleOptions);
       } catch (error) {
         console.error('Failed to load roles:', error);
         setRoleOptions([]);
-      } finally {
-        setIsLoadingRoles(false);
       }
     };
 
     loadRoles();
   }, []);
 
+
   useEffect(() => {
     if (editingData) {
-      reset(editingData);
+      reset({
+        ...editingData,
+        userRoles: editingData.userRoles?.map(r => r.roleId)
+      });
     } else {
       reset(defaultValues);
     }
   }, [editingData, reset]);
 
 
-
-  // จัดการเมื่อเลือก Role
-  const handleRoleSelect = (option: SelectOption | null) => {
-    const value = option ? option.value : '';
-    setSelectedRole(value);
-    setValue("roleName", value);
-    console.log('Selected Role:', value); // Debug log
-  };
-
-  // จัดการเมื่อพิมพ์ใน Role Search Box
-  const handleRoleInputChange = (inputValue: string) => {
-    const matchedOption = roleOptions.find(opt =>
-      opt.label.toLowerCase() === inputValue.toLowerCase()
-    );
-
-    if (!matchedOption) {
-      setSelectedRole(inputValue);
-      setValue("roleName", inputValue);
-      console.log('Typed Role:', inputValue); // Debug log
-    }
-  };
-
-  if (!showModal) return null;
-
   const onSubmit: SubmitHandler<UserFormValues> = async (formData) => {
     const formWithMeta: User = {
       ...formData,
+      userRoles: [],
       createdBy: session?.user?.userid,
       updatedBy: formData.id ? session?.user?.userid : null,
     };
@@ -138,7 +112,7 @@ export default function UserFormModal({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded shadow-lg w-1/3 relative">
         {/* Close Button */}
         <button
@@ -215,34 +189,13 @@ export default function UserFormModal({
             {errors.email && <p className="text-red-500 ml-160">{errors.email.message}</p>}
           </div>
 
-          {/* Role - ใช้ Google Style Search Component */}
+          {/* Role */}
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Role Name:</label>
-              <div className="relative">
-                {/* Register กับ React Hook Form */}
-                <input
-                  type="hidden"
-                  {...register("roleName")}
-                />
-
-                {/* Google Style Search Component */}
-                <GoogleStyleSearch
-                  options={roleOptions}
-                  value={selectedRole}
-                  placeholder={isLoadingRoles ? "Loading roles..." : "Select role..."}
-                  onSelect={handleRoleSelect}
-                  onInputChange={handleRoleInputChange}
-                  allowClear={true}
-                  showDropdownIcon={true}
-                  minSearchLength={0}
-                  maxDisplayItems={8}
-                  disabled={isLoadingRoles || !canEdit}
-                  className="w-full"
-                />
-              </div>
+              
             </div>
-            {errors.roleName && <p className="text-red-500 ml-160">{errors.roleName.message}</p>}
+            {errors.userRoles && <p className="text-red-500 ml-160">{errors.userRoles.message}</p>}
           </div>
 
           <div className="mb-4">

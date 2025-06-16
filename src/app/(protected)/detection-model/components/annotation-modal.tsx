@@ -68,9 +68,11 @@ const AnnotationModal = ({
     img.onload = () => {
       setImageObj(img);
     };
+
+    if (!currentPic.url) return;
     img.src = currentPic.url;
     setIsImageLoading(false);
-    
+
     setAnnotations(currentPic.annotations ?? []);
 
     return () => {
@@ -107,7 +109,7 @@ const AnnotationModal = ({
     const newAnnot = {
       id: `annotation-${Date.now()}`,
       type: tool as ShapeType,
-      color: selectedColor, 
+      color: selectedColor,
       points: [pos.x, pos.y],
       startX: pos.x,
       startY: pos.y,
@@ -325,7 +327,7 @@ const AnnotationModal = ({
   const handleSaveClassName = (classname: ClassName[]) => {
     setClassNames(classname);
     handleBulkUpdateLabels(classname);
-    
+
     const selected = classname.find(c => c.id == selectedClass?.id);
     setSelectedClass(selected || null);
 
@@ -354,175 +356,165 @@ const AnnotationModal = ({
   const onSubmit = async () => {
     const updatedPictures = updateAllAnnotationsToPictures();
 
-    const updateData = updatedPictures?.map((img) => {
-      return {
-        id: img.id,
-        name: img.name,
-        file: img.file,
-        refId: img.refId,
-        url: img.url,
-        annotations: img.annotations?.map(ann => ({
+    const updateData = updatedPictures?.map((img) => ({
+      id: img.id,
+      name: img.name,
+      file: img.file,
+      refId: img.refId,
+      url: img.url,
+      annotations: img.annotations?.map((ann) => {
+        const isRect = ann.type === 'rect';
+        const isCircle = ann.type === 'circle';
+        return {
           id: ann.id,
           type: ann.type,
           color: ann.color,
-          points: ann.points,
-          startX: ann.startX,
-          startY: ann.startY,
-          width: ann.width,
-          height: ann.height,
-          radius: ann.radius,
           label: ann.label,
-        })),
-      };
-    }) as ModelPicture[];
+          startX: isRect || isCircle ? ann.startX : 0,
+          startY: isRect || isCircle ? ann.startY : 0,
+          width: isRect ? ann.width ?? 0 : 0,
+          height: isRect ? ann.height ?? 0 : 0,
+          radius: isCircle ? ann.radius ?? 0 : 0,
+          points: ann.type === 'polygon' ? ann.points : [],
+        };
+      }),
+    }));
 
-    onSave(updateData); 
-    
-    // const exportData = {
-    //   image: pictureList[currentIndex],
-    //   annotations: annotations.map(ann => ({
-    //     id: ann.id,
-    //     type: ann.type,
-    //     color: ann.color,
-    //     label: ann.label,
-    //     coordinates: ann.type === 'rect'
-    //       ? { x: ann.startX, y: ann.startY, width: ann.width, height: ann.height }
-    //       : ann.type === 'circle'
-    //         ? { x: ann.startX, y: ann.startY, radius: ann.radius }
-    //         : { points: ann.points },
-    //   })),
-    // };
+    onSave(updateData);
   };
 
   const stageWidth = 760;
   const stageHeight = 500;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-      <div className="relative flex flex-col bg-white rounded-xl w-[100%] max-w-6xl h-[75%] p-4 shadow-xl space-y-4 overflow-hidden">
+    <>
+      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/30">
+        <div className="relative flex flex-col bg-white rounded-xl w-[100%] max-w-6xl h-[75%] p-4 shadow-xl space-y-4 overflow-hidden">
 
-        {/* Close Button */}
-        <button
-          type="button"
-          className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
-          onClick={onClose}
-        >
-          <X className="text-red-500" size={24} />
-        </button>
+          {/* Close Button */}
+          <button
+            type="button"
+            className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
+            onClick={onClose}
+          >
+            <X className="text-red-500" size={24} />
+          </button>
 
-        <h2 className="text-xl sm:text-2xl font-semibold text-center">Edit</h2>
+          <h2 className="text-xl sm:text-2xl font-semibold text-center">Edit</h2>
 
-        {/* Main Content Area */}
-        <div className="flex flex-col lg:flex-row flex-1 space-y-4 lg:space-y-0 lg:space-x-4 overflow-hidden">
+          {/* Main Content Area */}
+          <div className="flex flex-col lg:flex-row flex-1 space-y-4 lg:space-y-0 lg:space-x-4 overflow-hidden">
 
-          {/* Tool Selection (top in mobile, left in desktop) */}
-          <AnnotationToolSelector tool={tool} setTool={setTool} />
+            {/* Tool Selection (top in mobile, left in desktop) */}
+            <AnnotationToolSelector tool={tool} setTool={setTool} />
 
-          {/* Image Viewer */}
-          <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
-            <div className="flex items-center justify-center relative w-full bg-white aspect-[1ุ6/10] lg:aspect-auto">
-              {isImageLoading && <ImageLoading />}
-              <Stage
-                width={stageWidth}
-                height={stageHeight}
-                onMouseDown={handleMouseDown}
-                onMousemove={handleMouseMove}
-                onMouseup={handleMouseUp}
-                onClick={handleStageClick}
-                ref={stageRef}
-                className="bg-white"
-              >
-                <Layer>
-                  {imageObj && (
-                    <Rect
-                      name="background"
-                      width={stageWidth}
-                      height={stageHeight}
-                      fillPatternImage={imageObj}
-                      fillPatternScaleX={stageWidth / imageObj.width}
-                      fillPatternScaleY={stageHeight / imageObj.height}
-                    />
-                  )}
-                  {annotations.map(ann => renderAnnotation(ann))}
-                  {newAnnotation && renderAnnotation(newAnnotation)}
-                </Layer>
-              </Stage>
+            {/* Image Viewer */}
+            <div className="flex-1 flex flex-col items-center justify-center overflow-hidden">
+              <div className="flex items-center justify-center relative w-full bg-white aspect-[1ุ6/10] lg:aspect-auto">
+                {isImageLoading && <ImageLoading />}
+                <Stage
+                  width={stageWidth}
+                  height={stageHeight}
+                  onMouseDown={handleMouseDown}
+                  onMousemove={handleMouseMove}
+                  onMouseup={handleMouseUp}
+                  onClick={handleStageClick}
+                  ref={stageRef}
+                  className="bg-white"
+                >
+                  <Layer>
+                    {imageObj && (
+                      <Rect
+                        name="background"
+                        width={stageWidth}
+                        height={stageHeight}
+                        fillPatternImage={imageObj}
+                        fillPatternScaleX={stageWidth / imageObj.width}
+                        fillPatternScaleY={stageHeight / imageObj.height}
+                      />
+                    )}
+                    {annotations.map(ann => renderAnnotation(ann))}
+                    {newAnnotation && renderAnnotation(newAnnotation)}
+                  </Layer>
+                </Stage>
+              </div>
+
+              {/* Image Navigation */}
+              <ImageNavigator
+                currentIndex={currentIndex}
+                total={pictureList.length}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+              />
             </div>
 
-            {/* Image Navigation */}
-            <ImageNavigator
-              currentIndex={currentIndex}
-              total={pictureList.length}
-              onPrevious={handlePrevious}
-              onNext={handleNext}
-            />
-          </div>
+            {/* Right Sidebar */}
+            <div className="w-full lg:w-64 overflow-y-auto space-y-6">
 
-          {/* Right Sidebar */}
-          <div className="w-full lg:w-64 overflow-y-auto space-y-6">
-
-            {/* Colors */}
-            <div>
-              <h3 className="text-sm font-medium mb-2">Color</h3>
-              {/* <HuePicker
+              {/* Colors */}
+              <div>
+                <h3 className="text-sm font-medium mb-2">Color</h3>
+                {/* <HuePicker
                 color={selectedColor}
                 onChange={(updatedColor) => setSelectedColor(updatedColor.hex)}
                 width="93%"
               /> */}
-              <div style={{ width: '100%' }}>
-                <SliderPicker
-                  color={selectedColor}
-                  onChange={(updatedColor) => setSelectedColor(updatedColor.hex)}
-                />
+                <div style={{ width: '100%' }}>
+                  <SliderPicker
+                    color={selectedColor}
+                    onChange={(updatedColor) => setSelectedColor(updatedColor.hex)}
+                  />
                 </div>
+              </div>
+
+              {/* Box Class */}
+              <ClassSelector
+                classNames={classNames}
+                selectedClass={selectedClass}
+                setSelectedClass={setSelectedClass}
+                setIsOpen={setIsOpen}
+              />
+
+              {/* Annotations List */}
+              <AnnotationList
+                annotations={annotations}
+                selectedId={selectedId}
+                setSelectedId={setSelectedId}
+                onDelete={handleDelete}
+              />
             </div>
-
-            {/* Box Class */}
-            <ClassSelector
-              classNames={classNames}
-              selectedClass={selectedClass}
-              setSelectedClass={setSelectedClass}
-              setIsOpen={setIsOpen}
-            />
-
-            {/* Annotations List */}
-            <AnnotationList
-              annotations={annotations}
-              selectedId={selectedId}
-              setSelectedId={setSelectedId}
-              onDelete={handleDelete}
-            />
           </div>
-        </div>
 
-        {/* Save & Cancel Buttons */}
-        <div className="flex justify-end space-x-2">
-          {canEdit && (
+          {/* Save & Cancel Buttons */}
+          <div className="flex justify-end space-x-2">
+            {canEdit && (
+              <button
+                className="px-4 py-2 btn-primary-dark rounded flex items-center gap-2"
+                onClick={onSubmit}
+              >
+                Save <Save size={16} />
+              </button>
+            )}
             <button
-              className="px-4 py-2 btn-primary-dark rounded flex items-center gap-2"
-              onClick={onSubmit}
+              className="px-4 py-2 bg-secondary rounded flex items-center gap-2"
+              onClick={onClose}
             >
-              Save <Save size={16} />
+              Close <X size={16} />
             </button>
-          )}
-          <button
-            className="px-4 py-2 bg-secondary rounded flex items-center gap-2"
-            onClick={onClose}
-          >
-            Close <X size={16} />
-          </button>
+          </div>
+          
         </div>
-
-        {/* Class Name Modal */}
-        {isOpen && (
-          <ClassNameModal
-            onClose={() => setIsOpen(false)}
-            onSave={handleSaveClassName}
-            data={classNames}
-          />
-        )}
       </div>
-    </div>
+
+      {/* Class Name Modal */}
+      {isOpen && (
+        <ClassNameModal
+          onClose={() => setIsOpen(false)}
+          onSave={handleSaveClassName}
+          data={classNames}
+        />
+      )}
+    </>
   );
 }
 
@@ -530,7 +522,7 @@ interface ToolSelectorProps {
   tool: ShapeType | 'select';
   setTool: (id: ShapeType) => void;
 }
-function AnnotationToolSelector ({ tool, setTool }: ToolSelectorProps) {
+function AnnotationToolSelector({ tool, setTool }: ToolSelectorProps) {
   const tools: { id: ShapeType; label: string; icon?: JSX.Element }[] = [
     { id: 'select', label: 'Select', icon: <MousePointerClick size={24} /> },
     { id: 'rect', label: 'Rectangle', icon: <Square size={24} /> },
@@ -545,9 +537,8 @@ function AnnotationToolSelector ({ tool, setTool }: ToolSelectorProps) {
           <button
             key={id}
             onClick={() => setTool(id)}
-            className={`flex items-center space-x-2 px-1 py-1 rounded border ${
-              tool === id ? 'bg-blue-500 text-white' : 'bg-gray-200'
-            }`}
+            className={`flex items-center space-x-2 px-1 py-1 rounded border ${tool === id ? 'bg-blue-500 text-white' : 'bg-gray-200'
+              }`}
             title={label}
           >
             {icon && <span>{icon}</span>}
@@ -565,7 +556,7 @@ type ClassSelectorProps = {
   setSelectedClass: (cls: ClassName) => void;
   setIsOpen: (open: boolean) => void;
 };
-function ClassSelector({classNames, selectedClass, setSelectedClass, setIsOpen}: ClassSelectorProps) {
+function ClassSelector({ classNames, selectedClass, setSelectedClass, setIsOpen }: ClassSelectorProps) {
   return (
     <div className="mt-4">
       <div className="flex items-center justify-between mb-2">
@@ -604,7 +595,7 @@ type AnnotationListProps = {
   setSelectedId: (id: string) => void;
   onDelete: (id: string) => void;
 };
-function AnnotationList({annotations, selectedId, setSelectedId, onDelete}: AnnotationListProps) {
+function AnnotationList({ annotations, selectedId, setSelectedId, onDelete }: AnnotationListProps) {
   return (
     <div className="mt-0">
       <h3 className="text-sm font-medium mb-2">Annotations List</h3>
@@ -663,7 +654,7 @@ function AnnotationList({annotations, selectedId, setSelectedId, onDelete}: Anno
 type ImageNavigatorProps = {
   currentIndex: number;
   total: number;
-  onPrevious:() => void;
+  onPrevious: () => void;
   onNext: () => void;
 };
 function ImageNavigator({ currentIndex, total, onPrevious, onNext }: ImageNavigatorProps) {
@@ -698,4 +689,4 @@ function ImageNavigator({ currentIndex, total, onPrevious, onNext }: ImageNaviga
 }
 
 
-export default  AnnotationModal
+export default AnnotationModal

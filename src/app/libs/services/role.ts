@@ -8,26 +8,25 @@ export const search = async (param?: ParamSearch) => {
   try {
     const res =  await api.get<any>(`${API_ROUTES.role.get}?${param}`);
 
-    // const mapData: Role[] = res?.roles?.map((item) => ({
-    //   id: item.roleid,
-    //   RoleId: item.roleid,
-    //   RoleIName: item.rolename,
-    //   description: item.proddescription,
-    //   status: item.prodstatus,
-    //   statusName: item.camerastatus ? 'Active' : 'Inactive',
-    //   createdDate: item.createddate,
-    //   createdBy: item.createdby,
-    //   updatedDate: item.updateddate,
-    //   updatedBy: item.updatedby,
-    // }));
+    const mapData: Role[] = res?.roles?.map((item) => ({
+      id: item.roleid,
+      roleName: item.rolename,
+      description: item.roledescription,
+      status: item.rolestatus,
+      statusName: item.rolestatus ? 'Active' : 'Inactive',
+      createdDate: item.createddate,
+      createdBy: item.createdby,
+      updatedDate: item.updateddate,
+      updatedBy: item.updatedby,
+    }));
 
-    return res;
+    return mapData;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
 };
 
-export const detail = async (id: string) => {
+export const detail = async (id: number) => {
   try {
     return await api.get<Role>(`${API_ROUTES.role.detail}/${id}`);
   } catch (error) {
@@ -40,7 +39,8 @@ export const create = async (param: Partial<Role>) => {
     const res = await api.post<any>(`${API_ROUTES.role.insert}`, param);
     return {
       ...param,
-      id: param.roleId,
+      id: res.roleid,
+      statusName: param.status ? 'Active' : 'Inactive',
       createdDate: new Date(),
     };
   } catch (error) {
@@ -48,12 +48,12 @@ export const create = async (param: Partial<Role>) => {
   }  
 };
 
-export const update = async (id: string, param: Partial<Role>) => {
+export const update = async (id: number, param: Partial<Role>) => {
   try {
-    const res = await api.put<Role>(`${API_ROUTES.role.update}?roleId=${id}`, param);
+    const res = await api.put<Role>(`${API_ROUTES.role.update}?roleid=${id}`, param);
     return {
       ...param,
-      id: param.roleId,
+      statusName: param.status ? 'Active' : 'Inactive',
       createdDate: new Date(),
       updatedDate: new Date(),
     };
@@ -62,9 +62,9 @@ export const update = async (id: string, param: Partial<Role>) => {
   } 
 };
 
-export const remove = async (id: string) => {
+export const remove = async (id: number) => {
   try {
-    return await api.delete<Role>(`${API_ROUTES.role.delete}?roleId=${id}`);
+    return await api.delete<Role>(`${API_ROUTES.role.delete}?roleid=${id}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -80,15 +80,6 @@ export const upload = async (file: File) => {
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   } 
-};
-
-
-export const getRoleIdOptions = async (q: string) => {
-  try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.role.suggest_role_id}?q=${q}`);
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }  
 };
 
 export const getRoleNameOptions = async (q: string) => {

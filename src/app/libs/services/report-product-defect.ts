@@ -10,13 +10,13 @@ export const search = async (param?: ParamSearch) => {
 
     const mapData: ReportProduct[] = res?.product_defect_results?.map((item) => ({
       runningNo: item.resultid,
-      datetime: null,
+      datetime: item.defecttime,
       id: item.prodid,
       productId: item.prodid,
       productName: item.prodname,
       defectTypeId: item.defectid,
       defectTypeName: item.defecttype,
-      cameraName: item.cameraid,
+      cameraId: item.cameraid,
       status: item.prodstatus,
       imageUrl: item.imagepath,
     }));

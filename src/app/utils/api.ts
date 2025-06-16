@@ -1,14 +1,14 @@
 import axios, {
-  AxiosError,
+  // AxiosError,
   AxiosRequestConfig,
   AxiosResponse,
-  InternalAxiosRequestConfig,
+  // InternalAxiosRequestConfig,
 } from 'axios';
-import { getSession, signOut } from 'next-auth/react';
-import { toastError } from '@/app/utils/toast';
+// import { getSession, signOut } from 'next-auth/react';
+// import { toastError } from '@/app/utils/toast';
 
-const isRefreshing = false;
-const refreshSubscribers: ((token: string) => void)[] = [];
+// const isRefreshing = false;
+// const refreshSubscribers: ((token: string) => void)[] = [];
 
 const instance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || '',
@@ -125,7 +125,7 @@ const request = async <T>(
   }
 };
 
-// Upload helper
+// Params helper
 const buildQueryString = (params?: Record<string, any>): string => {
   if (!params) return '';
   const stringified = Object.fromEntries(
@@ -134,11 +134,8 @@ const buildQueryString = (params?: Record<string, any>): string => {
   return new URLSearchParams(stringified).toString();
 };
 
-const uploadFile = async <T>(
-  url: string,
-  formData: FormData,
-  config?: AxiosRequestConfig
-): Promise<T> => {
+// Upload helper
+const uploadFile = async <T>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> => {
   const res = await instance.post<T>(url, formData, {
     ...config,
     headers: {

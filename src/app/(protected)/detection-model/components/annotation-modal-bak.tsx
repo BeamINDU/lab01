@@ -224,12 +224,15 @@ export default function AnnotationModal({
     if (!currentPic) return;
 
     setIsImageLoading(true);
+    
     const img = new Image();
     img.onload = () => {
       setImageObj(img);
       setIsImageLoading(false);
     };
-    img.src = currentPic.url;
+
+    if (!currentPic.url) return;
+    img.src = currentPic.url; 
 
     return () => {
       img.onload = null;
@@ -566,7 +569,7 @@ export default function AnnotationModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/30">
         <div className="relative flex flex-col bg-white rounded-xl w-[90%] max-w-7xl h-[85%] p-4 shadow-xl space-y-4">
 
           {/* Close Button */}

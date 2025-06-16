@@ -76,7 +76,6 @@ export default function PlanningFormModal({
     defaultValues,
   });
 
-  const productId = watch("productId");
 
   useEffect(() => {
     if (editingData) {
@@ -116,7 +115,7 @@ export default function PlanningFormModal({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded shadow-lg w-1/3 relative">
         {/* Close Button */}
         <button
@@ -160,9 +159,9 @@ export default function PlanningFormModal({
               dataLoader={getProductIdOptions}
               labelField="label"
               valueField="value"
-              allowFreeText={true}
+              allowFreeText={false}
               disabled={!canEdit}
-              initialValue={productId}
+              initialValue={editingData?.productId}
               onSelectionChange={(value, option) => {
                 console.log('Product ID selected:', value, option);
                 setValue("productId", value, { shouldValidate: true });

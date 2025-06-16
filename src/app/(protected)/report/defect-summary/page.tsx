@@ -37,8 +37,8 @@ export default function Page() {
         productTypeName: formValues.productType || '',
         defectTypeName: formValues.defectType || '',
       };
-      const products = await search(param);
-      setData(products);
+      const defects = await search(param);
+      setData(Array.isArray(defects) ? defects : []);
     } catch (error) {
       console.error("Error search report-defect:", error);
       showError(`Search failed`);
@@ -96,7 +96,6 @@ export default function Page() {
         <DataTable
           columns={ReportDefectColumns()}
           data={data}
-          selectedIds={selectedIds}
           defaultSorting={[{ id: "lotNo", desc: false }]}
         />
         

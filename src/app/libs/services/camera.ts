@@ -41,6 +41,7 @@ export const create = async ( param: Partial<Camera>) => {
     return {
       ...param,
       id: param.cameraId,
+      statusName: param.status ? 'Active' : 'Inactive',
       createdDate: new Date(),
     };
   } catch (error) {
@@ -53,6 +54,8 @@ export const update = async (id: string, param: Partial<Camera>) => {
     const res = await api.put<Camera>(`${API_ROUTES.camera.update}?cameraid=${id}`, param);
     return {
       ...param,
+      id: param.cameraId,
+      statusName: param.status ? 'Active' : 'Inactive',
       createdDate: new Date(),
       updatedDate: new Date(),
     };

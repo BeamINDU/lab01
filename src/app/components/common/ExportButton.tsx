@@ -49,7 +49,7 @@ const ExportButton = ({onExport} : ExportButtonProps) => {
       {showExportOptions && (
         <div
           ref={dropdownRef}
-          className="absolute right-0 top-full w-40 bg-white border border-gray-300 rounded-md shadow-lg z-50"
+          className="absolute right-0 top-full w-40 bg-white border border-gray-300 rounded-md shadow-lg z-[1000]"
         >
           <button
             onClick={() => handleExport(ExportType.CSV)}

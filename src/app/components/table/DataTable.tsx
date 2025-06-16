@@ -1,23 +1,9 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronFirst,
-  ChevronLast,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
-import {
-  useReactTable,
-  getCoreRowModel,
-  ColumnDef,
-  ColumnMeta,
-  SortingState,
-  flexRender,
-  Row,
-} from "@tanstack/react-table";
+import { ChevronLeft, ChevronRight, ChevronFirst, ChevronLast, ChevronUp, ChevronDown } from "lucide-react";
+import { useReactTable, getCoreRowModel, ColumnDef, ColumnMeta, SortingState, flexRender, Row } from "@tanstack/react-table";
+import { formatNumber } from "@/app/utils/format";
 
 interface MyColumnMeta<TData> extends ColumnMeta<TData, unknown> {
   style?: React.CSSProperties;
@@ -30,16 +16,11 @@ type MyColumnDef<TData> = ColumnDef<TData> & {
 interface DataTableProps<TData> {
   columns: MyColumnDef<TData>[];
   data: TData[] | null;
-  selectedIds: (string | number)[];
+  selectedIds?: (string | number)[];
   defaultSorting: SortingState;
 }
 
-export default function DataTable<TData>({
-  columns,
-  data,
-  selectedIds,
-  defaultSorting,
-}: DataTableProps<TData>) {
+export default function DataTable<TData>({ columns, data, selectedIds, defaultSorting }: DataTableProps<TData>) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [sorting, setSorting] = useState<SortingState>(defaultSorting);
@@ -157,10 +138,10 @@ export default function DataTable<TData>({
       {/* Pagination Controls */}
       <div className="flex flex-col md:flex-row justify-between items-center mt-4 text-sm">
         <span className="mb-2 md:mb-0">
-          Total Records: {totalRows}
-          {selectedIds.length > 0 && (
+          Total Records: {formatNumber(totalRows)}
+          {selectedIds && selectedIds?.length > 0 && (
             <span className="ml-2">
-              ({selectedIds.length} row{selectedIds.length > 1 ? "s" : ""} selected)
+              ({selectedIds?.length} row{selectedIds?.length > 1 ? "s" : ""} selected)
             </span>
           )}
         </span>
@@ -201,7 +182,7 @@ export default function DataTable<TData>({
             <ChevronLeft size={16} />
           </button>
           <span className="flex justify-center min-w-[90px]">
-            {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, totalRows)} of {totalRows}
+            {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, totalRows)} of {formatNumber(totalRows)}
           </span>
           <button
             className={`w-8 h-8 flex justify-center items-center border rounded-full bg-gray-300 hover:bg-gray-200 ${

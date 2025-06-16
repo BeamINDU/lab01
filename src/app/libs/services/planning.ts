@@ -8,23 +8,22 @@ export const search = async (param?: ParamSearch) => {
   try {
     const res =  await api.get<any>(`${API_ROUTES.planning.get}?${param}`);
 
-    // const mapData: Planning[] = res?.planning?.map((item) => ({
-    //   id: item.planid,
-    //   planId: item.planid,
-    //   productId: item.productid,
-    //   lotNo: item.lotno,
-    //   lineId: item.lineid,
-    //   quantity: item.quantity,
-    //   startDate:item.startdate,
-    //   endDate:item.enddate,
-    //   status: item.prodstatus,
-    //   createdDate: item.createddate,
-    //   createdBy: item.createdby,
-    //   updatedDate: item.updateddate,
-    //   updatedBy: item.updatedby,
-    // }));
+    const mapData: Planning[] = res?.planning?.map((item) => ({
+      id: item.planid,
+      planId: item.planid,
+      productId: item.prodid,
+      lotNo: item.prodlot,
+      lineId: item.prodline,
+      quantity: item.quantity,
+      startDate:item.startdatetime,
+      endDate:item.enddatetime,
+      createdDate: item.createddate,
+      createdBy: item.createdby,
+      updatedDate: item.updateddate,
+      updatedBy: item.updatedby,
+    }));
 
-    return res;
+    return mapData;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -37,7 +36,6 @@ export const detail = async (id: string) => {
     throw new Error(extractErrorMessage(error));
   }  
 };
-
 
 export const create = async (param: Partial<Planning>) => {
   try {
@@ -68,7 +66,7 @@ export const update = async (id: string, param: Partial<Planning>) => {
 
 export const remove = async (id: string) => {
   try {
-    return await api.delete<Planning>(`${API_ROUTES.planning.delete}?planId=${id}`);
+    return await api.delete<Planning>(`${API_ROUTES.planning.delete}?planid=${id}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -89,6 +87,7 @@ export const upload = async (file: File) => {
 export const getPlanIdOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.planning.suggest_planid}?q=${q}`);
+
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -97,6 +96,7 @@ export const getPlanIdOptions = async (q: string) => {
 export const getLotNoOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.planning.suggest_lotno}?q=${q}`);
+
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -105,6 +105,46 @@ export const getLotNoOptions = async (q: string) => {
 export const getLineNoOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.planning.suggest_lineno}?q=${q}`);
+    
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+}
+
+export const startPlansConfirmation = async (param?: ParamSearch) => { 
+  try {
+    const mockPlans: Planning[] = Array.from({ length: 5000 }, (_, i) => ({
+      planId: `PLAN00${i+1}`,
+      productId: `PRO0000${i+1}`,
+      lotNo: `LOT000${i+1}`,
+      lineId: `Line${i+1}`,
+      quantity: i+1,
+      startDate: new Date(),
+      endDate: new Date(),
+    }));
+    return mockPlans;
+
+    // const res =  await api.get<any>(`${API_ROUTES.planning.plans_confirmation}?${param}`);
+
+    // const mapData: Planning[] = res?.planning?.map((item) => ({
+    //   planId: item.planid,
+    //   productId: item.prodid,
+    //   lotNo: item.prodlot,
+    //   lineId: item.prodline,
+    //   quantity: item.quantity,
+    //   startDate:item.startdatetime,
+    //   endDate:item.enddatetime,
+    // }));
+
+    // return mapData;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+};
+
+export const stopPlans = async (param?: ParamSearch) => {
+  try {
+    
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

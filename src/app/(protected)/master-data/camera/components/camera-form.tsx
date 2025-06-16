@@ -12,7 +12,7 @@ const CameraSchema = z.object({
   id: z.string().optional(),
   cameraId: z.string().min(1, "Camera Id is required"),
   cameraName: z.string().min(1, "Camera Name is required"),
-  location: z.string().min(1, "location is required"),
+  location: z.string().min(1, "Location is required"),
   status: z.boolean(),
 }); 
 
@@ -75,7 +75,7 @@ export default function CameraFormModal({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded shadow-lg w-1/3 relative">
         {/* Close Button */}
         <button

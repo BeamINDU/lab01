@@ -68,7 +68,6 @@ export default function ClassNameModal({ onClose, onSave, data }: ClassNameModal
 
     if (hasError) {
       setErrors(newErrors);
-      // showError('Please fix validation errors before saving.');
       return;
     }
 
@@ -78,8 +77,9 @@ export default function ClassNameModal({ onClose, onSave, data }: ClassNameModal
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white rounded-lg p-2 w-80 shadow-lg">
+        {/* Close Button */}
         <div className="relative mb-1">
           <button
             onClick={onClose}
@@ -90,12 +90,11 @@ export default function ClassNameModal({ onClose, onSave, data }: ClassNameModal
         </div>
 
         <h2 className="text-xl font-semibold text-center">Class Name</h2>
-
+        
         <div className="mt-4 p-4 space-y-2 mb-4 max-h-[40vh] overflow-y-auto">
           {className.map((item, index) => (
             <div key={index} className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
-                {/* ไม่ต้องใช้ register */}
                 <input
                   value={item.name}
                   onChange={(e) => handleChange(index, e.target.value)}

@@ -27,17 +27,9 @@ export default function Page() {
   const [editingData, setEditingData] = useState<User | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
 
-  // Watch สำหรับ roleName เพื่อ debug
-  // const watchedRoleName = watch("roleName");
-
   useEffect(() => {
     handleSearch();
   }, []);
-
-  // Debug: แสดงค่าที่ถูก watch
-  // useEffect(() => {
-  //   console.log('Current roleName value:', watchedRoleName);
-  // }, [watchedRoleName]);
 
   const handleSearch = async () => {
     try {
@@ -53,7 +45,7 @@ export default function Page() {
       };
       
       const users = await search(param);
-      setData(users);
+      setData(Array.isArray(users) ? users : []);
     } catch (error) {
       console.error("Error search user:", error);
       showError('Error search user');

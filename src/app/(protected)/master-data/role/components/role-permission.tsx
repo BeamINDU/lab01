@@ -13,7 +13,7 @@ import { getAllMenus, getRolePermissions, saveRolePermissions } from "@/app/libs
 
 // Schema for the form
 const RolePermissionSchema = z.object({
-  roleId: z.string().min(1, "Role ID is required"),
+  roleId: z.number().min(1, "Role ID is required"),
   permissions: z.array(
     z.object({
       menuId: z.string(),
@@ -36,7 +36,7 @@ interface RolePermissionModalProps {
   showModal: boolean;
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
   editingData: Role | null;
-  onSave: (formData: {roleId: string, permissions: {menuId: string, actions: number[]}[]}) => void;
+  onSave: (formData: {roleId: number, permissions: {menuId: string, actions: number[]}[]}) => void;
   canEdit: boolean;
 }
 
@@ -63,7 +63,7 @@ export default function RolePermissionModal({
   } = useForm<RolePermissionFormValues>({
     resolver: zodResolver(RolePermissionSchema),
     defaultValues: {
-      roleId: '',
+      roleId: 0,
       permissions: []
     }
   });
@@ -123,18 +123,18 @@ export default function RolePermissionModal({
   // Fetch role permissions when editing data changes
   useEffect(() => {
     const fetchPermissions = async () => {
-      if (!editingData?.roleId) return;
+      if (!editingData?.id) return;
       
       setIsLoading(true);
       setError(null);
       
       try {
         // Get permissions for this role from API
-        const permissions = await getRolePermissions(editingData.roleId);
+        const permissions = await getRolePermissions(editingData.id);
         
         // Reset form with the role ID
         reset({
-          roleId: editingData.roleId,
+          roleId: editingData.id,
           permissions: []
         });
         
@@ -252,7 +252,7 @@ export default function RolePermissionModal({
   };
 
   const onSubmit: SubmitHandler<RolePermissionFormValues> = async () => {
-    if (!editingData?.roleId) return;
+    if (!editingData?.id) return;
     
     setIsLoading(true);
     setError(null);
@@ -266,12 +266,12 @@ export default function RolePermissionModal({
         }));
       
       const formData = {
-        roleId: editingData.roleId,
+        roleId: editingData.id,
         permissions
       };
       
       // Send data to the API
-      await saveRolePermissions(editingData.roleId, permissions);
+      await saveRolePermissions(editingData.id, permissions);
       
       // Notify parent component
       onSave(formData);
@@ -597,7 +597,7 @@ export default function RolePermissionModal({
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded shadow-lg w-1/3 relative ">
         <button
           type="button"
@@ -614,7 +614,7 @@ export default function RolePermissionModal({
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
-          <input type="hidden" {...register('roleId')} value={editingData?.roleId || ''} />
+          <input type="hidden" {...register('roleId')} value={editingData?.id || ''} />
           
           {error && (
             <div className="bg-red-100 text-red-700 p-2 rounded mb-4">

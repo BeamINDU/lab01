@@ -25,7 +25,7 @@ export const API_ROUTES = {
     suggest_producttype_name: "",
   },
   defect_type: {
-    get: "",
+    get: "/defecttypes",
     detail: "",
     insert: "/adddefecttype", 
     update: "/updatedefecttype",
@@ -57,7 +57,7 @@ export const API_ROUTES = {
     suggest_username: "",
   },
   role: {
-    get: "",
+    get: "/roles",
     detail: "",
     insert: "/addrole", 
     update: "/updaterole",
@@ -86,22 +86,17 @@ export const API_ROUTES = {
     insert: "/addreportproduct",
     update: "/updatereportproduct",
     upload: "",
-    // insert_detail: "/addproductdetail",
   },
   report_defect: {
     get: "/defectsummary",
-    // insert: "/addreportdefect", 
-    // update: "/updatereportdefect", 
     suggest_lotno: "",
   },
   transaction: {
-    get: "",
-    // insert: "/addtransaction", 
-    // update: "/updatetransaction",
+    get: "/transaction",
     suggest_lotno: "",
   },
   planning: {
-    get: "",
+    get: "/planning",
     detail: "",
     insert: "/addplanning", 
     update: "/updateplanning",
@@ -110,6 +105,7 @@ export const API_ROUTES = {
     suggest_planid: "",
     suggest_lotno: "",
     suggest_lineno: "",
+    plans_confirmation: ""
   },
   detection_model: {
     get: "",

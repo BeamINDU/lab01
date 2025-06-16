@@ -80,7 +80,7 @@ export default function UserColumns({
       header: "User ID",
     },
     {
-      accessorKey: "userName",
+      accessorKey: "username",
       header: "Username",
     },
     {

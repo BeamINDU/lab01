@@ -21,7 +21,6 @@ import CameraFormModal from "./components/camera-form";
 
 export default function Page() {
   const { hasPermission } = usePermission();
-
   const { register, getValues, setValue, reset } = useForm();
   const [data, setData] = useState<Camera[]>([]);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -42,7 +41,7 @@ export default function Page() {
         status: formValues.status === '' ? undefined : formValues.status === 'true',
       };
       const cameras = await search(param);
-      setData(cameras);
+      setData(Array.isArray(cameras) ? cameras : []);
     } catch (error) {
       console.error("Error search camera:", error);
       showError('Error search camera');

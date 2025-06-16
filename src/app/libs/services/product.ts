@@ -13,10 +13,9 @@ export const search = async (param?: ParamSearch) => {
       productId: item.prodid,
       productName: item.prodname,
       productTypeId: item.prodtypeid,
-      productTypeName: '',
       serialNo: item.prodserial,
       status: item.prodstatus,
-      statusName: item.camerastatus ? 'Active' : 'Inactive',
+      statusName: item.prodstatus ? 'Active' : 'Inactive',
       createdDate: item.createddate,
       createdBy: item.createdby,
       updatedDate: item.updateddate,
@@ -43,6 +42,7 @@ export const create = async (param: Partial<Product>) => {
     return {
       ...param,
       id: param.productId,
+      statusName: param.status ? 'Active' : 'Inactive',
       createdDate: new Date(),
     };
   } catch (error) {
@@ -52,10 +52,11 @@ export const create = async (param: Partial<Product>) => {
 
 export const update = async (id: string, param: Partial<Product>) => {
   try {
-    const res = await api.put<Product>(`${API_ROUTES.product.update}?productId=${id}`, param);
+    const res = await api.put<Product>(`${API_ROUTES.product.update}?prodid=${id}`, param);
     return {
       ...param,
       id: param.productId,
+      statusName: param.status ? 'Active' : 'Inactive',
       createdDate: new Date(),
       updatedDate: new Date(),
     };
@@ -66,7 +67,7 @@ export const update = async (id: string, param: Partial<Product>) => {
 
 export const remove = async (id: string) => {
   try {
-    return await api.delete<Product>(`${API_ROUTES.product.delete}?productId=${id}`);
+    return await api.delete<Product>(`${API_ROUTES.product.delete}?prodid=${id}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -86,7 +87,22 @@ export const upload = async (file: File) => {
 
 export const getProductIdOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.product.suggest_product_id}?q=${q}`);
+    // return await api.get<SelectOption[]>(`${API_ROUTES.product.suggest_product_id}?q=${q}`);
+
+    // For Test
+    const res = await api.get<any>(`${API_ROUTES.product.get}`);
+
+    const result: SelectOption[] = (res?.products ?? [])
+      .filter((item) =>
+        item.prodstatus &&
+        item.prodid.toLowerCase().includes(q.toLowerCase())
+      )
+      .map((item) => ({
+        value: item.prodid,
+        label: item.prodid,
+      }));
+
+    return result;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

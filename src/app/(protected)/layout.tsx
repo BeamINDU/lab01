@@ -1,11 +1,12 @@
 import { ReactNode } from "react";
-import Providers from "./providers";
-import Layout from "@/app/components/Layout";
+import type { Metadata } from 'next'
+import Layout from "@/app/components/layout/Layout";
+import Providers from "@/app/(protected)/providers";
 
-export const metadata = {
-  title: "OCR",
-  description: "Optical Character Recognition",
-};
+export const metadata: Metadata = {
+  title: 'Product Inspection',
+  description: 'AI Detection and Analyzer by TAKUMI',
+}
 
 export default function MainLayout({ children }: { children: ReactNode;}) {
   return (
@@ -13,6 +14,6 @@ export default function MainLayout({ children }: { children: ReactNode;}) {
       <Layout>
         {children}
       </Layout>
-    </Providers>
+    </Providers> 
   );
 }

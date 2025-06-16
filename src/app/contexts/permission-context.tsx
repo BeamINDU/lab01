@@ -60,6 +60,7 @@ export const PermissionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       const menuItem: MenuItem = {
         id: item.menuId,
         label: item.menuName,
+        icon: item.icon,
         path: item.path || undefined,
         action: item.actions.length > 0 ? item.actions : undefined,
       };

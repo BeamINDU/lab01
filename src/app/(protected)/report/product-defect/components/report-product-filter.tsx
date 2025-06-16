@@ -7,7 +7,7 @@ import SearchFieldResponsive from '@/app/components/common/SearchField';
 import DateTimeField from '@/app/components/common/DateTimeField'; // ✅ ใช้ DateTimeField แทน
 import { getProductNameOptions } from "@/app/libs/services/product";
 import { getDefectTypeNameOptions } from "@/app/libs/services/defect-type";
-import { getCameraNameOptions } from "@/app/libs/services/camera";
+import { getCameraIdOptions, getCameraNameOptions } from "@/app/libs/services/camera";
 
 interface ReportProductFilterFormProps {
   register: UseFormRegister<any>;
@@ -49,21 +49,16 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           className="w-full"
         />
         
-        {/* Camera Name - ใช้ Camera Options */}
+        {/* Camera ID - ใช้ Camera Options */}
         <SearchFieldResponsive
           register={register}
           setValue={setValue}
-          fieldName="cameraName"
-          label="Camera Name"
+          fieldName="cameraId"
+          label="Camera ID"
           placeholder="Search camera..."
-          // dataLoader={async () => {
-          //   const options = await getCameraOptions();
-          //   return options.map(opt => ({
-          //     cameraName: opt.label.split(' - ')[0] 
-          //   }));
-          // }}
-          labelField="cameraName"
-          valueField="cameraName"
+          dataLoader={getCameraIdOptions}
+          labelField="label"
+          valueField="value"
           allowFreeText={true}
           className="w-full"
         />

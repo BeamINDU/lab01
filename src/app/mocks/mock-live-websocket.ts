@@ -1,8 +1,4 @@
 import { LiveInspectionView } from "@/app/types/live";
-import fs from "fs";
-import path from "path";
-
-type MessageHandler = (event: MessageEvent) => void;
 
 export class MockLiveWebSocket {
   readyState: number = WebSocket.CONNECTING;
@@ -52,25 +48,63 @@ export class MockLiveWebSocket {
     if (this.intervalId) clearInterval(this.intervalId);
 
     this.intervalId = setInterval(() => {
-      const base64Image = this.generateMockBase64Image();
+      const statusColorDetection = Math.random() > 0.5 ? "OK" : "NG";
+      const statusTypeClassification = Math.random() > 0.5 ? "OK" : "NG";
+      const statusComponentDetection = Math.random() > 0.5 ? "OK" : "NG";
+      const statusObjectCounting = Math.random() > 0.5 ? "OK" : "NG";
+      const statusBarcodeReading = Math.random() > 0.5 ? "OK" : "NG";
+      const status = (statusColorDetection === "OK" &&
+        statusTypeClassification === "OK" && 
+        statusComponentDetection === "OK" && 
+        statusObjectCounting === "OK" && 
+        statusBarcodeReading === "OK") ? "OK" : "NG";
 
       const data: LiveInspectionView = {
-        liveStream: "", // base64Image,
+        liveStream: "", //this.generateMockBase64Image();
         cameraId: this.currentCamera ?? "",
         cameraName: `Mock Camera ${this.currentCamera}`,
         location: `Zone ${this.currentCamera}`,
-        status: ["OK", "NG"][Math.floor(Math.random() * 2)],
-        productId: `PID-${Math.floor(Math.random() * 10000)}`,
-        productName: `Product ${Math.floor(Math.random() * 50)}`,
-        productTypeId: "T1",
-        productTypeName: "Mock Type",
-        serialNo: `SN-${Date.now()}`,
-        defectType: Math.random() > 0.5 ? "Scratch" : "None",
-        productDateTime: new Date().toISOString(),
+        status: status, //["OK", "NG"][Math.floor(Math.random() * 2)],
         lotNo: `Lot-${Math.floor(Math.random() * 10)}`,
         totalNG: Math.floor(Math.random() * 10).toString(),
-        totalPlanning: "100",
-        actualPlanning: Math.floor(Math.random() * 100).toString(),
+        totalProduct: Math.floor(Math.random() * 10000).toString(),
+        actualProduct: Math.floor(Math.random() * 10000).toString(),
+        currentInspection: {
+          productId: `PID-${Math.floor(Math.random() * 10000)}`,
+          productName: `Product ${Math.floor(Math.random() * 50)}`,
+          serialNo: `SN-${Date.now()}`,
+          productDateTime: new Date().toISOString(),
+        },
+        colorDetection: {
+          predictedResult:"Back Detected",
+          expected: "Back",
+          confident: Math.floor(Math.random() * 100),
+          status: statusColorDetection,
+        },
+        typeClassification: {
+          predictedResult:"Circle Detected",
+          expected: "Circle",
+          confident: Math.floor(Math.random() * 100),
+          status: statusTypeClassification,
+        },
+        componentDetection: {
+          predictedResult:"All Detected",
+          expected: "All",
+          confident: Math.floor(Math.random() * 100),
+          status: statusComponentDetection,
+        },
+        objectCounting: {
+          predictedResult:"Circle Detected",
+          expected: "Circle",
+          confident: Math.floor(Math.random() * 100),
+          status: statusObjectCounting,
+        },
+        barcodeReading: {
+          predictedResult:"Readable",
+          expected: "Back",
+          confident: Math.floor(Math.random() * 100),
+          status: statusBarcodeReading,
+        },
       };
 
       if (this.onmessage) {

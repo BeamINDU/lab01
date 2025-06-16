@@ -21,3 +21,4 @@ export type ParamSearch = {
   lotNo?: string,
   lineId?: string,
 }
+

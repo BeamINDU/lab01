@@ -37,13 +37,14 @@ export type FormData = {
   epochs: number | undefined,
   cameraId?: string | undefined,
   version?: number,
+  updatedBy?: string | null,
 };
 
 export type ModelPicture = {
   id?: number | null,
   name: string,
-  file: File,
-  url: string,
+  file?: File,
+  url?: string,
   annotations?: Annotation[];
   refId?: string
 }

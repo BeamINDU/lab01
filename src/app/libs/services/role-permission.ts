@@ -1,9 +1,9 @@
 import { api } from '@/app/utils/api'
 import type { UserPermission } from "@/app/types/user-permissions"
-import { Menu, Action } from "@/app/constants/menu"
 import { extractErrorMessage } from '@/app/utils/errorHandler';
+import { Menu, Action } from "@/app/constants/menu"
 
-// Sample menu
+
 const allMenuData: UserPermission[] = [
   { menuId: "DB000", parentId: "", menuName: "Dashboard", icon: "", seq:  1, path: "/dashboard", actions: [1] },
   { menuId: "LI000", parentId: "", menuName: "Live inspection view", icon: "", seq: 2, path: "", actions: [1] },
@@ -18,14 +18,8 @@ const allMenuData: UserPermission[] = [
   { menuId: "RP001", parentId: "RP000", menuName: "Product Defect Result", icon: "", seq: 1, path: "/report/product-defect", actions: [1, 3, 6] },
   { menuId: "RP002", parentId: "RP000", menuName: "Defect Summary", icon: "", seq: 2, path: "/report/defect-summary", actions: [1, 6] },
   { menuId: "RP003", parentId: "RP000", menuName: "Transaction", icon: "", seq: 3, path: "/report/transaction", actions: [1, 6] },
-  { menuId: "PL000", parentId: "", menuName: "Planning", icon: "", seq: 6, path: "/planning", actions: [1, 2, 3, 4, 5, 6] },
   { menuId: "DM000", parentId: "", menuName: "Detection Model", icon: "", seq: 5, path: "/detection-model", actions: [1, 2, 3, 4, 5, 6] },
-  { menuId: "L001", parentId: "LI000", menuName: "Zone cam 1", icon: "", seq: 1, path: "", actions: [1] },
-  { menuId: "CAM1", parentId: "L001", menuName: "Mock Camera cam 1", icon: "", seq: 1, path: "/live/cam1", actions: [1] },
-  { menuId: "CAM2", parentId: "L001", menuName: "Mock Camera cam 2", icon: "", seq: 2, path: "/live/cam2", actions: [1] },
-  { menuId: "L002", parentId: "LI000", menuName: "Zone cam 2", icon: "", seq: 2, path: "", actions: [1] },
-  { menuId: "CAM3", parentId: "L002", menuName: "Mock Camera cam 3", icon: "", seq: 1, path: "/live/cam3", actions: [1] },
-  { menuId: "CAM1", parentId: "L002", menuName: "Mock Camera cam 4", icon: "", seq: 2, path: "/live/cam4", actions: [1] },
+  { menuId: "PL000", parentId: "", menuName: "Planning", icon: "", seq: 6, path: "/planning", actions: [1, 2, 3, 4, 5, 6] },
 ];
 
 
@@ -38,7 +32,7 @@ export const getAllMenus = async (): Promise<UserPermission[]> => {
 }
 
 
-export const getRolePermissions = async (roleId: string): Promise<{menuId: string, actions: number[]}[]> => {
+export const getRolePermissions = async (roleId: number): Promise<{menuId: string, actions: number[]}[]> => {
   try {
     return [
       { menuId: "DB000", actions: [1] },
@@ -54,10 +48,11 @@ export const getRolePermissions = async (roleId: string): Promise<{menuId: strin
 };
 
 
-export const saveRolePermissions = async ( roleId: string, permissions: {menuId: string, actions: number[]}[]
-): Promise<{roleId: string, permissions: {menuId: string, actions: number[]}[]}> => {
-  console.log("Saving permissions for role", roleId, permissions);
+export const saveRolePermissions = async ( roleId: number, permissions: {menuId: string, actions: number[]}[]
+): Promise<{roleId: number, permissions: {menuId: string, actions: number[]}[]}> => {
+  
   try {
+    console.log("Saving permissions for role", roleId, permissions);
     return {
       roleId,
       permissions

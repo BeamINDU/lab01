@@ -8,20 +8,20 @@ export const search = async (param?: ParamSearch) => {
   try {
     const res =  await api.get<any>(`${API_ROUTES.defect_type.get}?${param}`);
 
-    // const mapData: DefectType[] = res?.cameras?.map((item) => ({
-    //   id: item.defecttypeid,
-    //   defectTypeId: item.defecttypeid,
-    //   defectTypeName: item.defecttypename,
-    //   description: item.description,
-    //   status: item.camerastatus,
-    //   statusName: item.camerastatus ? 'Active' : 'Inactive',
-    //   createdDate: item.createddate,
-    //   createdBy: item.createdby,
-    //   updatedDate: item.updateddate,
-    //   updatedBy: item.updatedby,
-    // }));
+    const mapData: DefectType[] = res?.defect_types?.map((item) => ({
+      id: item.defectid,
+      defectTypeId: item.defectid,
+      defectTypeName: item.defecttype,
+      description: item.defectdescription,
+      status: item.defectstatus,
+      statusName: item.defectstatus ? 'Active' : 'Inactive',
+      createdDate: item.createddate,
+      createdBy: item.createdby,
+      updatedDate: item.updateddate,
+      updatedBy: item.updatedby,
+    }));
     
-    return res;
+    return mapData;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -41,6 +41,7 @@ export const create = async (param: Partial<DefectType>) => {
     return {
       ...param,
       id: param.defectTypeId,
+      statusName: param.status ? 'Active' : 'Inactive',
       createdDate: new Date(),
     };
   } catch (error) {
@@ -50,10 +51,11 @@ export const create = async (param: Partial<DefectType>) => {
 
 export const update = async (id: string, param: Partial<DefectType>) => {
   try {
-    const res = await api.put<DefectType>(`${API_ROUTES.defect_type.update}?defecttypeid=${id}`, param);
+    const res = await api.put<DefectType>(`${API_ROUTES.defect_type.update}?defectid=${id}`, param);
     return {
       ...param,
       id: param.defectTypeId,
+      statusName: param.status ? 'Active' : 'Inactive',
       createdDate: new Date(),
       updatedDate: new Date(),
     };
@@ -64,7 +66,7 @@ export const update = async (id: string, param: Partial<DefectType>) => {
 
 export const remove = async (id: string) => {
   try {
-    return await api.delete<DefectType>(`${API_ROUTES.defect_type.delete}?defecttypeid=${id}`);
+    return await api.delete<DefectType>(`${API_ROUTES.defect_type.delete}?defectid=${id}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

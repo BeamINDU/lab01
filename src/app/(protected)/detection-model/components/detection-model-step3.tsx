@@ -6,6 +6,7 @@ import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { FormData, DetectionModel } from "@/app/types/detection-model";
 import { detail, updateStep3 } from "@/app/libs/services/detection-model";
+import { useSession } from "next-auth/react";
 import { usePopupTraining } from '@/app/contexts/popup-training-context';
 import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
 
@@ -31,6 +32,7 @@ type Step3Data = z.infer<typeof step3Schema>;
 
 export default function DetectionModelStep3Page({ next, prev, modelId, formData }: Props) {
   // console.log("formData:", formData);
+  const { data: session } = useSession();
   const { isTraining } = useTrainingSocketStore();
 
   const defaultValues: Step3Data = {
@@ -85,9 +87,6 @@ export default function DetectionModelStep3Page({ next, prev, modelId, formData 
   }, [reset]);
   
   const onSubmitHandler = async (data: Step3Data) => {
-    console.log("Submit data3:", data);
-    await updateStep3(modelId, data);
-
     const updatedFormData: FormData = {
       ...formData,
       currentStep: 3,
@@ -97,7 +96,12 @@ export default function DetectionModelStep3Page({ next, prev, modelId, formData 
       testDataset: data.testDataset,
       validationDataset: data.validationDataset,
       epochs: data.epochs,
+      updatedBy: session?.user?.userid,
     };
+
+    console.log("Submit data3:", updatedFormData);
+    await updateStep3(modelId, updatedFormData);
+
     next(updatedFormData);
   }
 

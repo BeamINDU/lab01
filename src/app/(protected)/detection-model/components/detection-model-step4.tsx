@@ -10,6 +10,7 @@ import { FormData, DetectionModel } from "@/app/types/detection-model";
 import { SelectOption } from "@/app/types/select-option";
 import { ModelStatus } from "@/app/constants/status"
 import { getCameraIdOptions } from "@/app/libs/services/camera";
+import { useSession } from "next-auth/react";
 import { getCamera, detail, updateStep4 } from "@/app/libs/services/detection-model";
 import { usePopupTraining } from '@/app/contexts/popup-training-context';
 import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
@@ -32,6 +33,7 @@ type Step4Data = z.infer<typeof step4Schema>;
 
 export default function DetectionModelStep4Page({ prev, next, modelId, formData, startTraining }: Props) {
   // console.log("formData3:", formData);
+  const { data: session } = useSession();
   const { isTraining, cancelConnection } = useTrainingSocketStore();
   const { displayProcessing, displaySuccess, displayError, hidePopup } = usePopupTraining();
   const [cameraOptions, setCameraOptions] = useState<SelectOption[]>([]);
@@ -128,6 +130,7 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
     fetchData();
   }, [reset]);
 
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -145,13 +148,16 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
     fetchData();
   }, []);
 
+
   useEffect(() => {
     setValue("cameraId", selectedCamera);
   }, [selectedCamera, setValue]);
 
+
   useEffect(() => {
     setValue("version", selectedVersion);
   }, [selectedVersion, setValue]);
+
 
   const onPrevious = async () => {
     if (!isTraining) {
@@ -180,15 +186,17 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
       return;
     }
 
-    console.log("Submit data4:", data);
-    await updateStep4(modelId, data);
-
     const updatedFormData: FormData = {
       ...formData,
       currentStep: 4,
       cameraId: data.cameraId,
       version: data.version,
+      updatedBy: session?.user?.userid,
     };
+
+    console.log("Submit data4:", updatedFormData);
+    await updateStep4(modelId, updatedFormData);
+
     next(updatedFormData);
 
     showSuccess("Saved successfully!");

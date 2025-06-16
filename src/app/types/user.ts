@@ -1,14 +1,17 @@
+import { Role } from "@/app/types/role";
+
 export type User = {
   id?: string
   userId: string
   username: string
+  password?: string
   firstname: string
   lastname: string
   email: string
-  roleName?: string
   status: boolean
-  statusName: boolean
-  password?: string
+  statusName?: string
+  roleName?: string
+  userRoles?: { roleId: number, roleNmae: string }[]
   createdDate?: Date
   createdBy?: string
   updatedDate?: Date | null

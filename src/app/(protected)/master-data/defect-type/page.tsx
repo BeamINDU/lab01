@@ -40,7 +40,7 @@ export default function Page() {
         status: formValues.status || undefined,
       };
       const defectTypes = await search(param);
-      setData(defectTypes);
+      setData(Array.isArray(defectTypes) ? defectTypes : []);
     } catch (error) {
       console.error("Search operation failed:", error);
       showError('Search failed');
@@ -117,6 +117,7 @@ export default function Page() {
       if (!formData.id) {
         const newData = await create(formData) as DefectType;
         setData(prev => [...prev, newData]);
+        
       } else {
         const updatedData = await update(formData?.id ?? "", formData) as DefectType;
         setData(prev => prev.map(item => (item.id === formData.id ? updatedData : item)));

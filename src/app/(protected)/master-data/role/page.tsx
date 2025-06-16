@@ -25,7 +25,7 @@ export default function Page() {
   const { hasPermission } = usePermission();
   const { register, getValues, setValue, reset } = useForm();
   const [data, setData] = useState<Role[]>([]);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [editingData, setEditingData] = useState<Role | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
@@ -34,7 +34,7 @@ export default function Page() {
     handleSearch();
   }, []);
   
-  const handleSavePermission = async (data: {roleId: string, permissions: {menuId: string, actions: number[]}[]}) => {
+  const handleSavePermission = async (data: {roleId: number, permissions: {menuId: string, actions: number[]}[]}) => {
     try {
       console.log('Save permission data:', data);
       await saveRolePermissions(data.roleId, data.permissions);
@@ -49,12 +49,11 @@ export default function Page() {
     try {
       const formValues = getValues();
       const param: ParamSearch = {
-        roleId: formValues.roleId || '',
         roleName: formValues.roleName || '',
         status: formValues.status || undefined,
       };
-      const products = await search(param);
-      setData(products);
+      const roles = await search(param);
+      setData(Array.isArray(roles) ? roles : []);
     } catch (error) {
       console.error("Error search role:", error);
       showError('Error search role');
@@ -64,8 +63,8 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     try {
-      const headers = ["Role ID", "Role Name", "Description", "Status"];
-      const keys: (keyof Role)[] = ["roleId", "roleName", "description", "statusName"];
+      const headers = ["Role Name", "Description", "Status"];
+      const keys: (keyof Role)[] = ["roleName", "description", "statusName"];
       const fileName = `Role_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
     
       switch (type) {
@@ -95,7 +94,8 @@ export default function Page() {
   const handleAddEdit = async (row?: Role) => {
     try {
       if (row) {
-        const result = (await detail(row.id ?? "")) ?? (row as Role);
+        // const result = row.id ? (await detail(row.id)) : (row as Role);
+        const result = data.find((item) => item.id === row.id) ?? row;
         setEditingData(result);
       } else {
         reset();
@@ -120,7 +120,7 @@ export default function Page() {
         for (const id of selectedIds) {
           await remove(id);
         }
-        setData(prev => prev.filter(item => !selectedIds.includes(item.id ?? "")));
+        setData(prev => prev.filter(item => !selectedIds.includes(item.id ?? 0)));
         setSelectedIds([]);
         showSuccess(`Deleted successfully`)
       } catch (error) {
@@ -132,11 +132,11 @@ export default function Page() {
 
   const handleSave = async (formData: Role) => {
     try {
-      if (!formData.id) {
+      if (formData.id === 0) {
         const newData = await create(formData) as Role;
         setData(prev => [...prev, newData]);
       } else {
-        const updatedData = await update(formData?.id ?? "", formData) as Role;
+        const updatedData = await update(formData?.id ?? 0, formData) as Role;
         setData(prev => prev.map(item => (item.id === formData.id ? updatedData : item)));
       }
       showSuccess(`Saved successfully`)
@@ -218,7 +218,7 @@ export default function Page() {
           })}
           data={data}
           selectedIds={selectedIds}
-          defaultSorting={[{ id: "roleId", desc: false }]}
+          defaultSorting={[{ id: "roleName", desc: false }]}
         />
         {isPermissionModalOpen && (
           <RolePermissionModal

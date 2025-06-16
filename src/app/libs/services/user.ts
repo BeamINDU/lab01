@@ -17,9 +17,10 @@ export const search = async (param?: ParamSearch) => {
       location: item.username,
       password: item.upassword,
       email: item.email,
-      roleName: item.roleid,
       status: item.userstatus,
-      statusName: item.camerastatus ? 'Active' : 'Inactive',
+      statusName: item.userstatus ? 'Active' : 'Inactive',
+      roleName: '',
+      userRoles: [],
       createdDate: item.createddate,
       createdBy: item.createdby,
       updatedDate: item.updateddate,
@@ -46,6 +47,7 @@ export const create = async (param: Partial<User>) => {
     return {
       ...param,
       id: param.userId,
+      statusName: param.status ? 'Active' : 'Inactive',
       createdDate: new Date(),
     };
   } catch (error) {
@@ -55,10 +57,11 @@ export const create = async (param: Partial<User>) => {
 
 export const update = async (id: string, param: Partial<User>) => {
   try {
-    const res = await api.put<User>(`${API_ROUTES.user.update}?userId=${id}`, param);
+    const res = await api.put<User>(`${API_ROUTES.user.update}?userid=${id}`, param);
     return {
       ...param,
       id: param.userId,
+      statusName: param.status ? 'Active' : 'Inactive',
       createdDate: new Date(),
       updatedDate: new Date(),
     };
@@ -69,7 +72,7 @@ export const update = async (id: string, param: Partial<User>) => {
 
 export const remove = async (id: string) => {
   try {
-    return await api.delete<User>(`${API_ROUTES.user.delete}?userId=${id}`);
+    return await api.delete<User>(`${API_ROUTES.user.delete}?userid=${id}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

@@ -14,7 +14,7 @@ export const search = async (param?: ParamSearch) => {
       productTypeName: item.prodtype,
       description: item.proddescription,
       status: item.prodstatus,
-      statusName: item.camerastatus ? 'Active' : 'Inactive',
+      statusName: item.prodstatus ? 'Active' : 'Inactive',
       createdDate: item.createddate,
       createdBy: item.createdby,
       updatedDate: item.updateddate,
@@ -41,6 +41,7 @@ export const create = async (param: Partial<ProductType>) => {
     return {
       ...param,
       id: param.productTypeId,
+      statusName: param.status ? 'Active' : 'Inactive',
       createdDate: new Date(),
     };
   } catch (error) {
@@ -54,6 +55,7 @@ export const update = async (id: string, param: Partial<ProductType>) => {
     return {
       ...param,
       id: param.productTypeId,
+      statusName: param.status ? 'Active' : 'Inactive',
       createdDate: new Date(),
       updatedDate: new Date(),
     };
@@ -85,12 +87,14 @@ export const upload = async (file: File) => {
 
 export const getProductTypeIdOptions = async (q: string): Promise<SelectOption[]> => {
   try {
+    // return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_id}?q=${q}`);
 
+    // For Test
     const res = await api.get<any>(`${API_ROUTES.product_type.get}`);
 
     const result: SelectOption[] = (res?.product_types ?? [])
       .filter((item) =>
-        !item.isdeleted &&
+        item.prodstatus &&
         item.prodtypeid.toLowerCase().includes(q.toLowerCase())
       )
       .map((item) => ({
@@ -113,7 +117,7 @@ export const getProductTypeNameOptions = async (q: string): Promise<SelectOption
 
     const result: SelectOption[] = (res?.product_types ?? [])
       .filter((item) =>
-        !item.isdeleted &&
+        item.prodstatus &&
         item.prodtype.toLowerCase().includes(q.toLowerCase())
       )
       .map((item) => ({

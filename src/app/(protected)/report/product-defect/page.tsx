@@ -41,7 +41,7 @@ export default function Page() {
         cameraName: formValues.cameraName || '',
       };
       const products = await search(param);
-      setData(products);
+      setData(Array.isArray(products) ? products : []);
     } catch (error) {
       console.error("Error search product:", error);
       showError('Error search product');
@@ -145,12 +145,9 @@ export default function Page() {
           columns={ReportProductColumns({
             canEdit: hasPermission(Menu.ReportProductDefect, Action.Edit),
             openDetailModal: handleDetail,
-            selectedIds,
-            setSelectedIds,
             data,
           })}
           data={data}
-          selectedIds={selectedIds}
           defaultSorting={[{ id: "datetime", desc: true }]}
         />
 

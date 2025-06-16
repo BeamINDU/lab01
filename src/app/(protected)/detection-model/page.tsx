@@ -43,7 +43,7 @@ export default function Page() {
         statusId: formValues.statusId || '',
       };
       const result = await search(param);
-      setData(result);
+      setData(Array.isArray(result) ? result : []);
     } catch (error) {
       console.error("Search operation failed:", error);
       showError('Search failed');

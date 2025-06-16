@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { extractErrorMessage } from '@/app/utils/errorHandler';
+import { useSession } from "next-auth/react";
 import { detail, updateStep1 } from "@/app/libs/services/detection-model";
 import { getFunctions } from "@/app/libs/services/detection-model";
 import { SelectOption } from "@/app/types/select-option";
@@ -23,6 +24,7 @@ export const step1Schema = z.object({
 type Step1Data = z.infer<typeof step1Schema>;
 
 export default function DetectionModelStep1({ next, modelId, formData }: Props) {
+  const { data: session } = useSession();
   const [functions, setFunctions] = useState<SelectOption[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
 
@@ -85,14 +87,16 @@ export default function DetectionModelStep1({ next, modelId, formData }: Props) 
   
 
   const onSubmitHandler = async (data: Step1Data) => {
-    console.log("Submit data1:", data);
-    await updateStep1(modelId, data);
-
     const updatedFormData: FormData = {
       ...formData,
       currentStep: 1,
       functions: data.functions,
+      updatedBy: session?.user?.userid,
     };
+
+    console.log("Submit data1:", updatedFormData);
+    await updateStep1(modelId, updatedFormData);
+
     next(updatedFormData);
   }
 

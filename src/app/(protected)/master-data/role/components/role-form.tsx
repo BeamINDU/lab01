@@ -10,10 +10,9 @@ import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 
 const RoleSchema = z.object({
-  id: z.string().optional(),
-  roleId: z.string().min(1, "Role Id  is required"),
+  id: z.number().optional(),
   roleName: z.string().min(1, "Role Name  is required"),
-  description: z.string(),
+  description: z.string().optional(),
   status: z.boolean(),
 }); 
 
@@ -37,8 +36,7 @@ export default function RoleFormModal({
   const { data: session } = useSession();
  
   const defaultValues: RoleFormValues = {
-    id: '',
-    roleId: '',
+    id: 0,
     roleName: '',
     description: '',
     status: true,
@@ -76,8 +74,9 @@ export default function RoleFormModal({
     onSave(formWithMeta);
   };
 
+  console.log(errors);
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
       <div className="bg-white p-6 rounded shadow-lg w-1/3 relative">
         {/* Close Button */}
         <button
@@ -102,7 +101,7 @@ export default function RoleFormModal({
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('id')} />
           
-          <div className="mb-4">
+          {/* <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Role ID:</label>
               <input 
@@ -111,7 +110,7 @@ export default function RoleFormModal({
               />
             </div>
             {errors.roleId && <p className="text-red-500 ml-160">{errors.roleId.message}</p>}
-          </div>
+          </div> */}
           
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
