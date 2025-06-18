@@ -106,9 +106,41 @@ const processTimeData = (data: any[], timeField: string = 'hour_slot') => {
 };
 
 // API Functions
-export const getProducts = () => Promise.resolve(mockProducts);
-export const getCameras = () => Promise.resolve(mockCameras);
-export const getLines = () => Promise.resolve(mockLines);
+export const getProducts = async (): Promise<ProductOption[]> => {
+  try {
+    const response = await fetch('http://localhost:8080/products');
+    if (!response.ok) throw new Error('Failed to fetch products');
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
+    // Fallback to mock data if API fails
+    return mockProducts;
+  }
+};
+
+export const getCameras = async (): Promise<CameraOption[]> => {
+  try {
+    const response = await fetch('http://localhost:8080/cameras');
+    if (!response.ok) throw new Error('Failed to fetch cameras');
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch cameras:', error);
+    // Fallback to mock data if API fails
+    return mockCameras;
+  }
+};
+
+export const getLines = async (): Promise<LineOption[]> => {
+  try {
+    const response = await fetch('http://localhost:8080/lines');
+    if (!response.ok) throw new Error('Failed to fetch lines');
+    return await response.json();
+  } catch (error) {
+    console.error('Failed to fetch lines:', error);
+    // Fallback to mock data if API fails
+    return mockLines;
+  }
+};
 
 export const getDashboardData = async (filters: DashboardFilters): Promise<DashboardData> => {
   try {
