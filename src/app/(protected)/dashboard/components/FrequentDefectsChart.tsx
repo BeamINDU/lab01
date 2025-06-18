@@ -182,7 +182,7 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
   return (
     <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
-        Top 5 Defects Most Found by Cameras
+         Top 5 Most Frequent Defect Types
       </h2>
       <div className="h-[200px] sm:h-[240px] md:h-[260px]">
         <Bar data={barChartData} options={options} />

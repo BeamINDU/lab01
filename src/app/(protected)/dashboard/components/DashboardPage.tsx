@@ -61,6 +61,8 @@ export default function DashboardPage() {
         lineId: selectedLine || undefined,
         startDate: dateFrom ? new Date(dateFrom) : undefined,
         endDate: dateTo ? new Date(dateTo) : undefined,
+        month: selectedMonth || undefined,
+        year: selectedYear || undefined,
       };
 
       console.log('Refreshing dashboard with filters:', filters);
