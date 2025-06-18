@@ -1,3 +1,4 @@
+// src/app/(protected)/dashboard/components/NGDistributionChart.tsx
 'use client';
 
 import { Bar } from 'react-chartjs-2';
@@ -131,7 +132,7 @@ export default function NGDistributionChart({ data }: NGDistributionChartProps) 
   return (
     <div className="p-3 md:p-6 bg-white rounded-xl shadow w-full">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-3 md:mb-6">
-        Distribution of NG Found per Hour by Product Category
+        Top 5 Product NGs by Hour
       </h2>
       <div className="h-[200px] sm:h-[240px] md:h-[260px]">
         <Bar data={stackedBarData} options={options} />

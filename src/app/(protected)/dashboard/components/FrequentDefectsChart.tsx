@@ -1,3 +1,4 @@
+// src/app/(protected)/dashboard/components/FrequentDefectsChart.tsx
 'use client';
 
 import { Bar } from 'react-chartjs-2';
@@ -68,7 +69,6 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
     datasets
   };
 
-
   const maxValue = Math.max(
     ...chartData.flatMap(item => 
       availableLines.map(line => item[line] || 0)
@@ -76,7 +76,6 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
       Array.isArray(values) ? Math.max(...values) : values
     )
   );
-
 
   const maxStackedValue = Math.max(
     ...chartData.map(item => 
@@ -88,7 +87,6 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
     indexAxis: 'y',
     responsive: true,
     maintainAspectRatio: false,
-
     layout: {
       padding: {
         right: 50, 
@@ -115,7 +113,6 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
             return `${context.dataset.label}: ${context.parsed.x}`;
           },
           afterLabel: function(context: any) {
-
             const dataIndex = context.dataIndex;
             const total = availableLines.reduce((sum, line) => {
               return sum + (chartData[dataIndex][line] || 0);
@@ -126,7 +123,6 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
       },
       datalabels: {
         display: function(context: any) {
-
           return context.datasetIndex === availableLines.length - 1;
         },
         anchor: 'end',
@@ -137,7 +133,6 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
           size: 10,
         },
         formatter: function(value: number, context: any) {
-
           const dataIndex = context.dataIndex;
           const total = availableLines.reduce((sum, line) => {
             return sum + (chartData[dataIndex][line] || 0);
@@ -151,14 +146,12 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
       x: {
         beginAtZero: true,
         stacked: true,
-
         max: Math.ceil(maxStackedValue * 1.2),
         grid: {
           color: 'rgba(0, 0, 0, 0.1)',
         },
         ticks: {
           font: { size: 10 },
-
           callback: function(value: any) {
             return value <= maxStackedValue ? value : '';
           }
@@ -171,7 +164,6 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
         },
         ticks: {
           font: { size: 9 },
-
           callback: function(value: any, index: number) {
             const label = this.getLabelForValue(value);
             if (label && label.length > 20) {
@@ -190,7 +182,7 @@ export default function FrequentDefectsChart({ data }: FrequentDefectsChartProps
   return (
     <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
-        Top 5 Most Frequent Defect Types
+        Top 5 Defects Most Found by Cameras
       </h2>
       <div className="h-[200px] sm:h-[240px] md:h-[260px]">
         <Bar data={barChartData} options={options} />

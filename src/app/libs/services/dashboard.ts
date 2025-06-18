@@ -1,315 +1,201 @@
-import { api } from '@/app/utils/api'
-import { DashboardData, DashboardFilters, TrendData, DefectTypeData, DefectCameraData, NgDistributionData } from '@/app/types/dashboard'
+// src/app/libs/services/dashboard.ts
 import { extractErrorMessage } from '@/app/utils/errorHandler';
 
-export type ProductOption = {
-  productId: string
-  productName: string
+// Types
+export interface ProductOption { id: string; name: string; }
+export interface CameraOption { id: string; name: string; }
+export interface LineOption { id: string; name: string; }
+
+export interface DashboardFilters {
+  productId?: string;
+  cameraId?: string;
+  lineId?: string;
+  startDate?: Date;
+  endDate?: Date;
+  month?: string;
+  year?: string;
 }
 
-export type CameraOption = {
-  cameraId: string
-  cameraName: string
-  location: string
+export interface DashboardData {
+  totalProducts: number;
+  goodCount: number;
+  ngCount: number;
+  trendData: Array<{ time: string; [key: string]: string | number; }>;
+  defectsByType: Array<{ type: string; count: number; }>;
+  defectsByCamera: Array<{ camera: string; defects: number; }>;
+  ngDistribution: Array<{ time: string; A: number; B: number; C: number; D: number; }>;
 }
 
-export type LineOption = {
-  lineId: string
-  lineName: string
-}
-
-//  Realistic Product Data with Categories
-const REALISTIC_PRODUCTS = [
-  { id: 'PROD-BEV-001', name: 'Coca-Cola Classic 330ml Can', category: 'Beverage', line: 'LINE-A' },
-  { id: 'PROD-BEV-002', name: 'Pepsi Cola 500ml Bottle', category: 'Beverage', line: 'LINE-A' },
-  { id: 'PROD-BEV-003', name: 'Sprite Lemon 350ml Bottle', category: 'Beverage', line: 'LINE-A' },
-  { id: 'PROD-BEV-004', name: 'Red Bull Energy Drink 250ml', category: 'Energy Drink', line: 'LINE-A' },
-  { id: 'PROD-FOD-001', name: 'Mama Instant Noodle Cup', category: 'Food', line: 'LINE-B' },
-  { id: 'PROD-FOD-002', name: 'KitKat Chocolate Bar 45g', category: 'Snack', line: 'LINE-B' },
-  { id: 'PROD-FOD-003', name: 'Lactasoy Soy Milk 300ml', category: 'Dairy', line: 'LINE-B' },
-  { id: 'PROD-COS-001', name: 'Nivea Body Lotion 400ml', category: 'Cosmetic', line: 'LINE-C' },
-  { id: 'PROD-COS-002', name: 'Pantene Shampoo 170ml', category: 'Personal Care', line: 'LINE-C' },
-  { id: 'PROD-MED-001', name: 'Paracetamol 500mg Tablets', category: 'Medicine', line: 'LINE-D' },
-  { id: 'PROD-MED-002', name: 'Vitamin C 1000mg Tablets', category: 'Supplement', line: 'LINE-D' },
+// Mock data
+const mockProducts: ProductOption[] = [
+  { id: "1", name: "Tea Bottle" },
+  { id: "2", name: "Coffee Cup" },
+  { id: "3", name: "Water Bottle" },
+  { id: "4", name: "Juice Container" }
 ];
 
-//  Realistic Camera Data
-const REALISTIC_CAMERAS = [
-  { id: 'CAM-LA-01', name: 'Line A - Input Inspection', location: 'Production Line A - Entry Point', line: 'LINE-A' },
-  { id: 'CAM-LA-02', name: 'Line A - Label Check', location: 'Production Line A - Labeling Station', line: 'LINE-A' },
-  { id: 'CAM-LA-03', name: 'Line A - Final QC', location: 'Production Line A - Final Quality Check', line: 'LINE-A' },
-  { id: 'CAM-LB-01', name: 'Line B - Surface Check', location: 'Production Line B - Surface Inspection', line: 'LINE-B' },
-  { id: 'CAM-LB-02', name: 'Line B - Barcode Verify', location: 'Production Line B - Barcode Station', line: 'LINE-B' },
-  { id: 'CAM-LB-03', name: 'Line B - Packaging QC', location: 'Production Line B - Packaging Check', line: 'LINE-B' },
-  { id: 'CAM-LC-01', name: 'Line C - Dimension Check', location: 'Production Line C - Dimension Control', line: 'LINE-C' },
-  { id: 'CAM-LC-02', name: 'Line C - Color Inspection', location: 'Production Line C - Color Quality', line: 'LINE-C' },
-  { id: 'CAM-LD-01', name: 'Line D - Pharma QC', location: 'Production Line D - Pharmaceutical Quality', line: 'LINE-D' },
-  { id: 'CAM-PKG-01', name: 'Packaging - Final Check', location: 'Multi-Product Packaging Line', line: 'LINE-PKG' }
+const mockCameras: CameraOption[] = [
+  { id: "CAM001", name: "Production Line A Camera" },
+  { id: "CAM002", name: "Production Line B Camera" },
+  { id: "CAM003", name: "Quality Check Camera" },
+  { id: "CAM004", name: "Cup Line production" }
 ];
 
-//  Realistic Production Lines
-const REALISTIC_LINES = [
-  { id: 'LINE-A', name: 'Beverage Production Line A', shortName: 'Beverage Line' },
-  { id: 'LINE-B', name: 'Food & Snack Production Line B', shortName: 'Food Line' },
-  { id: 'LINE-C', name: 'Personal Care Line C', shortName: 'Personal Care Line' },
-  { id: 'LINE-D', name: 'Pharmaceutical Line D', shortName: 'Pharma Line' },
-  { id: 'LINE-PKG', name: 'Multi-Product Packaging Line', shortName: 'Packaging Line' }
+const mockLines: LineOption[] = [
+  { id: "1", name: "LOT12345" },
+  { id: "2", name: "LOT12346" },
+  { id: "3", name: "LOT12347" },
+  { id: "4", name: "LOT12348" }
 ];
 
-// Mock data for dropdowns
-const mockProducts: ProductOption[] = REALISTIC_PRODUCTS.map(product => ({
-  productId: product.id,
-  productName: product.name
-}));
+// Helper functions
+const formatDateTime = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+};
 
-const mockCameras: CameraOption[] = REALISTIC_CAMERAS.map(camera => ({
-  cameraId: camera.id,
-  cameraName: camera.name,
-  location: camera.location
-}));
-
-const mockLines: LineOption[] = REALISTIC_LINES.map(line => ({
-  lineId: line.id,
-  lineName: line.name
-}));
-
-
-const generateMockDashboardData = (filters: DashboardFilters): DashboardData => {
-  const selectedProduct = filters.productId ? REALISTIC_PRODUCTS.find(p => p.id === filters.productId) : null;
-  const selectedCamera = filters.cameraId ? REALISTIC_CAMERAS.find(c => c.id === filters.cameraId) : null;
-  const selectedLine = filters.lineId ? REALISTIC_LINES.find(l => l.id === filters.lineId) : null;
-
-
-  let relevantLines: typeof REALISTIC_LINES = [];
-  if (selectedLine) {
-    relevantLines = [selectedLine];
-  } else if (selectedProduct) {
-    const productLine = REALISTIC_LINES.find(l => l.id === selectedProduct.line);
-    relevantLines = productLine ? [productLine] : REALISTIC_LINES;
-  } else if (selectedCamera) {
-    const cameraLine = REALISTIC_LINES.find(l => l.id === selectedCamera.line);
-    relevantLines = cameraLine ? [cameraLine] : REALISTIC_LINES;
-  } else {
-    relevantLines = REALISTIC_LINES;
-  }
-
-
-  const isWeekend = new Date().getDay() === 0 || new Date().getDay() === 6;
-  const baseMultiplier = isWeekend ? 0.6 : 1.0;
-  
-  let baseTotal = 8500;
-  if (selectedProduct) baseTotal = 3500; 
-  else if (selectedCamera) baseTotal = 5000;
-  else if (selectedLine) baseTotal = 6000; 
-
-  const totalProducts = Math.floor(baseTotal * baseMultiplier);
-  const defectRate = selectedLine?.id === 'LINE-D' ? 0.008 : 0.025; // Pharma has lower defect rate
-  const ngCount = Math.floor(totalProducts * defectRate);
-  const goodCount = totalProducts - ngCount;
-
-
-  const getDefectTypesForContext = () => {
-    if (selectedProduct?.category === 'Beverage') {
-      return ['Label Missing', 'Cap Defect', 'Volume Error', 'Surface Scratch', 'Barcode Error'];
-    } else if (selectedProduct?.category === 'Medicine' || selectedLine?.id === 'LINE-D') {
-      return ['Tablet Crack', 'Weight Variance', 'Color Deviation', 'Packaging Seal', 'Label Error'];
-    } else if (selectedProduct?.category === 'Cosmetic' || selectedLine?.id === 'LINE-C') {
-      return ['Pump Defect', 'Label Shift', 'Container Dent', 'Color Match', 'Volume Check'];
-    } else {
-      return ['Label Misalign', 'Surface Scratch', 'Package Dent', 'Missing Part', 'Color Variance'];
-    }
-  };
-
-  const defectTypes = getDefectTypesForContext();
-  
-  const trendData: TrendData[] = [
-    { 
-      time: '06:00', 
-      MissingPart: Math.floor(Math.random() * 2) + 1, 
-      Misalignment: Math.floor(Math.random() * 2) + 1, 
-      Dent: Math.floor(Math.random() * 1), 
-      Crack: Math.floor(Math.random() * 1), 
-      Scratch: Math.floor(Math.random() * 1) + 1 
-    },
-    { 
-      time: '09:00', 
-      MissingPart: Math.floor(Math.random() * 3) + 2, 
-      Misalignment: Math.floor(Math.random() * 3) + 2, 
-      Dent: Math.floor(Math.random() * 2) + 1, 
-      Crack: Math.floor(Math.random() * 2), 
-      Scratch: Math.floor(Math.random() * 2) + 1 
-    },
-    { 
-      time: '12:00', 
-      MissingPart: Math.floor(Math.random() * 4) + 3, 
-      Misalignment: Math.floor(Math.random() * 4) + 3, 
-      Dent: Math.floor(Math.random() * 3) + 2, 
-      Crack: Math.floor(Math.random() * 2) + 1, 
-      Scratch: Math.floor(Math.random() * 3) + 2 
-    },
-    { 
-      time: '15:00', 
-      MissingPart: Math.floor(Math.random() * 3) + 2, 
-      Misalignment: Math.floor(Math.random() * 3) + 2, 
-      Dent: Math.floor(Math.random() * 2) + 1, 
-      Crack: Math.floor(Math.random() * 2), 
-      Scratch: Math.floor(Math.random() * 2) + 1 
-    },
-    { 
-      time: '18:00', 
-      MissingPart: Math.floor(Math.random() * 2) + 1, 
-      Misalignment: Math.floor(Math.random() * 2) + 1, 
-      Dent: Math.floor(Math.random() * 1), 
-      Crack: Math.floor(Math.random() * 1), 
-      Scratch: Math.floor(Math.random() * 1) + 1 
-    }
-  ];
-
-
-  const defectsByType: DefectTypeData[] = defectTypes.slice(0, 5).map(defectType => {
-    const lineData: any = { type: defectType };
-    
-    if (relevantLines.length === 1) {
-
-      lineData[relevantLines[0].shortName] = Math.floor(Math.random() * 8) + 5;
-    } else {
-
-      relevantLines.slice(0, 3).forEach((line, index) => {
-        lineData[line.shortName] = Math.floor(Math.random() * 6) + 3;
-      });
-    }
-    
-    return lineData;
+const buildParams = (filters: DashboardFilters): URLSearchParams => {
+  const params = new URLSearchParams({
+    start: formatDateTime(filters.startDate!),
+    end: formatDateTime(filters.endDate!)
   });
-
-
-  let relevantCameras = REALISTIC_CAMERAS;
-  if (selectedCamera) {
-    relevantCameras = [selectedCamera];
-  } else if (selectedLine) {
-    relevantCameras = REALISTIC_CAMERAS.filter(c => c.line === selectedLine.id);
-  } else if (selectedProduct) {
-    relevantCameras = REALISTIC_CAMERAS.filter(c => c.line === selectedProduct.line);
+  
+  if (filters.productId) {
+    const product = mockProducts.find(p => p.id === filters.productId);
+    if (product) params.append('productname', product.name);
   }
+  if (filters.lineId) {
+    const line = mockLines.find(l => l.id === filters.lineId);
+    if (line) params.append('prodline', line.name);
+  }
+  if (filters.cameraId) params.append('cameraid', filters.cameraId);
+  
+  return params;
+};
 
-  const defectsByCamera: DefectCameraData[] = relevantCameras.slice(0, 6).map(camera => ({
-    camera: camera.name.replace(/^Line [A-Z] - /, ''), 
-    defects: Math.floor(Math.random() * 20) + 10
-  }));
+const fetchAPI = async (endpoint: string, params: URLSearchParams) => {
+  const response = await fetch(`http://localhost:8080${endpoint}?${params.toString()}`);
+  if (!response.ok) throw new Error(`Failed to fetch ${endpoint}`);
+  return response.json();
+};
 
-
-  const getProductCategories = () => {
-    if (selectedProduct) {
-      return [selectedProduct.category];
-    } else if (selectedLine) {
-      const lineProducts = REALISTIC_PRODUCTS.filter(p => p.line === selectedLine.id);
-      return [...new Set(lineProducts.map(p => p.category))];
+const processTimeData = (data: any[], timeField: string = 'hour_slot') => {
+  const timeMap = new Map();
+  data.forEach(item => {
+    const hour = new Date(item[timeField]).toLocaleTimeString('en-US', { 
+      hour: '2-digit', minute: '2-digit', hour12: false 
+    });
+    
+    if (item.defecttype) {
+      // สำหรับ trend data
+      if (!timeMap.has(hour)) timeMap.set(hour, { time: hour });
+      const hourData = timeMap.get(hour);
+      hourData[item.defecttype] = (hourData[item.defecttype] || 0) + (item.quantity || item.defect_count || 0);
     } else {
-      return ['Beverage', 'Food', 'Cosmetic', 'Medicine'];
+      // สำหรับ ng distribution - รวมจำนวนทั้งหมด
+      const currentCount = timeMap.get(hour) || 0;
+      timeMap.set(hour, currentCount + (item.defect_count || 0));
     }
-  };
-
-  const categories = getProductCategories();
-  const ngDistribution: NgDistributionData[] = [
-    { 
-      time: "06:00", 
-      A: categories.length > 0 ? Math.floor(Math.random() * 3) + 2 : 0,
-      B: categories.length > 1 ? Math.floor(Math.random() * 2) + 1 : 0,
-      C: categories.length > 2 ? Math.floor(Math.random() * 2) + 1 : 0,
-      D: categories.length > 3 ? Math.floor(Math.random() * 1) + 1 : 0
-    },
-    { 
-      time: "09:00", 
-      A: categories.length > 0 ? Math.floor(Math.random() * 4) + 3 : 0,
-      B: categories.length > 1 ? Math.floor(Math.random() * 3) + 2 : 0,
-      C: categories.length > 2 ? Math.floor(Math.random() * 3) + 2 : 0,
-      D: categories.length > 3 ? Math.floor(Math.random() * 2) + 1 : 0
-    },
-    { 
-      time: "12:00", 
-      A: categories.length > 0 ? Math.floor(Math.random() * 5) + 4 : 0,
-      B: categories.length > 1 ? Math.floor(Math.random() * 4) + 3 : 0,
-      C: categories.length > 2 ? Math.floor(Math.random() * 3) + 2 : 0,
-      D: categories.length > 3 ? Math.floor(Math.random() * 2) + 1 : 0
-    },
-    { 
-      time: "15:00", 
-      A: categories.length > 0 ? Math.floor(Math.random() * 4) + 3 : 0,
-      B: categories.length > 1 ? Math.floor(Math.random() * 3) + 2 : 0,
-      C: categories.length > 2 ? Math.floor(Math.random() * 3) + 2 : 0,
-      D: categories.length > 3 ? Math.floor(Math.random() * 2) + 1 : 0
-    },
-    { 
-      time: "18:00", 
-      A: categories.length > 0 ? Math.floor(Math.random() * 3) + 2 : 0,
-      B: categories.length > 1 ? Math.floor(Math.random() * 2) + 1 : 0,
-      C: categories.length > 2 ? Math.floor(Math.random() * 2) + 1 : 0,
-      D: categories.length > 3 ? Math.floor(Math.random() * 1) + 1 : 0
-    }
-  ];
-
-  console.log('Generated dashboard data for filters:', {
-    selectedProduct: selectedProduct?.name,
-    selectedCamera: selectedCamera?.name,
-    selectedLine: selectedLine?.name,
-    totalProducts,
-    defectsByType: defectsByType.map(d => d.type),
-    relevantCameras: relevantCameras.map(c => c.name)
   });
-
-  return {
-    totalProducts,
-    goodCount,
-    ngCount,
-    trendData,
-    defectsByType,
-    defectsByCamera,
-    ngDistribution
-  };
+  return timeMap;
 };
 
 // API Functions
-export const getProducts = async (): Promise<ProductOption[]> => {
-  try {
-
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return mockProducts;
-  } catch (error) {
-    console.error('Failed to fetch products:', error);
-    throw new Error(extractErrorMessage(error));
-  }
-}
-
-export const getCameras = async (): Promise<CameraOption[]> => {
-  try {
-
-    await new Promise(resolve => setTimeout(resolve, 500)); 
-    return mockCameras;
-  } catch (error) {
-    console.error('Failed to fetch cameras:', error);
-    throw new Error(extractErrorMessage(error));
-  }
-}
-
-export const getLines = async (): Promise<LineOption[]> => {
-  try {
-
-    await new Promise(resolve => setTimeout(resolve, 500)); 
-    return mockLines;
-  } catch (error) {
-    console.error('Failed to fetch lines:', error);
-    throw new Error(extractErrorMessage(error));
-  }
-}
+export const getProducts = () => Promise.resolve(mockProducts);
+export const getCameras = () => Promise.resolve(mockCameras);
+export const getLines = () => Promise.resolve(mockLines);
 
 export const getDashboardData = async (filters: DashboardFilters): Promise<DashboardData> => {
   try {
-    console.log('Fetching dashboard data with filters:', filters);
-    await new Promise(resolve => setTimeout(resolve, 800)); 
+    if (!filters.startDate || !filters.endDate) {
+      throw new Error('Start date and end date are required');
+    }
+
+    const params = buildParams(filters);
+    console.log('API Parameters:', params.toString());
+
+    // Fetch all data in parallel
+    const [
+      totalProductsData,
+      goodNgRatioData,
+      top5DefectsData,
+      top5TrendsData,
+      defectsCameraData,
+      ngDistributionData
+    ] = await Promise.all([
+      fetchAPI('/totalprod', params),
+      fetchAPI('/goodngratio', params),
+      fetchAPI('/top5defects', params),
+      fetchAPI('/top5trends', params),
+      fetchAPI('/defects-camera', params),
+      fetchAPI('/ngdistribution', params)
+    ]);
+
+    console.log('API Responses:', { totalProductsData, goodNgRatioData, top5DefectsData, top5TrendsData, defectsCameraData, ngDistributionData });
+
+    // Process data
+    const totalProducts = totalProductsData?.total_products || 0;
+    const goodCount = goodNgRatioData?.reduce((sum: number, item: any) => sum + (item.total_ok || 0), 0) || 0;
+    const ngCount = goodNgRatioData?.reduce((sum: number, item: any) => sum + (item.total_ng || 0), 0) || 0;
+
+    const defectsByType = top5DefectsData?.slice(0, 5).map((item: any) => ({
+      type: item.defecttype || 'Unknown',
+      count: item.quantity || 0
+    })) || [];
+
+    // Process defects by camera
+    const cameraDefects = new Map();
+    if (defectsCameraData && Array.isArray(defectsCameraData)) {
+      defectsCameraData.forEach((item: any) => {
+        const camera = item.cameraname || item.cameraid || 'Unknown';
+        const current = cameraDefects.get(camera) || 0;
+        cameraDefects.set(camera, current + (item.totalng || 0));
+      });
+    }
     
-    return generateMockDashboardData(filters);
+    const defectsByCamera = Array.from(cameraDefects.entries()).map(([camera, count]) => ({
+      camera,
+      defects: count as number  // เปลี่ยนจาก 'count' เป็น 'defects'
+    }));
+
+    const trendMap = processTimeData(top5TrendsData || []);
+    const trendData = Array.from(trendMap.values()).sort((a, b) => a.time.localeCompare(b.time));
+
+    // แก้ไข ng distribution processing ให้ตรงกับ NGDistributionChart
+    const distributionMap = new Map();
+    if (ngDistributionData && Array.isArray(ngDistributionData)) {
+      ngDistributionData.forEach((item: any) => {
+        const hour = new Date(item.hour_slot).toLocaleTimeString('en-US', { 
+          hour: '2-digit', minute: '2-digit', hour12: false 
+        });
+        const current = distributionMap.get(hour) || 0;
+        distributionMap.set(hour, current + (item.defect_count || 0));
+      });
+    }
+    
+    // แปลงเป็นรูปแบบที่ NGDistributionChart ต้องการ
+    const ngDistribution = Array.from(distributionMap.entries()).map(([time, count]) => ({
+      time,
+      A: count as number,  // ใช้ A เป็น category หลัก
+      B: 0,                // categories อื่นเป็น 0
+      C: 0,
+      D: 0
+    })).sort((a, b) => a.time.localeCompare(b.time));
+
+    const result = { totalProducts, goodCount, ngCount, trendData, defectsByType, defectsByCamera, ngDistribution };
+    console.log('Processed dashboard data:', result);
+    console.log('🔍 ngDistribution:', ngDistribution);
+    console.log('🔍 defectsByCamera:', defectsByCamera);
+    console.log('🔍 Raw defectsCameraData:', defectsCameraData);
+    return result;
+    
   } catch (error) {
     console.error('Failed to fetch dashboard data:', error);
     throw new Error(extractErrorMessage(error));
   }
-}
+};

@@ -1,3 +1,4 @@
+// src/app/(protected)/dashboard/components/DefectByCameraChart.tsx
 'use client';
 
 import { Bar } from 'react-chartjs-2';
@@ -26,6 +27,8 @@ interface DefectByCameraChartProps {
 }
 
 export default function DefectByCameraChart({ data }: DefectByCameraChartProps) {
+  console.log('📸 DefectByCameraChart data:', data?.defectsByCamera);
+
   const chartData = data?.defectsByCamera || [
     { camera: 'Input Inspection', defects: 45 },
     { camera: 'Label Check', defects: 80 },
@@ -55,7 +58,7 @@ export default function DefectByCameraChart({ data }: DefectByCameraChartProps) 
     datasets: [
       {
         label: 'Defects Count',
-        data: displayData.map(item => item.defects),
+        data: displayData.map(item => item.defects || 0),
         backgroundColor: backgroundColors,
         borderColor: borderColors,
         borderWidth: 2,
@@ -63,15 +66,11 @@ export default function DefectByCameraChart({ data }: DefectByCameraChartProps) 
         borderSkipped: false,
         hoverBackgroundColor: borderColors,
         hoverBorderWidth: 3,
-        // ปิด default labels
-        datalabels: {
-          display: false
-        }
       }
     ]
   };
 
-  // Custom plugin สำหรับแสดงค่าบน bar (built-in Chart.js)
+  // Custom plugin สำหรับแสดงค่าบน bar
   const valueDisplayPlugin = {
     id: 'valueDisplay',
     afterDatasetsDraw: (chart: any) => {
@@ -119,16 +118,6 @@ export default function DefectByCameraChart({ data }: DefectByCameraChartProps) 
             return `Defects: ${context.parsed.x}`;
           }
         }
-      },
-      // ปิด datalabels plugin หากมี
-      datalabels: {
-        display: false
-      }
-    },
-    elements: {
-      bar: {
-        // ปิด default labels ใน bar element
-        borderSkipped: false,
       }
     },
     scales: {
@@ -169,11 +158,11 @@ export default function DefectByCameraChart({ data }: DefectByCameraChartProps) 
         />
       </div>
       
-      {chartData.length === 1 && (
-        <div className="text-center text-xs text-gray-500 mt-2">
-          Showing data for selected camera only
-        </div>
-      )}
+      {/* Debug info */}
+      <div className="text-xs text-gray-500 mt-2">
+        Data count: {chartData.length} | 
+        Max value: {Math.max(...displayData.map(d => d.defects || 0))}
+      </div>
     </div>
   );
 }

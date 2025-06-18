@@ -21,7 +21,6 @@ interface HeaderFiltersProps {
   onDateToChange?: (date: string | null) => void;
 }
 
-
 interface SearchableDropdownProps {
   options: Array<{id: string, name: string}>;
   selectedValue: string;
@@ -38,13 +37,13 @@ function SearchableDropdown({ options, selectedValue, placeholder, onSelect, loa
 
   // Filter options based on search term
   useEffect(() => {
-    const filtered = options.filter(option =>
-      option.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = options.filter(option => 
+      option?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) || false
     );
     setFilteredOptions(filtered);
   }, [searchTerm, options]);
 
-
+  // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -92,9 +91,9 @@ function SearchableDropdown({ options, selectedValue, placeholder, onSelect, loa
 
       {/* Dropdown Menu */}
       {isOpen && !loading && (
-        <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-gray-300 rounded-md shadow-lg z-50">
+        <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-300 rounded shadow-lg z-50 max-h-60 overflow-hidden">
           {/* Search Input */}
-          <div className="p-2 border-b border-gray-200">
+          <div className="p-2 border-b">
             <div className="relative">
               <Search size={14} className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
@@ -102,20 +101,20 @@ function SearchableDropdown({ options, selectedValue, placeholder, onSelect, loa
                 placeholder={`Search ${placeholder.toLowerCase()}...`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-8 pr-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-violet-500"
+                className="w-full pl-8 pr-3 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-violet-500"
                 autoFocus
               />
             </div>
           </div>
 
           {/* Options List */}
-          <div className="max-h-48 overflow-y-auto">
+          <div className="max-h-40 overflow-y-auto">
             {/* All option */}
             <button
               type="button"
               onClick={() => handleSelect('')}
               className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-100 ${
-                selectedValue === '' ? 'bg-violet-50 text-violet-700' : 'text-gray-700'
+                !selectedValue ? 'bg-violet-50 text-violet-700' : 'text-gray-700'
               }`}
             >
               All {placeholder}
@@ -196,10 +195,10 @@ export default function HeaderFilters({
     loadDropdownData();
   }, []);
 
-  // Convert data to dropdown format
-  const productOptions = products.map(p => ({ id: p.productId, name: p.productName }));
-  const cameraOptions = cameras.map(c => ({ id: c.cameraId, name: c.cameraName }));
-  const lineOptions = lines.map(l => ({ id: l.lineId, name: l.lineName }));
+  // Convert data to dropdown format (ใช้ id และ name ตามที่ dashboard service กำหนด)
+  const productOptions = products.map(p => ({ id: p.id, name: p.name }));
+  const cameraOptions = cameras.map(c => ({ id: c.id, name: c.name }));
+  const lineOptions = lines.map(l => ({ id: l.id, name: l.name }));
 
   if (loading) {
     return (
@@ -246,7 +245,7 @@ export default function HeaderFilters({
         />
       </div>
 
-      {/*  DateFilters Component */}
+      {/* DateFilters Component */}
       <DateFilters
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}
