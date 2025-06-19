@@ -1,33 +1,41 @@
 // src/app/(protected)/dashboard/components/GoodNGRatioChart.tsx
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { DashboardData } from '@/app/types/dashboard';
+'use client';
+
 import { useMemo } from 'react';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import type { GoodNGRatioData } from '@/app/types/dashboard';
 
 interface GoodNGRatioChartProps {
-  data: DashboardData | null;
+  data: GoodNGRatioData[] | null;
+  loading?: boolean;
+  error?: string;
 }
 
 const colors = ['#60a5fa', '#ef4444'];
 
-export default function GoodNGRatioChart({ data }: GoodNGRatioChartProps) {
-
+export default function GoodNGRatioChart({ data, loading, error }: GoodNGRatioChartProps) {
   const chartData = useMemo(() => {
-    if (data) {
+    if (!data || data.length === 0) {
+      // Default fallback data
       return [
-        { name: "Good", value: data.goodCount },
-        { name: "Not Good", value: data.ngCount },
+        { name: "Good", value: 900 },
+        { name: "Not Good", value: 100 },
       ];
     }
-    // Default fallback data
+
+    // Aggregate total_ok และ total_ng จากทุก LOT
+    const totalOk = data.reduce((sum, item) => sum + (item.total_ok || 0), 0);
+    const totalNg = data.reduce((sum, item) => sum + (item.total_ng || 0), 0);
+
     return [
-      { name: "Good", value: 900 },
-      { name: "Not Good", value: 100 },
+      { name: "Good", value: totalOk },
+      { name: "Not Good", value: totalNg },
     ];
   }, [data]);
 
   const chartKey = useMemo(() => {
-    return `pie-chart-${data?.goodCount || 0}-${data?.ngCount || 0}-${Date.now()}`;
-  }, [data?.goodCount, data?.ngCount]);
+    return `pie-chart-${chartData[0].value}-${chartData[1].value}-${Date.now()}`;
+  }, [chartData]);
 
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
   const goodPercentage = total > 0 ? ((chartData[0].value / total) * 100).toFixed(1) : '0.0';
@@ -78,6 +86,32 @@ export default function GoodNGRatioChart({ data }: GoodNGRatioChartProps) {
     return null;
   };
 
+  if (loading) {
+    return (
+      <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full min-h-[200px] md:min-h-[220px]">
+        <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-1"> 
+          Good / NG Ratio
+        </h2>
+        <div className="h-[160px] md:h-[170px] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full min-h-[200px] md:min-h-[220px]">
+        <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-1"> 
+          Good / NG Ratio
+        </h2>
+        <div className="h-[160px] md:h-[170px] flex items-center justify-center">
+          <p className="text-red-500 text-center text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full min-h-[200px] md:min-h-[220px]">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-1"> 
@@ -123,7 +157,12 @@ export default function GoodNGRatioChart({ data }: GoodNGRatioChartProps) {
         </ResponsiveContainer>
       </div>
 
-
+      {/* แสดงข้อมูลสรุป */}
+      {data && data.length > 0 && (
+        <div className="text-xs text-gray-500 mt-1 text-center">
+          Total LOTs: {data.length} | Good: {chartData[0].value} | NG: {chartData[1].value}
+        </div>
+      )}
     </div>
   );
 }

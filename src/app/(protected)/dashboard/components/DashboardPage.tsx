@@ -1,11 +1,12 @@
 // src/app/(protected)/dashboard/components/DashboardPage.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import dayjs from 'dayjs';
-import { showError, showSuccess } from '@/app/utils/swal';
+import { debounce } from 'lodash';
+import { showError } from '@/app/utils/swal';
 import { getDashboardData } from '@/app/libs/services/dashboard';
-import { DashboardData, DashboardFilters } from '@/app/types/dashboard';
+import type { DashboardData, DashboardFilters } from '@/app/types/dashboard';
 import HeaderFilters from './HeaderFilters';
 import TotalProductsCard from './TotalProductsCard';
 import GoodNGRatioChart from './GoodNGRatioChart';
@@ -15,6 +16,7 @@ import NGDistributionChart from './NGDistributionChart';
 import DefectByCameraChart from './DefectByCameraChart';
 
 export default function DashboardPage() {
+  // Filter states
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [selectedCamera, setSelectedCamera] = useState<string>('');
   const [selectedLine, setSelectedLine] = useState<string>('');
@@ -43,41 +45,50 @@ export default function DashboardPage() {
     });
   }, []);
 
+  // Debounced refresh function
+  const debouncedRefreshDashboardData = useCallback(
+    debounce(async (filters: DashboardFilters) => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        console.log('Refreshing dashboard with filters:', filters);
+        
+        const data = await getDashboardData(filters);
+        setDashboardData(data);
+        
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+        setError('Failed to load dashboard data. Please try again.');
+        showError('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    }, 500),
+    []
+  );
+
   // Load dashboard data when filters change
   useEffect(() => {
     if (dateFrom && dateTo) {
-      refreshDashboardData();
-    }
-  }, [selectedProduct, selectedCamera, selectedLine, selectedMonth, selectedYear, dateFrom, dateTo]);
-
-  const refreshDashboardData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
       const filters: DashboardFilters = {
         productId: selectedProduct || undefined,
         cameraId: selectedCamera || undefined,
         lineId: selectedLine || undefined,
-        startDate: dateFrom ? new Date(dateFrom) : undefined,
-        endDate: dateTo ? new Date(dateTo) : undefined,
+        startDate: new Date(dateFrom),
+        endDate: new Date(dateTo),
         month: selectedMonth || undefined,
         year: selectedYear || undefined,
       };
 
-      console.log('Refreshing dashboard with filters:', filters);
-      
-      const data = await getDashboardData(filters);
-      setDashboardData(data);
-      
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-      setError('Failed to load dashboard data. Please try again.');
-      showError('Failed to load dashboard data');
-    } finally {
-      setLoading(false);
+      debouncedRefreshDashboardData(filters);
     }
-  };
+
+    // Cleanup
+    return () => {
+      debouncedRefreshDashboardData.cancel();
+    };
+  }, [selectedProduct, selectedCamera, selectedLine, selectedMonth, selectedYear, dateFrom, dateTo, debouncedRefreshDashboardData]);
 
   const handleProductChange = (productId: string) => {
     setSelectedProduct(productId);
@@ -110,7 +121,6 @@ export default function DashboardPage() {
       
       // ตรวจสอบว่า From Date ไม่เกิน To Date
       if (dateTo && dayjs(date).isAfter(dayjs(dateTo))) {
-        // ถ้า From Date มากกว่า To Date ให้ปรับ To Date เป็นวันเดียวกันเวลา 23:59
         const newToDate = dayjs(date).endOf('day').format('YYYY-MM-DD HH:mm');
         setDateTo(newToDate);
         console.log('Auto-adjusted To Date to:', newToDate);
@@ -134,6 +144,23 @@ export default function DashboardPage() {
       console.log('Selected Date To:', date);
     } else {
       setDateTo('');
+    }
+  };
+
+  // Manual refresh function
+  const handleRefresh = () => {
+    if (dateFrom && dateTo) {
+      const filters: DashboardFilters = {
+        productId: selectedProduct || undefined,
+        cameraId: selectedCamera || undefined,
+        lineId: selectedLine || undefined,
+        startDate: new Date(dateFrom),
+        endDate: new Date(dateTo),
+        month: selectedMonth || undefined,
+        year: selectedYear || undefined,
+      };
+
+      debouncedRefreshDashboardData(filters);
     }
   };
 
@@ -169,7 +196,7 @@ export default function DashboardPage() {
   }
 
   // Error state
-  if (error) {
+  if (error && !dashboardData) {
     return (
       <main className="p-2">
         <HeaderFilters 
@@ -194,7 +221,7 @@ export default function DashboardPage() {
             <p>{error}</p>
             <button 
               className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              onClick={refreshDashboardData}
+              onClick={handleRefresh}
             >
               Retry
             </button>
@@ -236,26 +263,66 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
         {/* Left column: Total products and Good/NG Ratio stacked */}
         <div className="lg:col-span-1 space-y-6">
-          <TotalProductsCard data={dashboardData} />
-          <GoodNGRatioChart data={dashboardData} />
+          <TotalProductsCard 
+            data={dashboardData?.totalProducts || null} 
+            loading={loading}
+            error={error}
+          />
+          <GoodNGRatioChart 
+            data={dashboardData?.goodNgRatio || null}
+            loading={loading}
+            error={error}
+          />
         </div>
 
         {/* Middle: Trend and Top Defects */}
         <div className="lg:col-span-2">
-          <TrendDetectionChart data={dashboardData} />
+          <TrendDetectionChart 
+            data={dashboardData?.trendData || null}
+            loading={loading}
+            error={error}
+          />
         </div>
         <div className="lg:col-span-3">
-          <FrequentDefectsChart data={dashboardData} />
+          <FrequentDefectsChart 
+            data={dashboardData?.frequentDefects || null}
+            loading={loading}
+            error={error}
+          />
         </div>
 
         {/* Bottom row: NG Distribution and Camera Defects */}
         <div className="lg:col-span-3">
-          <NGDistributionChart data={dashboardData} />
+          <NGDistributionChart 
+            data={dashboardData?.ngDistribution || null}
+            loading={loading}
+            error={error}
+          />
         </div>
         <div className="lg:col-span-3">
-          <DefectByCameraChart data={dashboardData} />
+          <DefectByCameraChart 
+            data={dashboardData?.defectsByCamera || null}
+            loading={loading}
+            error={error}
+          />
         </div>
       </div>
+
+      {/* Debug Information (แสดงในโหมด development) */}
+      {process.env.NODE_ENV === 'development' && dashboardData && (
+        <div className="mt-6 p-4 bg-gray-100 rounded-lg">
+          <h3 className="text-sm font-semibold mb-2">Debug Information:</h3>
+          <div className="text-xs text-gray-600 space-y-1">
+            <div>Total Products: {dashboardData.totalProducts?.total_products || 0}</div>
+            <div>Good/NG Ratio Records: {dashboardData.goodNgRatio?.length || 0}</div>
+            <div>Frequent Defects Records: {dashboardData.frequentDefects?.length || 0}</div>
+            <div>Trend Data Records: {dashboardData.trendData?.length || 0}</div>
+            <div>Camera Defects Records: {dashboardData.defectsByCamera?.length || 0}</div>
+            <div>NG Distribution Records: {dashboardData.ngDistribution?.length || 0}</div>
+            <div>Last Updated: {new Date().toLocaleTimeString()}</div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

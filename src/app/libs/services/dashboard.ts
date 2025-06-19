@@ -1,32 +1,20 @@
 // src/app/libs/services/dashboard.ts
 import { extractErrorMessage } from '@/app/utils/errorHandler';
+import type {
+  DashboardFilters,
+  DashboardData,
+  TotalProductsData,
+  GoodNGRatioData,
+  DefectTypeData,
+  TrendData,
+  DefectCameraData,
+  NgDistributionData,
+  ProductOption,
+  CameraOption,
+  LineOption
+} from '@/app/types/dashboard';
 
-// Types
-export interface ProductOption { id: string; name: string; }
-export interface CameraOption { id: string; name: string; }
-export interface LineOption { id: string; name: string; }
-
-export interface DashboardFilters {
-  productId?: string;
-  cameraId?: string;
-  lineId?: string;
-  startDate?: Date;
-  endDate?: Date;
-  month?: string;
-  year?: string;
-}
-
-export interface DashboardData {
-  totalProducts: number;
-  goodCount: number;
-  ngCount: number;
-  trendData: Array<{ time: string; [key: string]: string | number; }>;
-  defectsByType: Array<{ type: string; count: number; }>;
-  defectsByCamera: Array<{ camera: string; defects: number; }>;
-  ngDistribution: Array<{ time: string; A: number; B: number; C: number; D: number; }>;
-}
-
-// Mock data
+// Mock data (fallback เมื่อ API ล้มเหลว)
 const mockProducts: ProductOption[] = [
   { id: "1", name: "Tea Bottle" },
   { id: "2", name: "Coffee Cup" },
@@ -65,6 +53,7 @@ const buildParams = (filters: DashboardFilters): URLSearchParams => {
     end: formatDateTime(filters.endDate!)
   });
   
+  // ใช้ name แทน id สำหรับ API (ตามที่ Python API ต้องการ)
   if (filters.productId) {
     const product = mockProducts.find(p => p.id === filters.productId);
     if (product) params.append('productname', product.name);
@@ -79,65 +68,90 @@ const buildParams = (filters: DashboardFilters): URLSearchParams => {
 };
 
 const fetchAPI = async (endpoint: string, params: URLSearchParams) => {
-  const response = await fetch(`http://localhost:8080${endpoint}?${params.toString()}`);
-  if (!response.ok) throw new Error(`Failed to fetch ${endpoint}`);
+  // ใช้ URL ตรงๆ ตามที่กำหนดใน Python API
+  const baseUrl = 'http://localhost:8080';
+  const response = await fetch(`${baseUrl}${endpoint}?${params.toString()}`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${endpoint}: ${response.status} ${response.statusText}`);
+  }
+  
   return response.json();
-};
-
-const processTimeData = (data: any[], timeField: string = 'hour_slot') => {
-  const timeMap = new Map();
-  data.forEach(item => {
-    const hour = new Date(item[timeField]).toLocaleTimeString('en-US', { 
-      hour: '2-digit', minute: '2-digit', hour12: false 
-    });
-    
-    if (item.defecttype) {
-      // สำหรับ trend data
-      if (!timeMap.has(hour)) timeMap.set(hour, { time: hour });
-      const hourData = timeMap.get(hour);
-      hourData[item.defecttype] = (hourData[item.defecttype] || 0) + (item.quantity || item.defect_count || 0);
-    } else {
-      // สำหรับ ng distribution - รวมจำนวนทั้งหมด
-      const currentCount = timeMap.get(hour) || 0;
-      timeMap.set(hour, currentCount + (item.defect_count || 0));
-    }
-  });
-  return timeMap;
 };
 
 // API Functions
 export const getProducts = async (): Promise<ProductOption[]> => {
   try {
-    const response = await fetch('http://localhost:8080/products');
-    if (!response.ok) throw new Error('Failed to fetch products');
-    return await response.json();
+    const baseUrl = 'http://localhost:8080';
+    const response = await fetch(`${baseUrl}/products`);
+    
+    if (!response.ok) {
+      console.warn('Products API failed, using fallback data');
+      return mockProducts;
+    }
+    
+    const data = await response.json();
+    console.log('Products API response:', data);
+    
+    // ตรวจสอบว่า response เป็น array หรือไม่
+    if (Array.isArray(data)) {
+      return data;
+    } else {
+      console.warn('Products API returned non-array, using fallback');
+      return mockProducts;
+    }
   } catch (error) {
     console.error('Failed to fetch products:', error);
-    // Fallback to mock data if API fails
     return mockProducts;
   }
 };
 
 export const getCameras = async (): Promise<CameraOption[]> => {
   try {
-    const response = await fetch('http://localhost:8080/cameras');
-    if (!response.ok) throw new Error('Failed to fetch cameras');
-    return await response.json();
+    const baseUrl = 'http://localhost:8080';
+    const response = await fetch(`${baseUrl}/cameras`);
+    
+    if (!response.ok) {
+      console.warn('Cameras API failed, using fallback data');
+      return mockCameras;
+    }
+    
+    const data = await response.json();
+    console.log('Cameras API response:', data);
+    
+    if (Array.isArray(data)) {
+      return data;
+    } else {
+      console.warn('Cameras API returned non-array, using fallback');
+      return mockCameras;
+    }
   } catch (error) {
     console.error('Failed to fetch cameras:', error);
-    // Fallback to mock data if API fails
     return mockCameras;
   }
 };
 
 export const getLines = async (): Promise<LineOption[]> => {
   try {
-    const response = await fetch('http://localhost:8080/lines');
-    if (!response.ok) throw new Error('Failed to fetch lines');
-    return await response.json();
+    const baseUrl = 'http://localhost:8080';
+    const response = await fetch(`${baseUrl}/lines`);
+    
+    if (!response.ok) {
+      console.warn('Lines API failed, using fallback data');
+      return mockLines;
+    }
+    
+    const data = await response.json();
+    console.log('Lines API response:', data);
+    
+    if (Array.isArray(data)) {
+      return data;
+    } else {
+      console.warn('Lines API returned non-array, using fallback');
+      return mockLines;
+    }
   } catch (error) {
     console.error('Failed to fetch lines:', error);
-    // Fallback to mock data if API fails
     return mockLines;
   }
 };
@@ -149,9 +163,10 @@ export const getDashboardData = async (filters: DashboardFilters): Promise<Dashb
     }
 
     const params = buildParams(filters);
-    console.log('API Parameters:', params.toString());
+    console.log('🔗 API Parameters:', params.toString());
+    console.log('🌐 Base URL: http://localhost:8080');
 
-    // Fetch all data in parallel
+    // Fetch all data in parallel - ใช้ endpoint names ตามที่กำหนดใน Python
     const [
       totalProductsData,
       goodNgRatioData,
@@ -168,66 +183,95 @@ export const getDashboardData = async (filters: DashboardFilters): Promise<Dashb
       fetchAPI('/ngdistribution', params)
     ]);
 
-    console.log('API Responses:', { totalProductsData, goodNgRatioData, top5DefectsData, top5TrendsData, defectsCameraData, ngDistributionData });
+    console.log('📊 API Responses:', { 
+      totalProductsData, 
+      goodNgRatioData, 
+      top5DefectsData, 
+      top5TrendsData, 
+      defectsCameraData, 
+      ngDistributionData 
+    });
 
-    // Process data
-    const totalProducts = totalProductsData?.total_products || 0;
-    const goodCount = goodNgRatioData?.reduce((sum: number, item: any) => sum + (item.total_ok || 0), 0) || 0;
-    const ngCount = goodNgRatioData?.reduce((sum: number, item: any) => sum + (item.total_ng || 0), 0) || 0;
+    // ส่งข้อมูล raw ไป components โดยตรง (ไม่แปลง)
+    const result: DashboardData = {
+      totalProducts: totalProductsData,
+      goodNgRatio: Array.isArray(goodNgRatioData) ? goodNgRatioData : [],
+      trendData: Array.isArray(top5TrendsData) ? top5TrendsData : [],
+      defectsByType: Array.isArray(top5DefectsData) ? top5DefectsData : [],
+      defectsByCamera: Array.isArray(defectsCameraData) ? defectsCameraData : [],
+      ngDistribution: Array.isArray(ngDistributionData) ? ngDistributionData : []
+    };
 
-    const defectsByType = top5DefectsData?.slice(0, 5).map((item: any) => ({
-      type: item.defecttype || 'Unknown',
-      count: item.quantity || 0
-    })) || [];
-
-    // Process defects by camera
-    const cameraDefects = new Map();
-    if (defectsCameraData && Array.isArray(defectsCameraData)) {
-      defectsCameraData.forEach((item: any) => {
-        const camera = item.cameraname || item.cameraid || 'Unknown';
-        const current = cameraDefects.get(camera) || 0;
-        cameraDefects.set(camera, current + (item.totalng || 0));
-      });
-    }
-    
-    const defectsByCamera = Array.from(cameraDefects.entries()).map(([camera, count]) => ({
-      camera,
-      defects: count as number  // เปลี่ยนจาก 'count' เป็น 'defects'
-    }));
-
-    const trendMap = processTimeData(top5TrendsData || []);
-    const trendData = Array.from(trendMap.values()).sort((a, b) => a.time.localeCompare(b.time));
-
-    // แก้ไข ng distribution processing ให้ตรงกับ NGDistributionChart
-    const distributionMap = new Map();
-    if (ngDistributionData && Array.isArray(ngDistributionData)) {
-      ngDistributionData.forEach((item: any) => {
-        const hour = new Date(item.hour_slot).toLocaleTimeString('en-US', { 
-          hour: '2-digit', minute: '2-digit', hour12: false 
-        });
-        const current = distributionMap.get(hour) || 0;
-        distributionMap.set(hour, current + (item.defect_count || 0));
-      });
-    }
-    
-    // แปลงเป็นรูปแบบที่ NGDistributionChart ต้องการ
-    const ngDistribution = Array.from(distributionMap.entries()).map(([time, count]) => ({
-      time,
-      A: count as number,  // ใช้ A เป็น category หลัก
-      B: 0,                // categories อื่นเป็น 0
-      C: 0,
-      D: 0
-    })).sort((a, b) => a.time.localeCompare(b.time));
-
-    const result = { totalProducts, goodCount, ngCount, trendData, defectsByType, defectsByCamera, ngDistribution };
-    console.log('Processed dashboard data:', result);
-    console.log('🔍 ngDistribution:', ngDistribution);
-    console.log('🔍 defectsByCamera:', defectsByCamera);
-    console.log('🔍 Raw defectsCameraData:', defectsCameraData);
+    console.log('✅ Final dashboard data:', result);
     return result;
     
   } catch (error) {
-    console.error('Failed to fetch dashboard data:', error);
-    throw new Error(extractErrorMessage(error));
+    console.error('❌ Failed to fetch dashboard data:', error);
+    
+    // Return mock data instead of throwing error
+    console.log('🔄 Using fallback mock data');
+    return {
+      totalProducts: { total_products: 1500 },
+      goodNgRatio: [
+        {
+          prodname: "Tea Bottle",
+          cameraid: "CAM004",
+          prodlot: "LOT12346", 
+          line: "LOT12346",
+          total_ok: 450,
+          total_ng: 50,
+          ok_ratio_percent: 90.0,
+          ng_ratio_percent: 10.0
+        }
+      ],
+      trendData: [
+        {
+          defecttype: "Crack",
+          line: "LOT12346",
+          hour_slot: "2025-06-19T09:00:00",
+          quantity: 2
+        },
+        {
+          defecttype: "Scratch", 
+          line: "LOT12346",
+          hour_slot: "2025-06-19T12:00:00",
+          quantity: 1
+        }
+      ],
+      defectsByType: [
+        {
+          defecttype: "Crack",
+          line: "LOT12346",
+          quantity: 15,
+          all_defect_times: ["2025-06-19T09:00:00"]
+        },
+        {
+          defecttype: "Scratch",
+          line: "LOT12347", 
+          quantity: 8,
+          all_defect_times: ["2025-06-19T10:00:00"]
+        }
+      ],
+      defectsByCamera: [
+        {
+          prodid: "P001",
+          defectid: "DEF001",
+          defecttype: "Crack",
+          cameraid: "CAM001",
+          line: "LOT12346",
+          cameraname: "Production Line A Camera",
+          totalng: 5,
+          defecttime: "2025-06-19T09:00:00"
+        }
+      ],
+      ngDistribution: [
+        {
+          defecttype: "Crack",
+          prodname: "Tea Bottle", 
+          hour_slot: "2025-06-19T09:00:00",
+          defect_count: 3
+        }
+      ]
+    };
   }
 };

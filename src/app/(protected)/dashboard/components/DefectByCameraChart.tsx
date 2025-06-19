@@ -1,6 +1,7 @@
 // src/app/(protected)/dashboard/components/DefectByCameraChart.tsx
 'use client';
 
+import { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -11,7 +12,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { DashboardData } from '@/app/types/dashboard';
+import type { DefectCameraData } from '@/app/types/dashboard';
 
 ChartJS.register(
   CategoryScale,
@@ -23,42 +24,57 @@ ChartJS.register(
 );
 
 interface DefectByCameraChartProps {
-  data: DashboardData | null;
+  data: DefectCameraData[] | null;
+  loading?: boolean;
+  error?: string;
 }
 
-export default function DefectByCameraChart({ data }: DefectByCameraChartProps) {
-  console.log('📸 DefectByCameraChart data:', data?.defectsByCamera);
-
-  const chartData = data?.defectsByCamera || [
-    { camera: 'Input Inspection', defects: 45 },
-    { camera: 'Label Check', defects: 80 },
-    { camera: 'Surface Check', defects: 60 },
-    { camera: 'Barcode Verify', defects: 70 },
-  ];
-
-  const displayData = chartData.length > 0 ? chartData : [
-    { camera: 'No Data', defects: 0 }
-  ];
-
-  // Generate gradient colors
-  const generateColors = (count: number): string[] => {
-    const colors: string[] = [];
-    for (let i = 0; i < count; i++) {
-      const hue = 200 + (40 * i / count); // Blue hues from 200 to 240
-      colors.push(`hsla(${hue}, 85%, 60%, 0.8)`);
+export default function DefectByCameraChart({ data, loading, error }: DefectByCameraChartProps) {
+  const chartData = useMemo(() => {
+    if (!data || data.length === 0) {
+      return {
+        labels: ['No Data'],
+        datasets: [{
+          label: 'Defects Count',
+          data: [0],
+          backgroundColor: ['rgba(156, 163, 175, 0.8)'],
+          borderColor: ['rgba(156, 163, 175, 1)'],
+          borderWidth: 2,
+        }]
+      };
     }
-    return colors;
-  };
 
-  const backgroundColors = generateColors(displayData.length);
-  const borderColors = backgroundColors.map((color: string) => color.replace('0.8', '1'));
+    // Group by camera และ sum totalng
+    const cameraMap = new Map<string, number>();
+    
+    data.forEach(item => {
+      const cameraName = item.cameraname || item.cameraid || 'Unknown Camera';
+      const current = cameraMap.get(cameraName) || 0;
+      cameraMap.set(cameraName, current + (item.totalng || 0));
+    });
 
-  const barChartData = {
-    labels: displayData.map(item => item.camera),
-    datasets: [
-      {
+    // แปลงเป็น arrays สำหรับ chart
+    const labels = Array.from(cameraMap.keys());
+    const defectCounts = Array.from(cameraMap.values());
+
+    // Generate gradient colors
+    const generateColors = (count: number): string[] => {
+      const colors: string[] = [];
+      for (let i = 0; i < count; i++) {
+        const hue = 200 + (40 * i / Math.max(count - 1, 1)); // Blue hues from 200 to 240
+        colors.push(`hsla(${hue}, 85%, 60%, 0.8)`);
+      }
+      return colors;
+    };
+
+    const backgroundColors = generateColors(labels.length);
+    const borderColors = backgroundColors.map((color: string) => color.replace('0.8', '1'));
+
+    return {
+      labels,
+      datasets: [{
         label: 'Defects Count',
-        data: displayData.map(item => item.defects || 0),
+        data: defectCounts,
         backgroundColor: backgroundColors,
         borderColor: borderColors,
         borderWidth: 2,
@@ -66,9 +82,9 @@ export default function DefectByCameraChart({ data }: DefectByCameraChartProps) 
         borderSkipped: false,
         hoverBackgroundColor: borderColors,
         hoverBorderWidth: 3,
-      }
-    ]
-  };
+      }]
+    };
+  }, [data]);
 
   // Custom plugin สำหรับแสดงค่าบน bar
   const valueDisplayPlugin = {
@@ -145,6 +161,32 @@ export default function DefectByCameraChart({ data }: DefectByCameraChartProps) 
     }
   };
 
+  if (loading) {
+    return (
+      <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
+        <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
+          Top 5 Defects Most Found by Cameras
+        </h2>
+        <div className="h-[200px] sm:h-[240px] md:h-[260px] flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
+        <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
+          Top 5 Defects Most Found by Cameras
+        </h2>
+        <div className="h-[200px] sm:h-[240px] md:h-[260px] flex items-center justify-center">
+          <p className="text-red-500 text-center">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
@@ -152,17 +194,19 @@ export default function DefectByCameraChart({ data }: DefectByCameraChartProps) 
       </h2>
       <div className="h-[200px] sm:h-[240px] md:h-[260px]">
         <Bar 
-          data={barChartData} 
+          data={chartData} 
           options={options}
           plugins={[valueDisplayPlugin]}
         />
       </div>
       
       {/* Debug info */}
-      <div className="text-xs text-gray-500 mt-2">
-        Data count: {chartData.length} | 
-        Max value: {Math.max(...displayData.map(d => d.defects || 0))}
-      </div>
+      {data && (
+        <div className="text-xs text-gray-500 mt-2">
+          Data count: {data.length} cameras | 
+          Total defects: {data.reduce((sum, item) => sum + (item.totalng || 0), 0)}
+        </div>
+      )}
     </div>
   );
 }

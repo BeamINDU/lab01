@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { ChevronDown, Search } from "lucide-react";
-import { getProducts, getCameras, getLines, ProductOption, CameraOption, LineOption } from "@/app/libs/services/dashboard";
+import { getProducts, getCameras, getLines } from "@/app/libs/services/dashboard";
+import type { ProductOption, CameraOption, LineOption } from '@/app/types/dashboard';
 import { showError } from '@/app/utils/swal';
-import DateFilters from './DateFilters'; 
+import DateFilters from './DateFilters';
 
 interface HeaderFiltersProps {
   selectedProduct?: string;
