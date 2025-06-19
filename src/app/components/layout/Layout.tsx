@@ -196,7 +196,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const Nevbar = () => {
     return (
-      <header className="flex items-center justify-between px-4 py-5 bg-white shadow-md">
+      <header className="flex items-center justify-between px-3 py-3 bg-white shadow-md">
         <div className="flex items-center space-x-4">
           <button onClick={toggleSidebar} className="text-gray-700">
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}

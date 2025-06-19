@@ -524,7 +524,7 @@ interface ToolSelectorProps {
 }
 function AnnotationToolSelector({ tool, setTool }: ToolSelectorProps) {
   const tools: { id: ShapeType; label: string; icon?: JSX.Element }[] = [
-    { id: 'select', label: 'Select', icon: <MousePointerClick size={24} /> },
+    // { id: 'select', label: 'Select', icon: <MousePointerClick size={24} /> },
     { id: 'rect', label: 'Rectangle', icon: <Square size={24} /> },
     { id: 'circle', label: 'Circle', icon: <CircleIcon size={24} /> },
     { id: 'polygon', label: 'Polygon', icon: <Edit3 size={24} /> },

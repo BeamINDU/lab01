@@ -70,6 +70,9 @@ export default function TrendDetectionChart({ data, loading, error }: TrendDetec
     const defectTypes = new Set<string>();
     
     data.forEach(item => {
+      // จัดการกับ line ที่เป็น null
+      const lineLabel = item.line || 'Unknown Line';
+      
       const hour = new Date(item.hour_slot).toLocaleTimeString('en-US', { 
         hour: '2-digit', 
         minute: '2-digit', 
@@ -81,8 +84,9 @@ export default function TrendDetectionChart({ data, loading, error }: TrendDetec
       }
       
       const timeData = timeMap.get(hour)!;
-      timeData[item.defecttype] = (timeData[item.defecttype] || 0) + (item.quantity || 0);
-      defectTypes.add(item.defecttype);
+      const defectKey = `${item.defecttype} (${lineLabel})`;
+      timeData[defectKey] = (timeData[defectKey] || 0) + (item.quantity || 0);
+      defectTypes.add(defectKey);
     });
 
     // สร้าง labels (sorted time)

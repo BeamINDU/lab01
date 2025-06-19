@@ -1,4 +1,4 @@
-// src/app/libs/services/dashboard.ts
+// src/app/libs/services/dashboard.ts - แก้ไขการ map ข้อมูล
 import { extractErrorMessage } from '@/app/utils/errorHandler';
 import type {
   DashboardFilters,
@@ -14,7 +14,56 @@ import type {
   LineOption
 } from '@/app/types/dashboard';
 
-// Mock data (fallback เมื่อ API ล้มเหลว)
+// Helper functions
+const formatDateTime = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+};
+
+const buildParams = (filters: DashboardFilters): URLSearchParams => {
+  const params = new URLSearchParams({
+    start: formatDateTime(filters.startDate!),
+    end: formatDateTime(filters.endDate!)
+  });
+  
+  // ตรวจสอบ parameter ที่ส่งไป API ตามคู่มือ
+  if (filters.productId) {
+    const product = mockProducts.find(p => p.id === filters.productId);
+    if (product) params.append('productname', product.name);
+  }
+  if (filters.lineId) {
+    const line = mockLines.find(l => l.id === filters.lineId);
+    if (line) params.append('prodline', line.name);
+  }
+  if (filters.cameraId) params.append('cameraid', filters.cameraId);
+  
+  return params;
+};
+
+const fetchAPI = async (endpoint: string, params: URLSearchParams) => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+  const url = `${baseUrl}${endpoint}?${params.toString()}`;
+  
+  console.log('🌐 Fetching:', url);
+  
+  const response = await fetch(url);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${endpoint}: ${response.status} ${response.statusText}`);
+  }
+  
+  const data = await response.json();
+  console.log(`📊 ${endpoint} Response:`, data);
+  
+  return data;
+};
+
+// Mock data (fallback)
 const mockProducts: ProductOption[] = [
   { id: "1", name: "Tea Bottle" },
   { id: "2", name: "Coffee Cup" },
@@ -36,53 +85,10 @@ const mockLines: LineOption[] = [
   { id: "4", name: "LOT12348" }
 ];
 
-// Helper functions
-const formatDateTime = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-};
-
-const buildParams = (filters: DashboardFilters): URLSearchParams => {
-  const params = new URLSearchParams({
-    start: formatDateTime(filters.startDate!),
-    end: formatDateTime(filters.endDate!)
-  });
-  
-  // ใช้ name แทน id สำหรับ API (ตามที่ Python API ต้องการ)
-  if (filters.productId) {
-    const product = mockProducts.find(p => p.id === filters.productId);
-    if (product) params.append('productname', product.name);
-  }
-  if (filters.lineId) {
-    const line = mockLines.find(l => l.id === filters.lineId);
-    if (line) params.append('prodline', line.name);
-  }
-  if (filters.cameraId) params.append('cameraid', filters.cameraId);
-  
-  return params;
-};
-
-const fetchAPI = async (endpoint: string, params: URLSearchParams) => {
-  // ใช้ URL ตรงๆ ตามที่กำหนดใน Python API
-  const baseUrl = 'http://localhost:8080';
-  const response = await fetch(`${baseUrl}${endpoint}?${params.toString()}`);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${endpoint}: ${response.status} ${response.statusText}`);
-  }
-  
-  return response.json();
-};
-
-// API Functions
+// API Functions with proper error handling
 export const getProducts = async (): Promise<ProductOption[]> => {
   try {
-    const baseUrl = 'http://localhost:8080';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     const response = await fetch(`${baseUrl}/products`);
     
     if (!response.ok) {
@@ -93,7 +99,6 @@ export const getProducts = async (): Promise<ProductOption[]> => {
     const data = await response.json();
     console.log('Products API response:', data);
     
-    // ตรวจสอบว่า response เป็น array หรือไม่
     if (Array.isArray(data)) {
       return data;
     } else {
@@ -108,7 +113,7 @@ export const getProducts = async (): Promise<ProductOption[]> => {
 
 export const getCameras = async (): Promise<CameraOption[]> => {
   try {
-    const baseUrl = 'http://localhost:8080';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     const response = await fetch(`${baseUrl}/cameras`);
     
     if (!response.ok) {
@@ -133,7 +138,7 @@ export const getCameras = async (): Promise<CameraOption[]> => {
 
 export const getLines = async (): Promise<LineOption[]> => {
   try {
-    const baseUrl = 'http://localhost:8080';
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     const response = await fetch(`${baseUrl}/lines`);
     
     if (!response.ok) {
@@ -164,7 +169,6 @@ export const getDashboardData = async (filters: DashboardFilters): Promise<Dashb
 
     const params = buildParams(filters);
     console.log('🔗 API Parameters:', params.toString());
-    console.log('🌐 Base URL: http://localhost:8080');
 
     // Fetch all data in parallel - ใช้ endpoint names ตามที่กำหนดใน Python
     const [
@@ -183,7 +187,7 @@ export const getDashboardData = async (filters: DashboardFilters): Promise<Dashb
       fetchAPI('/ngdistribution', params)
     ]);
 
-    console.log('📊 API Responses:', { 
+    console.log('📊 All API Responses:', { 
       totalProductsData, 
       goodNgRatioData, 
       top5DefectsData, 
@@ -192,12 +196,12 @@ export const getDashboardData = async (filters: DashboardFilters): Promise<Dashb
       ngDistributionData 
     });
 
-    // ส่งข้อมูล raw ไป components โดยตรง (ไม่แปลง)
+    // แก้ไข: ตรวจสอบ structure ของข้อมูลก่อน map
     const result: DashboardData = {
       totalProducts: totalProductsData,
       goodNgRatio: Array.isArray(goodNgRatioData) ? goodNgRatioData : [],
       trendData: Array.isArray(top5TrendsData) ? top5TrendsData : [],
-      defectsByType: Array.isArray(top5DefectsData) ? top5DefectsData : [],
+      defectsByType: Array.isArray(top5DefectsData) ? top5DefectsData : [],  // แก้ไขชื่อ field
       defectsByCamera: Array.isArray(defectsCameraData) ? defectsCameraData : [],
       ngDistribution: Array.isArray(ngDistributionData) ? ngDistributionData : []
     };
@@ -208,70 +212,76 @@ export const getDashboardData = async (filters: DashboardFilters): Promise<Dashb
   } catch (error) {
     console.error('❌ Failed to fetch dashboard data:', error);
     
-    // Return mock data instead of throwing error
+    // Return mock data for development
     console.log('🔄 Using fallback mock data');
-    return {
-      totalProducts: { total_products: 1500 },
-      goodNgRatio: [
-        {
-          prodname: "Tea Bottle",
-          cameraid: "CAM004",
-          prodlot: "LOT12346", 
-          line: "LOT12346",
-          total_ok: 450,
-          total_ng: 50,
-          ok_ratio_percent: 90.0,
-          ng_ratio_percent: 10.0
-        }
-      ],
-      trendData: [
-        {
-          defecttype: "Crack",
-          line: "LOT12346",
-          hour_slot: "2025-06-19T09:00:00",
-          quantity: 2
-        },
-        {
-          defecttype: "Scratch", 
-          line: "LOT12346",
-          hour_slot: "2025-06-19T12:00:00",
-          quantity: 1
-        }
-      ],
-      defectsByType: [
-        {
-          defecttype: "Crack",
-          line: "LOT12346",
-          quantity: 15,
-          all_defect_times: ["2025-06-19T09:00:00"]
-        },
-        {
-          defecttype: "Scratch",
-          line: "LOT12347", 
-          quantity: 8,
-          all_defect_times: ["2025-06-19T10:00:00"]
-        }
-      ],
-      defectsByCamera: [
-        {
-          prodid: "P001",
-          defectid: "DEF001",
-          defecttype: "Crack",
-          cameraid: "CAM001",
-          line: "LOT12346",
-          cameraname: "Production Line A Camera",
-          totalng: 5,
-          defecttime: "2025-06-19T09:00:00"
-        }
-      ],
-      ngDistribution: [
-        {
-          defecttype: "Crack",
-          prodname: "Tea Bottle", 
-          hour_slot: "2025-06-19T09:00:00",
-          defect_count: 3
-        }
-      ]
-    };
+    return getMockDashboardData();
   }
+};
+
+// Mock data function
+const getMockDashboardData = (): DashboardData => {
+  return {
+    totalProducts: { total_products: 1500 },
+    goodNgRatio: [
+      {
+        prodname: "Tea Bottle",
+        cameraid: "CAM004",
+        prodlot: "LOT12346", 
+        line: "LOT12346",
+        total_ok: 450,
+        total_ng: 50,
+        ok_ratio_percent: 90.0,
+        ng_ratio_percent: 10.0
+      }
+    ],
+    trendData: [
+      {
+        defecttype: "Crack",
+        line: "LOT12346",
+        hour_slot: "2025-06-19T09:00:00",
+        quantity: 2
+      },
+      {
+        defecttype: "Scratch", 
+        line: "LOT12346",
+        hour_slot: "2025-06-19T12:00:00",
+        quantity: 1
+      }
+    ],
+    defectsByType: [
+      {
+        defecttype: "Crack",
+        line: "LOT12346",
+        quantity: 15,
+        all_defect_times: ["2025-06-19T09:00:00"]
+      },
+      {
+        defecttype: "Scratch",
+        line: "LOT12347", 
+        quantity: 8,
+        all_defect_times: ["2025-06-19T10:00:00"]
+      }
+    ],
+    defectsByCamera: [
+      {
+        prodid: "P001",
+        defectid: "DEF001",
+        defecttype: "Crack",
+        cameraid: "CAM001",
+        line: "LOT12346",
+        cameraname: "Production Line A Camera",
+        totalng: 5,
+        defecttime: "2025-06-19T09:00:00"
+      }
+    ],
+    ngDistribution: [
+      {
+        defecttype: "Crack",
+        prodname: "Tea Bottle", 
+        line: "LOT12346",
+        hour_slot: "2025-06-19T09:00:00",
+        defect_count: 3
+      }
+    ]
+  };
 };

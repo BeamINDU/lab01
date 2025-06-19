@@ -45,61 +45,63 @@ const getColorForLine = (lineIndex: number): string => {
 };
 
 export default function FrequentDefectsChart({ data, loading, error }: FrequentDefectsChartProps) {
-  const chartData = useMemo(() => {
-    if (!data || data.length === 0) {
-      return {
-        labels: ['No Data'],
-        datasets: [{
-          label: 'No Data',
-          data: [0],
-          backgroundColor: 'rgba(156, 163, 175, 0.8)',
-          borderColor: 'rgba(156, 163, 175, 1)',
-          borderWidth: 1,
-        }]
-      };
+const chartData = useMemo(() => {
+  if (!data || data.length === 0) {
+    return {
+      labels: ['No Data'],
+      datasets: [{
+        label: 'No Data',
+        data: [0],
+        backgroundColor: 'rgba(156, 163, 175, 0.8)',
+        borderColor: 'rgba(156, 163, 175, 1)',
+        borderWidth: 1,
+      }]
+    };
+  }
+
+  // Group by defecttype และ collect lines (จัดการ null values)
+  const defectMap = new Map<string, Record<string, number>>();
+  const linesSet = new Set<string>();
+  
+  data.forEach(item => {
+    const lineLabel = item.line || 'Unknown Line'; // จัดการ null line
+    
+    if (!defectMap.has(item.defecttype)) {
+      defectMap.set(item.defecttype, {});
     }
-
-    // Group by defecttype และ collect lines
-    const defectMap = new Map<string, Record<string, number>>();
-    const linesSet = new Set<string>();
     
-    data.forEach(item => {
-      if (!defectMap.has(item.defecttype)) {
-        defectMap.set(item.defecttype, {});
-      }
-      
-      const defectData = defectMap.get(item.defecttype)!;
-      defectData[item.line] = (defectData[item.line] || 0) + (item.quantity || 0);
-      linesSet.add(item.line);
-    });
+    const defectData = defectMap.get(item.defecttype)!;
+    defectData[lineLabel] = (defectData[lineLabel] || 0) + (item.quantity || 0);
+    linesSet.add(lineLabel);
+  });
 
-    // สร้าง labels (defect types) sorted by total quantity
-    const defectTotals = new Map<string, number>();
-    defectMap.forEach((lineData, defectType) => {
-      const total = Object.values(lineData).reduce((sum, qty) => sum + qty, 0);
-      defectTotals.set(defectType, total);
-    });
-    
-    const labels = Array.from(defectTotals.entries())
-      .sort((a, b) => b[1] - a[1]) // Sort by total quantity desc
-      .slice(0, 5) // Top 5
-      .map(([defectType]) => defectType);
+  // สร้าง labels (defect types) sorted by total quantity
+  const defectTotals = new Map<string, number>();
+  defectMap.forEach((lineData, defectType) => {
+    const total = Object.values(lineData).reduce((sum, qty) => sum + qty, 0);
+    defectTotals.set(defectType, total);
+  });
+  
+  const labels = Array.from(defectTotals.entries())
+    .sort((a, b) => b[1] - a[1]) // Sort by total quantity desc
+    .slice(0, 5) // Top 5
+    .map(([defectType]) => defectType);
 
-    const linesArray = Array.from(linesSet).sort();
-    
-    // สร้าง datasets สำหรับแต่ละ line
-    const datasets = linesArray.map((line, index) => ({
-      label: line,
-      data: labels.map(defectType => defectMap.get(defectType)?.[line] || 0),
-      backgroundColor: getColorForLine(index),
-      borderColor: getColorForLine(index).replace('0.8', '1'),
-      borderWidth: 1,
-      borderRadius: 4,
-      borderSkipped: false,
-    }));
+  const linesArray = Array.from(linesSet).sort();
+  
+  // สร้าง datasets สำหรับแต่ละ line
+  const datasets = linesArray.map((line, index) => ({
+    label: line,
+    data: labels.map(defectType => defectMap.get(defectType)?.[line] || 0),
+    backgroundColor: getColorForLine(index),
+    borderColor: getColorForLine(index).replace('0.8', '1'),
+    borderWidth: 1,
+    borderRadius: 4,
+    borderSkipped: false,
+  }));
 
-    return { labels, datasets };
-  }, [data]);
+  return { labels, datasets };
+}, [data]);
 
   const maxStackedValue = useMemo(() => {
     if (chartData.datasets.length === 0) return 0;

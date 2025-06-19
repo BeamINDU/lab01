@@ -199,31 +199,29 @@ export default function LiveInspectionViewPage({ cameraId }: { cameraId: string 
   };
   
   return (
-    <div className="p-2">
+    <div className="px-2 py-1">
       {/* Header */}
-      <div className={`flex justify-between items-center bg-sky-500 text-white text-xl font-bold text-xl px-4 py-2 rounded-t h-13 ${loading ? "animate-pulse" : ""}`}>
-        <span>{data?.location}</span>
+      {/* <div className={`flex justify-between items-center bg-sky-500 text-white text-xl font-bold text-xl px-4 py-2 rounded-t h-13 ${loading ? "animate-pulse" : ""}`}>
+        <span>{data?.location} {data?.cameraName}</span>
+        
         <button 
           className="w-24 bg-white text-sky-500 font-semibold px-3 py-1 rounded hover:bg-gray-100 transition"
           onClick={handleStartPlan}
         >
           START
         </button>
-      </div>
+      </div> */}
 
       {/* Main Grid */}
-      <div className="grid grid-cols-[660px_1fr] mt-3 bg-gray-100 rounded-b">
+      <div className="grid grid-cols-[820px_1fr] mt-0 bg-gray-100 rounded-b">
 
         {/* Camera and Summary */}
-        <div className="space-y-4 w-[640px] ">
-          <CameraBox cameraName={data?.cameraName} liveStream={data?.liveStream} loading={loading} />
+        <div className="space-y-4">
+          {/* Camera */}
+          <CameraBox location={data?.location} cameraName={data?.cameraName} liveStream={data?.liveStream} loading={loading} />
 
-          <div className="grid grid-cols-2 gap-2 text-center text-xl font-semibold">
-            <SummaryBox label="Lot No." value={data?.lotNo} loading={loading} />
-            <SummaryBox label="Total NG" value={formatNumber(toNumber(data?.totalNG))} loading={loading} />
-            <SummaryBox label="Total Product" value={formatNumber(toNumber(data?.totalProduct))} loading={loading} />
-            <SummaryBox label="Actual" value={formatNumber(toNumber(data?.actualProduct))} loading={loading} />
-          </div>
+          {/* Current Inspection */}
+          <CurrentInspectionBox data={data?.currentInspection} loading={loading} onStartPlan={handleStartPlan} />
         </div>
 
         {/* Status and Detection Info */}
@@ -231,13 +229,13 @@ export default function LiveInspectionViewPage({ cameraId }: { cameraId: string 
 
           {/* Status */}
           <div
-            className={`font-bold text-4xl flex justify-center items-center py-7 rounded
+            className={`font-bold text-6xl flex justify-center items-center py-8 rounded
               ${
                 loading
                   ? "bg-gray-400 text-transparent animate-pulse"
                   : data?.status === "OK"
                   ? "bg-green-500 text-white"
-                  : "bg-red-500 text-white"
+                  : "bg-[#FF5050] text-white"
               }
             `}
           >
@@ -260,8 +258,13 @@ export default function LiveInspectionViewPage({ cameraId }: { cameraId: string 
             loading={loading}
           />
 
-          {/* Current Inspection */}
-          <CurrentInspectionBox data={data?.currentInspection} loading={loading} />
+          {/* Summary */}
+          <div className="grid grid-cols-2 gap-4 text-center text-2xl font-semibold">
+            <SummaryBox label="Lot No." value={data?.lotNo} loading={loading} />
+            <SummaryBox label="Total NG" value={formatNumber(toNumber(data?.totalNG))} loading={loading} />
+            <SummaryBox label="Total Product" value={formatNumber(toNumber(data?.totalProduct))} loading={loading} />
+            <SummaryBox label="Actual" value={formatNumber(toNumber(data?.actualProduct))} loading={loading} />
+          </div>
         </div>
       </div>
 

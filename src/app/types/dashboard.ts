@@ -1,4 +1,4 @@
-// src/app/types/dashboard.ts - Updated Types to match API
+// src/app/types/dashboard.ts - แก้ไขให้ตรงกับ API Response
 
 export interface DashboardFilters {
   productId?: string;
@@ -11,7 +11,7 @@ export interface DashboardFilters {
   year?: string;
 }
 
-// API Response Types (ตรงกับ API จริง)
+// API Response Types (ตรงกับ mainsql2_1.py response)
 export interface TotalProductsData {
   total_products: number;
 }
@@ -30,7 +30,7 @@ export interface GoodNGRatioData {
 export interface TrendData {
   defecttype: string;
   line: string;
-  hour_slot: string;
+  hour_slot: string;  // ISO datetime string
   quantity: number;
 }
 
@@ -38,7 +38,7 @@ export interface DefectTypeData {
   defecttype: string;
   line: string;
   quantity: number;
-  all_defect_times: string[];
+  all_defect_times: string[];  // Array of ISO datetime strings
 }
 
 export interface DefectCameraData {
@@ -46,16 +46,17 @@ export interface DefectCameraData {
   defectid: string;
   defecttype: string;
   cameraid: string;
-  line: string;
+  line: string;        // ใช้ alias "LINE" จาก SQL
   cameraname: string;
   totalng: number;
-  defecttime: string;
+  defecttime: string;  // ISO datetime string
 }
 
 export interface NgDistributionData {
   defecttype: string;
   prodname: string;
-  hour_slot: string;
+  line: string;        // เพิ่ม line field
+  hour_slot: string;   // ISO datetime string
   defect_count: number;
 }
 
@@ -64,12 +65,12 @@ export interface DashboardData {
   totalProducts: TotalProductsData | null;
   goodNgRatio: GoodNGRatioData[] | null;
   trendData: TrendData[] | null;
-  defectsByType: DefectTypeData[] | null;
+  defectsByType: DefectTypeData[] | null;  // แก้ไขชื่อ field
   defectsByCamera: DefectCameraData[] | null;
   ngDistribution: NgDistributionData[] | null;
 }
 
-// Additional helper types
+// Dropdown options (จาก /products, /cameras, /lines endpoints)
 export interface ProductOption {
   id: string;
   name: string;
@@ -85,24 +86,7 @@ export interface LineOption {
   name: string;
 }
 
-// Chart data interfaces (processed from API data)
-export interface ProcessedChartData {
-  labels: string[];
-  datasets: Array<{
-    label: string;
-    data: number[];
-    backgroundColor: string | string[];
-    borderColor: string | string[];
-    [key: string]: any;
-  }>;
-}
-
-export interface PieChartData {
-  name: string;
-  value: number;
-}
-
-// Error and Loading states
+// Component States
 export interface ComponentState {
   loading?: boolean;
   error?: string;

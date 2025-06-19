@@ -40,98 +40,81 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={`min-h-screen bg-white flex items-center justify-center ${nunito.className}`}>
-      <div className="flex bg-gray-100 shadow-lg rounded-lg overflow-hidden w-4/5 h-max max-w-5xl">
-        <div className="w-2/5 p-8 mt-4  ">
-          <div className="flex items-center mb-12">
+    <div className={`min-h-screen bg-white flex items-center justify-center px-4 ${nunito.className}`}>
+      <div className="flex flex-col lg:flex-row bg-gray-100 shadow-lg rounded-lg overflow-hidden w-full max-w-5xl">
+        {/* Left Panel */}
+        <div className="w-full lg:w-2/5 p-6 sm:p-10">
+          <div className="flex items-center mb-10">
             <Image
               src="/images/logo-login.png"
               alt="Logo"
-              width={80}
-              height={80}
+              width={70}
+              height={70}
               className="object-contain"
             />
-            <div className="ml-0">
+            <div className="ml-2">
               <h1 className="text-2xl font-bold text-black">TAKUMI</h1>
-              <p className="text-black text-sm font-bold">(Product Inspection)</p>
+              <p className="text-black text-sm font-semibold">(Product Inspection)</p>
             </div>
           </div>
 
-          <p className="flex items-center justify-center text-red-500 text-sm min-h-5">{error}</p>
+          <p className="text-red-500 text-sm min-h-5 text-center mb-2">{error}</p>
 
-          {/* <form onSubmit={handleSubmit}> */}
-          <form onSubmit={handleLogin}>
-            <div className="mb-6">
-              <label className="block text-black text-sm font-sm mb-1">Username</label>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label className="block text-black text-sm font-medium mb-1">Username</label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Enter your username"
-                className="w-4/5 h-6 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
-            <div className="mb-8">
+            <div>
               <label className="block text-black text-sm font-medium mb-1">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter your password"
-                className="w-4/5 h-6 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               />
             </div>
-            <div className="flex justify-between items-center mb-6">
-              {/* <label className="inline-flex items-center text-sm text-black">
-                <input type="checkbox" className="form-checkbox text-blue-500" />
-                <span className="ml-2">Remember</span>
-              </label> */}
-              
-              <a href="#" onClick={handleForgotPassword} className="text-sm text-blue-500 mr-16 hover:underline">
+            <div className="flex justify-end">
+              {/* <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-sm text-blue-500 hover:underline"
+              >
                 Forgot Password?
-              </a>
-
-              {/* <a href="#" onClick={handleChangePassword} className="text-sm text-blue-500 mr-16 hover:underline">
-                change Password?
-              </a> */}
+              </button> */}
             </div>
             <button
               type="submit"
-              className="bg-[#0369A1] text-white mt-14 py-2 px-4 rounded-lg w-4/5 h-10 hover:bg-blue-600"
+              className="bg-[#0369A1] text-white py-2 px-4 rounded-lg w-full hover:bg-blue-600"
             >
               Login
             </button>
-            {/* <div className="flex ml-10 mt-4">
-              <span className="text-sm text-black">Don’t have an account?</span>
-              <a href="#" className="ml-2 text-sm text-blue-500 hover:underline">
-                Sign up
-              </a>
-            </div> */}
           </form>
         </div>
 
-        <div className="w-3/5 relative">
+        {/* Right Panel */}
+        <div className="hidden lg:block relative w-full lg:w-3/5">
           <Image
             src="/images/takumi-pic.png"
             alt="Login Background"
             fill
             className="object-cover"
           />
-          <div className="absolute top-2 right-1 bg-black bg-opacity-20 text-white p-4 rounded-lg shadow-lg max-w-md">
-            <h1 className="text-lg font-bold mb-2">
-              {/* TAKUMI <span className="text-sm font-normal ">(Product Inspection)</span> */}
-            </h1>
-
-            <p className="text-xs leading-5 text-justify">
-              {/* &emsp;เหมาะสำหรับธุรกิจเกี่ยวกับการผลิต โลจิสติกส์ และการเงิน <br />
-              ด้วยความสามารถในการเลือกโมดูลตามความต้องการสำหรับอุตสาหกรรมการผลิต <br />
-              ได้แก่ฟีเจอร์การตรวจจับความผิดพลาด แจ้งเตือนการบำรุงรักษา <br />
-              การตรวจสอบคุณภาพโดยภาพและเสียง สำหรับธุรกิจโลจิสติกส์ ได้แก่ <br />
-              การแนะนำการจัดวางสินค้าในพาเลท <br />
-              และฟังก์ชันการพยากรณ์การขายและการวางบิลสำหรับธุรกิจการเงิน */}
-            </p>
+          <div className="absolute top-2 right-2 bg-black bg-opacity-20 text-white p-4 rounded-lg shadow-lg max-w-md text-xs leading-5">
+            {/* Content placeholder */}
+            {/* <h1 className="text-lg font-bold mb-2">TAKUMI (RAG)</h1>
+            <p>
+              เหมาะสำหรับธุรกิจเกี่ยวกับการผลิต โลจิสติกส์ และการเงิน...
+            </p> */}
           </div>
         </div>
       </div>

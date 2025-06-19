@@ -1,4 +1,5 @@
-// src/app/(protected)/dashboard/components/DashboardPage.tsx
+// src/app/(protected)/dashboard/components/DashboardPage.tsx - แก้ไขการเรียกใช้ข้อมูล
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -39,7 +40,7 @@ export default function DashboardPage() {
     setDateFrom(startOfDay);
     setDateTo(endOfDay);
     
-    console.log('Default date range set:', {
+    console.log('🕐 Default date range set:', {
       from: startOfDay,
       to: endOfDay
     });
@@ -52,13 +53,15 @@ export default function DashboardPage() {
         setLoading(true);
         setError(null);
 
-        console.log('Refreshing dashboard with filters:', filters);
+        console.log('🔄 Refreshing dashboard with filters:', filters);
         
         const data = await getDashboardData(filters);
         setDashboardData(data);
         
+        console.log('✅ Dashboard data updated:', data);
+        
       } catch (error) {
-        console.error('Failed to load dashboard data:', error);
+        console.error('❌ Failed to load dashboard data:', error);
         setError('Failed to load dashboard data. Please try again.');
         showError('Failed to load dashboard data');
       } finally {
@@ -81,6 +84,7 @@ export default function DashboardPage() {
         year: selectedYear || undefined,
       };
 
+      console.log('🎯 Filters changed, triggering refresh:', filters);
       debouncedRefreshDashboardData(filters);
     }
 
@@ -90,29 +94,30 @@ export default function DashboardPage() {
     };
   }, [selectedProduct, selectedCamera, selectedLine, selectedMonth, selectedYear, dateFrom, dateTo, debouncedRefreshDashboardData]);
 
+  // Event handlers
   const handleProductChange = (productId: string) => {
     setSelectedProduct(productId);
-    console.log('Selected Product:', productId);
+    console.log('🏷️ Selected Product:', productId);
   };
 
   const handleCameraChange = (cameraId: string) => {
     setSelectedCamera(cameraId);
-    console.log('Selected Camera:', cameraId);
+    console.log('📷 Selected Camera:', cameraId);
   };
 
   const handleLineChange = (lineId: string) => {
     setSelectedLine(lineId);
-    console.log('Selected Line:', lineId);
+    console.log('🏭 Selected Line:', lineId);
   };
 
   const handleMonthChange = (month: string) => {
     setSelectedMonth(month);
-    console.log('Selected Month:', month);
+    console.log('📅 Selected Month:', month);
   };
 
   const handleYearChange = (year: string) => {
     setSelectedYear(year);
-    console.log('Selected Year:', year);
+    console.log('📅 Selected Year:', year);
   };
 
   const handleDateFromChange = (date: string | null) => {
@@ -123,10 +128,10 @@ export default function DashboardPage() {
       if (dateTo && dayjs(date).isAfter(dayjs(dateTo))) {
         const newToDate = dayjs(date).endOf('day').format('YYYY-MM-DD HH:mm');
         setDateTo(newToDate);
-        console.log('Auto-adjusted To Date to:', newToDate);
+        console.log('🔄 Auto-adjusted To Date to:', newToDate);
       }
       
-      console.log('Selected Date From:', date);
+      console.log('🕐 Selected Date From:', date);
     } else {
       setDateFrom('');
     }
@@ -141,7 +146,7 @@ export default function DashboardPage() {
       }
       
       setDateTo(date);
-      console.log('Selected Date To:', date);
+      console.log('🕐 Selected Date To:', date);
     } else {
       setDateTo('');
     }
@@ -285,7 +290,7 @@ export default function DashboardPage() {
         </div>
         <div className="lg:col-span-3">
           <FrequentDefectsChart 
-            data={dashboardData?.frequentDefects || null}
+            data={dashboardData?.defectsByType || null}  // แก้ไขชื่อ field
             loading={loading}
             error={error}
           />
@@ -311,11 +316,11 @@ export default function DashboardPage() {
       {/* Debug Information (แสดงในโหมด development) */}
       {process.env.NODE_ENV === 'development' && dashboardData && (
         <div className="mt-6 p-4 bg-gray-100 rounded-lg">
-          <h3 className="text-sm font-semibold mb-2">Debug Information:</h3>
+          <h3 className="text-sm font-semibold mb-2">🐛 Debug Information:</h3>
           <div className="text-xs text-gray-600 space-y-1">
             <div>Total Products: {dashboardData.totalProducts?.total_products || 0}</div>
             <div>Good/NG Ratio Records: {dashboardData.goodNgRatio?.length || 0}</div>
-            <div>Frequent Defects Records: {dashboardData.frequentDefects?.length || 0}</div>
+            <div>Defects by Type Records: {dashboardData.defectsByType?.length || 0}</div>
             <div>Trend Data Records: {dashboardData.trendData?.length || 0}</div>
             <div>Camera Defects Records: {dashboardData.defectsByCamera?.length || 0}</div>
             <div>NG Distribution Records: {dashboardData.ngDistribution?.length || 0}</div>
