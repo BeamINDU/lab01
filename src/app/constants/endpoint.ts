@@ -119,10 +119,10 @@ export const API_ROUTES = {
   },
   dashboard: {
     total_products: "",
-    good_ng_ratio: "",
-    trend_detection: "",
-    frequent_defects: "",
-    ng_distribution: "",
-    defect_by_camera: "",
+    good_ng_ratio: "/goodngratio",
+    top5_trends: "/top5trends",
+    top5_defects: "/top5defects",
+    ng_distribution: "/ngdistribution",
+    defects_camera: "/defects-camera",
   },
 };

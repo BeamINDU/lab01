@@ -5,13 +5,13 @@ import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { formatNumber, toNumber } from "@/app/utils/format";
 import { useLiveSocketStore } from '@/app/stores/useLiveSocketStore';
 import { Planning } from "@/app/types/planning";
-import { LiveInspectionView } from "@/app/types/live";
 import { startPlansConfirmation, stopPlans } from "@/app/libs/services/planning";
 import SummaryBox from "./summary-box";
 import CameraBox from "./camera-box";
 import DetectionBox from "./detection-box";
 import CurrentInspectionBox from "./current-Inspection-box"
 import PlanningConfirmationModal from "./plans-confirm-model"
+import { LiveInspectionView } from "@/app/types/live";
 
 interface detectionInfo {
   title: string
@@ -200,22 +200,10 @@ export default function LiveInspectionViewPage({ cameraId }: { cameraId: string 
   
   return (
     <div className="px-2 py-1">
-      {/* Header */}
-      {/* <div className={`flex justify-between items-center bg-sky-500 text-white text-xl font-bold text-xl px-4 py-2 rounded-t h-13 ${loading ? "animate-pulse" : ""}`}>
-        <span>{data?.location} {data?.cameraName}</span>
-        
-        <button 
-          className="w-24 bg-white text-sky-500 font-semibold px-3 py-1 rounded hover:bg-gray-100 transition"
-          onClick={handleStartPlan}
-        >
-          START
-        </button>
-      </div> */}
-
       {/* Main Grid */}
       <div className="grid grid-cols-[820px_1fr] mt-0 bg-gray-100 rounded-b">
 
-        {/* Camera and Summary */}
+        {/* Camera and Current Inspection */}
         <div className="space-y-4">
           {/* Camera */}
           <CameraBox location={data?.location} cameraName={data?.cameraName} liveStream={data?.liveStream} loading={loading} />

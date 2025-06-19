@@ -103,6 +103,7 @@ export const getCameraNameOptions = async (q: string) => {
 export const getCameraLocationOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_location}?q=${q}`);
+    
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

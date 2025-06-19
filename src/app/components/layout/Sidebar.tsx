@@ -1,108 +1,159 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { useState, useEffect } from 'react'
+import { useRouter, usePathname } from "next/navigation";
+import Image from "next/image";
+import Link from 'next/link'
+import { Menu, X, ChevronDown, User, LogOut, LayoutDashboard, Camera, Boxes, FileText, Settings, CalendarCog, CircleDot } from 'lucide-react'
+import { signOut, useSession } from "next-auth/react";
+import { MenuItem } from '@/app/types/menu';
 import { usePermission } from '@/app/contexts/permission-context';
-import type { MenuItem } from '@/app/types/menu';
 
 //---------------------------------------------------------------------------------------------------------
 
-const _menuData: MenuItem[] = [
-  { id:"1", label: "Dashboard", path: "/dashboard" },
-  { id:"2", label: "Live inspection view",
+const _menuTree: MenuItem[] = [
+  { id: "1", label: "Dashboard", icon: "dashboard", path: "/dashboard" },
+  {
+    id: "2", label: "Live inspection view", icon: "live",
     children: [
       {
-        id:"21", label: "Line Packing 1",
+        id: "21", label: "Zone 1",
         children: [
-          { id:"211", label: "CAM 1 Identify", path: "/live/1" },
-          { id:"212", label: "CAM 2 Defect Detection", path: "/live/2" },
+          { id: "211", label: "CAM 1", path: "/live/cam1" },
         ],
       },
       {
-        id:"22", label: "Line Spare Part",
+        id: "22", label: "Zone 2",
         children: [
-          { id:"221", label: "CAM 3 Identify &Detect", path: "/live/3" },
-          { id:"222", label: "CAM 4 Identify &Detect", path: "/live/4" },
-          { id:"223", label: "CAM 5 Identify &Detect", path: "/live/5" }
+          { id: "221", label: "CAM 2", path: "/live/cam2" },
+          { id: "222", label: "CAM 3", path: "/live/cam3" },
         ],
       },
     ],
   },
   {
-    id:"3", label: "Master data",
+    id: "3", label: "Master data", icon: "settings",
     children: [
-      { id:"31", label: "Product", path: "/master-data/product" },
-      { id:"32", label: "Product Type", path: "/master-data/product-type" },
-      { id:"33", label: "Defect Type", path: "/master-data/defect-type" },
-      { id:"34", label: "Camera", path: "/master-data/camera" },
-      { id:"35", label: "User", path: "/master-data/user" },
-      { id:"36", label: "Role", path: "/master-data/role" },
+      { id: "31", label: "Product", path: "/master-data/product" },
+      { id: "32", label: "Product Type", path: "/master-data/product-type" },
+      { id: "33", label: "Defect Type", path: "/master-data/defect-type" },
+      { id: "34", label: "Camera", path: "/master-data/camera" },
+      { id: "35", label: "User", path: "/master-data/user" },
+      { id: "36", label: "Role", path: "/master-data/role" },
     ],
   },
-  { id:"4", label: "Report",
+  {
+    id: "4", label: "Report", icon: "report",
     children: [
-      { id:"41", label: "Product Defect Result", path: "/report/product-defect"},
-      { id:"42", label: "Defect Summary", path: "/report/defect-summary" },
-      { id:"43", label: "Transaction", path: "/report/c" },
+      { id: "41", label: "Product Defect Result", path: "/report/product-defect" },
+      { id: "42", label: "Defect Summary", path: "/report/defect-summary" },
+      { id: "43", label: "Transaction", path: "/report/c" },
     ],
   },
-  { id:"5", label: "Detection Model", path: "/detection-model" }, 
-  { id:"6", label: "Planning", path: "/planning" }, 
+  { id: "5", label: "Detection Model", icon: "detection", path: "/detection-model" },
+  { id: "6", label: "Planning", icon: "planning", path: "/planning" },
 ];
 
 //---------------------------------------------------------------------------------------------------------
 
-const Sidebar = () => {
-  const pathname = usePathname();
+type SidebarProps = {
+  sidebarOpen: boolean;
+  setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  toggleSidebar: () => void;
+};
+
+export default function Sidebar({sidebarOpen, setSidebarOpen, toggleSidebar}: SidebarProps) {
+  const { status, data: session } = useSession();
   const { menuTree, loading } = usePermission();
-  const [openMenus, setOpenMenus] = useState<{ [key: string]: boolean }>({});
+  const router = useRouter();
+  const pathname = usePathname();
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({})
+  
+  // useEffect(() => {
+  //   if (status !== "authenticated") handleLogout();
+  // }, [status]);
 
-  const toggleMenu = (label: string) => {
-    setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }));
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/login" });
   };
 
-  const getSectionClass = (level: number) => {
-    const bgColors = ["bg-[#0369A1]", "bg-[#7e8f97]", "bg-[#CFF0FB]"];
-    const bgColor = bgColors[level] ?? "bg-[#E0F7FF]";
-    const textColor = level >= 2 ? "text-gray-800" : "text-white";
-    return `w-full flex items-center justify-between px-4 py-2 rounded-md ${bgColor} ${textColor}`;
+  const navigateToDashboard = () => {
+    router.push("/dashboard");
   };
 
-  const getLinkClass = (level: number, isActive: boolean) => {
-    const base = "block px-4 py-2 rounded-md transition-all duration-150";
-    if (level === 0) {
-      return isActive ? `${base} bg-[#1e3a8a] text-white` : `${base} bg-[#0369A1] text-white hover:bg-sky-800`;
-    } else if (level === 1) {
-      return isActive ? `${base} bg-[#0EA5E9] text-white` : `${base} bg-[#F9FAFB] text-gray-800 hover:bg-sky-100`;
-    } else {
-      return isActive ? `${base} bg-[#0EA5E9] text-white` : `${base} bg-[#CFF0FB] text-gray-800 hover:bg-sky-100`;
+  const toggleMenu = (title: string) => {
+    setOpenMenus((prev) => ({ ...prev, [title]: !prev[title] }))
+  }
+
+  const isMenuActive = (item: MenuItem): boolean => {
+    if (item.path === pathname) return true;
+    if (item.children) {
+      return item.children.some((child) => isMenuActive(child));
     }
+    return false;
+  };
+
+  const mapIconNameToIcon = (iconName: string): React.ReactNode => {
+    const iconMap: Record<string, React.ReactNode> = {
+      dashboard: <LayoutDashboard className="w-4 h-4 mr-2 text-gray-500" />,
+      live: <Camera className="w-4 h-4 mr-2 text-gray-500" />,
+      settings: <Settings className="w-4 h-4 mr-2 text-gray-500" />,
+      report: <FileText className="w-4 h-4 mr-2 text-gray-500" />,
+      planning: <CalendarCog className="w-4 h-4 mr-2 text-gray-500" />,
+      detection: <Boxes className="w-4 h-4 mr-2 text-gray-400" />,
+    };
+    return iconMap[iconName.toLowerCase()] || <CircleDot className="w-2 h-2 mr-2 text-gray-400" />;
+  };
+
+  const getPaddingByLevel = (level: number) => {
+    if (level === 0) return 'pl-2';
+    if (level === 1) return 'pl-4';
+    return 'pl-6';
   };
 
   const renderMenu = (items: MenuItem[], level = 0) => (
     <ul className="space-y-1">
       {items.map((item) => {
-        const isActive = item.path === pathname;
+        const isTopLevel = level === 0;
+        const isActive = isMenuActive(item);
+        const hasChildren = item.children && item.children.length > 0;
+        const padding = getPaddingByLevel(level);
+
         return (
-          <li key={item.id || item.label}>
-            {item.children?.length ? (
-              <>
-                <button className={getSectionClass(level)} onClick={() => toggleMenu(item.label)}>
-                  <span>{item.label}</span>
-                  {openMenus[item.label] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                </button>
-                {openMenus[item.label] && (
-                  <div className="ml-2 mt-1">
-                    {renderMenu(item.children, level + 1)}
-                  </div>
+          <li key={item.label}>
+            <div
+              className={`text-md flex items-center justify-between rounded-md cursor-pointer px-2 py-2
+                ${padding}
+                ${isActive
+                  ? isTopLevel
+                    ? 'bg-blue-200 text-blue-700 font-semibold'
+                    : 'text-blue-700 font-semibold'
+                  : 'hover:bg-gray-100 text-gray-700'}
+                transition duration-150`}
+            >
+              <div className="flex items-center flex-1 space-x-2">
+                {mapIconNameToIcon(item.icon || item.label)}
+                {item.path ? (
+                  <Link href={item.path} onClick={() => setSidebarOpen(true)} className="flex-1">
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span onClick={() => toggleMenu(item.label)}>{item.label}</span>
                 )}
-              </>
-            ) : (
-              <Link href={item.path ?? "#"} className={getLinkClass(level, isActive)}>
-                {item.label}
-              </Link>
+              </div>
+              {hasChildren && (
+                <button onClick={() => toggleMenu(item.label)} className="ml-2 focus:outline-none">
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${openMenus[item.label] ? 'rotate-180' : ''}`}
+                  />
+                </button>
+              )}
+            </div>
+
+            {hasChildren && openMenus[item.label] && (
+              <div className="ml-2 border-gray-200">
+                {renderMenu(item.children!, level + 1)}
+              </div>
             )}
           </li>
         );
@@ -110,15 +161,35 @@ const Sidebar = () => {
     </ul>
   );
 
-  if (loading) return <div>Loading menu...</div>;
-
   return (
-    <aside className="bg-white overflow-y-auto py-2 w-64 h-[calc(100vh-80px)] ">
-      <nav className="space-y-2 px-2">
+    <div className={`fixed z-40 inset-y-0 left-0 w-64 bg-white shadow-md transition-transform duration-200 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className="flex items-center justify-between p-3">
+
+        {/* Logo */}
+        <div className="cursor-pointer" onClick={navigateToDashboard}>
+          <div className="flex items-center space-x-1">
+            <Image src="/images/logo-takumi.png" alt="TAKUMI Logo" width={40} height={40} />
+            <div className="flex flex-col leading-tight">
+              <span className="font-bold text-xl -mt-2">TAKUMI</span>
+              <span className="text-sm text-gray-600">Product Inspection</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Hamburger Button */}
+        <button
+          onClick={toggleSidebar}
+          className="block"
+        >
+          <X className="w-6 h-6 md:hidden" />
+          <Menu className="w-6 h-6 hidden md:block" />
+        </button>
+      </div>
+
+      {/* <Sidebar/> */}
+      <nav className="p-4 space-y-2 overflow-y-auto h-[calc(100vh-72px)]">
         {renderMenu(menuTree)}
       </nav>
-    </aside>
-  );
-};
-
-export default Sidebar;
+    </div>
+  )
+}
