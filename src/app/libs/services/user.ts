@@ -62,7 +62,6 @@ export const update = async (id: string, param: Partial<User>) => {
       ...param,
       id: param.userId,
       statusName: param.status ? 'Active' : 'Inactive',
-      createdDate: new Date(),
       updatedDate: new Date(),
     };
   } catch (error) {

@@ -56,7 +56,6 @@ export const update = async (id: string, param: Partial<DefectType>) => {
       ...param,
       id: param.defectTypeId,
       statusName: param.status ? 'Active' : 'Inactive',
-      createdDate: new Date(),
       updatedDate: new Date(),
     };
   } catch (error) {

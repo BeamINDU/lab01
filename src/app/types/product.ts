@@ -7,7 +7,7 @@ export type Product = {
   serialNo: string
   status: boolean
   statusName?: string
-  createdDate?: Date | null
+  createdDate?: Date
   createdBy?: string
   updatedDate?: Date | null
   updatedBy?: string | null

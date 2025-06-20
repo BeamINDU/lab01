@@ -125,8 +125,8 @@ export default function Page() {
       } else {
         const updatedData = await update(formData?.id ?? "", formData) as Product;
         setData(prev => prev.map(item => item.id === formData.id ? updatedData : item ));
-        showSuccess('Product updated successfully');
       }
+      showSuccess('Product updated successfully');
       setIsFormModalOpen(false);
     } catch (error) {
       console.error('Save operation failed:', error);

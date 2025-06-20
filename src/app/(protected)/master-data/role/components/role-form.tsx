@@ -14,6 +14,10 @@ const RoleSchema = z.object({
   roleName: z.string().min(1, "Role Name  is required"),
   description: z.string().optional(),
   status: z.boolean(),
+  createdDate: z.union([
+    z.coerce.date(),
+    z.literal("").transform(() => undefined)
+  ]).optional()
 }); 
 
 type RoleFormValues = z.infer<typeof RoleSchema>;
@@ -69,6 +73,7 @@ export default function RoleFormModal({
     const formWithMeta: Role = {
       ...formData,
       createdBy: session?.user?.userid,
+      createdDate: formData.createdDate,
       updatedBy: formData.id ? session?.user?.userid : null,
     };
     onSave(formWithMeta);
@@ -100,6 +105,7 @@ export default function RoleFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('id')} />
+          <input type="hidden" {...register('createdDate')} />
           
           {/* <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">

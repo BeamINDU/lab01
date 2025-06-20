@@ -43,7 +43,7 @@ export const create = async (param: Partial<Product>) => {
       ...param,
       id: param.productId,
       statusName: param.status ? 'Active' : 'Inactive',
-      createdDate: new Date(),
+      createdDate: new Date(res.createddate),
     };
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -52,13 +52,12 @@ export const create = async (param: Partial<Product>) => {
 
 export const update = async (id: string, param: Partial<Product>) => {
   try {
-    const res = await api.put<Product>(`${API_ROUTES.product.update}?prodid=${id}`, param);
+    const res = await api.put<any>(`${API_ROUTES.product.update}?prodid=${id}`, param);
     return {
       ...param,
       id: param.productId,
       statusName: param.status ? 'Active' : 'Inactive',
-      createdDate: new Date(),
-      updatedDate: new Date(),
+      updatedDate: new Date(res.updateddate),
     };
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -67,7 +66,7 @@ export const update = async (id: string, param: Partial<Product>) => {
 
 export const remove = async (id: string) => {
   try {
-    return await api.delete<Product>(`${API_ROUTES.product.delete}?prodid=${id}`);
+    return await api.delete<any>(`${API_ROUTES.product.delete}?prodid=${id}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

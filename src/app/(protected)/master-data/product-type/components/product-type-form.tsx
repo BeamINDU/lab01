@@ -15,6 +15,10 @@ const ProductTypeSchema = z.object({
   productTypeName: z.string().min(1, "Product Type Name is required"),
   description: z.string(),
   status: z.boolean(),
+  createdDate: z.union([
+    z.coerce.date(),
+    z.literal("").transform(() => undefined)
+  ]).optional()
 }); 
 
 type ProductTypeFormValues = z.infer<typeof ProductTypeSchema>;
@@ -69,14 +73,11 @@ export default function ProductTypeFormModal({
     const formWithMeta: ProductType = {
       ...formData,
       createdBy: session?.user?.userid,
+      createdDate: formData.createdDate,
       updatedBy: formData.id ? session?.user?.userid : null,
     };
     onSave(formWithMeta);
   };
-
-  // const watchedStatus = watch("status");
-
-  if (!showModal) return null;
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
@@ -103,6 +104,7 @@ export default function ProductTypeFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('id')} />
+          <input type="hidden" {...register('createdDate')} />
           
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">  

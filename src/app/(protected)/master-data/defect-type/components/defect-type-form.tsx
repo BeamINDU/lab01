@@ -15,6 +15,10 @@ const DefectTypeSchema = z.object({
   defectTypeName: z.string().min(1, "Defect Type Name is required"),
   description: z.string(),
   status: z.boolean(),
+  createdDate: z.union([
+    z.coerce.date(),
+    z.literal("").transform(() => undefined)
+  ]).optional()
 }); 
 
 type DefectTypeFormValues = z.infer<typeof DefectTypeSchema>;
@@ -69,6 +73,7 @@ export default function DefectTypeFormModal({
     const formWithMeta: DefectType = {
       ...formData,
       createdBy: session?.user?.userid,
+      createdDate: formData.createdDate,
       updatedBy: formData.id ? session?.user?.userid : null,
     };
     onSave(formWithMeta);
@@ -99,6 +104,7 @@ export default function DefectTypeFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('id')} />
+          <input type="hidden" {...register('createdDate')} />
           
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">

@@ -14,6 +14,10 @@ const CameraSchema = z.object({
   cameraName: z.string().min(1, "Camera Name is required"),
   location: z.string().min(1, "Location is required"),
   status: z.boolean(),
+  createdDate: z.union([
+    z.coerce.date(),
+    z.literal("").transform(() => undefined)
+  ]).optional()
 }); 
 
 type CameraFormValues = z.infer<typeof CameraSchema>;
@@ -69,6 +73,7 @@ export default function CameraFormModal({
     const formWithMeta: Camera = {
       ...formData,
       createdBy: session?.user?.userid,
+      createdDate: formData.createdDate,
       updatedBy: formData.id ? session?.user?.userid : null,
     };
     onSave(formWithMeta);
@@ -99,6 +104,7 @@ export default function CameraFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('id')} />
+          <input type="hidden" {...register('createdDate')} />
           
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">

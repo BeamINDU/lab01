@@ -27,9 +27,9 @@ export default function DashboardPage() {
   // Dashboard data state
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | undefined>(undefined);
   
-  // 🔄 Auto-refresh states
+  //  Auto-refresh states
   const [isAutoRefresh, setIsAutoRefresh] = useState<boolean>(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -233,119 +233,86 @@ export default function DashboardPage() {
     );
   }
 
-  return (
-    <main className="p-2">
-      {/* Header with Auto-refresh Controls */}
-      <div className="flex justify-between items-start mb-6">
-        <HeaderFilters 
-          selectedProduct={selectedProduct}
-          selectedCamera={selectedCamera}
-          selectedLine={selectedLine}
-          selectedMonth={selectedMonth}
-          selectedYear={selectedYear}
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          onProductChange={handleProductChange}
-          onCameraChange={handleCameraChange}
-          onLineChange={handleLineChange}
-          onMonthChange={handleMonthChange}
-          onYearChange={handleYearChange}
-          onDateFromChange={handleDateFromChange}
-          onDateToChange={handleDateToChange}
+// ใน DashboardPage.tsx - แทนที่ส่วน Header + Auto-refresh Controls เดิม
+
+return (
+  <main className="p-2">
+    {/* Header แบบง่าย - ไม่มี Auto-refresh Controls */}
+    <HeaderFilters 
+      selectedProduct={selectedProduct}
+      selectedCamera={selectedCamera}
+      selectedLine={selectedLine}
+      selectedMonth={selectedMonth}
+      selectedYear={selectedYear}
+      dateFrom={dateFrom}
+      dateTo={dateTo}
+      onProductChange={handleProductChange}
+      onCameraChange={handleCameraChange}
+      onLineChange={handleLineChange}
+      onMonthChange={handleMonthChange}
+      onYearChange={handleYearChange}
+      onDateFromChange={handleDateFromChange}
+      onDateToChange={handleDateToChange}
+    />
+
+    {/* Loading overlay during refresh */}
+    {loading && dashboardData && (
+      <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
+        <div className="bg-white p-4 rounded-lg shadow-lg">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
+          <p className="text-sm text-gray-600">Updating data...</p>
+        </div>
+      </div>
+    )}
+
+    {/* Dashboard Charts Grid */}
+    <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+      {/* Left column: Total products and Good/NG Ratio stacked */}
+      <div className="lg:col-span-1 space-y-6">
+        <TotalProductsCard 
+          data={dashboardData?.totalProducts || null} 
+          loading={loading && !dashboardData}
+          error={error}
         />
-
-        {/* 🔄 Auto-refresh Controls */}
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleManualRefresh}
-              className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
-              disabled={loading}
-            >
-              🔄 Refresh
-            </button>
-            <button
-              onClick={toggleAutoRefresh}
-              className={`px-3 py-1 text-xs rounded transition-colors ${
-                isAutoRefresh 
-                  ? 'bg-green-600 text-white hover:bg-green-700' 
-                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-              }`}
-            >
-              {isAutoRefresh ? '⏸️ Auto: ON' : '▶️ Auto: OFF'}
-            </button>
-          </div>
-          
-          {/* Last Updated Time */}
-          <div className="text-xs text-gray-500">
-            Last updated: {lastUpdated.toLocaleTimeString()}
-            {isAutoRefresh && (
-              <span className="ml-2 text-green-600">
-                • Auto-refresh: 1min
-              </span>
-            )}
-          </div>
-        </div>
+        <GoodNGRatioChart 
+          data={dashboardData?.goodNgRatio || null}
+          loading={loading && !dashboardData}
+          error={error}
+        />
       </div>
 
-      {/* Loading overlay during refresh */}
-      {loading && dashboardData && (
-        <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
-          <div className="bg-white p-4 rounded-lg shadow-lg">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
-            <p className="text-sm text-gray-600">Updating data...</p>
-          </div>
-        </div>
-      )}
-
-      {/* Dashboard Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
-        {/* Left column: Total products and Good/NG Ratio stacked */}
-        <div className="lg:col-span-1 space-y-6">
-          <TotalProductsCard 
-            data={dashboardData?.totalProducts || null} 
-            loading={loading && !dashboardData}
-            error={error}
-          />
-          <GoodNGRatioChart 
-            data={dashboardData?.goodNgRatio || null}
-            loading={loading && !dashboardData}
-            error={error}
-          />
-        </div>
-
-        {/* Middle: Trend and Top Defects */}
-        <div className="lg:col-span-2">
-          <TrendDetectionChart 
-            data={dashboardData?.trendData || null}
-            loading={loading && !dashboardData}
-            error={error}
-          />
-        </div>
-        <div className="lg:col-span-3">
-          <FrequentDefectsChart 
-            data={dashboardData?.defectsByType || null}
-            loading={loading && !dashboardData}
-            error={error}
-          />
-        </div>
-
-        {/* Bottom row: NG Distribution and Camera Defects */}
-        <div className="lg:col-span-3">
-          <NGDistributionChart 
-            data={dashboardData?.ngDistribution || null}
-            loading={loading && !dashboardData}
-            error={error}
-          />
-        </div>
-        <div className="lg:col-span-3">
-          <DefectByCameraChart 
-            data={dashboardData?.defectsByCamera || null}
-            loading={loading && !dashboardData}
-            error={error}
-          />
-        </div>
+      {/* Middle: Trend and Top Defects */}
+      <div className="lg:col-span-2">
+        <TrendDetectionChart 
+          data={dashboardData?.trendData || null}
+          loading={loading && !dashboardData}
+          error={error}
+        />
       </div>
-    </main>
-  );
+      <div className="lg:col-span-3">
+        <FrequentDefectsChart 
+          data={dashboardData?.defectsByType || null}
+          loading={loading && !dashboardData}
+          error={error}
+        />
+      </div>
+
+      {/* Bottom row: NG Distribution and Camera Defects */}
+      <div className="lg:col-span-3">
+        <NGDistributionChart 
+          data={dashboardData?.ngDistribution || null}
+          loading={loading && !dashboardData}
+          error={error}
+        />
+      </div>
+      <div className="lg:col-span-3">
+        <DefectByCameraChart 
+          data={dashboardData?.defectsByCamera || null}
+          loading={loading && !dashboardData}
+          error={error}
+        />
+      </div>
+    </div>
+  </main>
+);
 }
