@@ -39,7 +39,7 @@ export default function CameraBox({ items, loading = false }: Props) {
             <div className="text-md text-gray-600 font-semibold px-1 py-2">{item.title}</div>
 
             <div
-              className={`text-3xl font-bold px-1 py-2 ${loading ? "animate-pulse bg-gray-300 text-transparent rounded h-[42px]" : ""
+              className={`text-3xl font-bold px-1 py-2 h-[42px] ${loading ? "animate-pulse bg-gray-300 text-transparent rounded " : ""
                 }`}
             >
               {!loading && item.value}
@@ -52,7 +52,7 @@ export default function CameraBox({ items, loading = false }: Props) {
               <span
                 className={`${loading
                     ? "animate-pulse bg-gray-300 text-transparent inline-block w-20 h-8 rounded"
-                    : ""
+                    : "h-20"
                   }`}
               >
                 {!loading && item.expected}

@@ -12,7 +12,7 @@ export default function CameraBox({ location, cameraName, liveStream, loading }:
   return (
     <div className="w-[800px] overflow-hidden rounded shadow">
       <div className={`bg-black text-white font-semibold text-left px-4 py-2 h-12 ${loading && "animate-pulse bg-gray-600 text-transparent"}`}>
-        {location} : {cameraName} 
+        {location} {cameraName} 
       </div>
 
       <div className="w-[800px] h-[600px] bg-gray-300 flex items-center justify-center text-center text-sm">
@@ -25,12 +25,12 @@ export default function CameraBox({ location, cameraName, liveStream, loading }:
                 <span className="text-[8px] leading-none">🔴</span>
                 <span>LIVE</span>
               </div>
-              {/* <img
+              <img
                 className="absolute inset-0 w-full h-full object-cover"
                 src={`data:image/jpeg;base64,${liveStream}`}
                 alt="Live stream"
-              /> */}
-              <video
+              />
+              {/* <video
                 width={800}
                 height={600}
                 controls
@@ -39,7 +39,7 @@ export default function CameraBox({ location, cameraName, liveStream, loading }:
                 loop
                 autoPlay
                 muted
-              />
+              /> */}
             </div>
           </>
         )}

@@ -46,7 +46,7 @@ const emptyData: LiveInspection = {
   liveStream: '',
   location: 'Loading...',
   cameraId: '',
-  cameraName: 'Loading...',
+  cameraName: '',
   status: '',
   lotNo: '',
   totalNG: '',
@@ -88,37 +88,37 @@ export default function LiveInspectionViewPage({ cameraId }: { cameraId: string 
         const detectionInfo = [
           {
             title: detectionTitles[0],
-            value: incoming.colorDetection.predictedResult,
+            value: incoming.colorDetection.predictedResult ?? "",
             expected: incoming.colorDetection.expected,
-            confident: incoming.colorDetection.confident,
+            confident: incoming.colorDetection.confident ?? 0,
             status: incoming.colorDetection.status,
           },
           {
             title: detectionTitles[1],
-            value: incoming.typeClassification.predictedResult,
+            value: incoming.typeClassification.predictedResult ?? "",
             expected: incoming.typeClassification.expected,
-            confident: incoming.typeClassification.confident,
+            confident: incoming.typeClassification.confident ?? 0,
             status: incoming.typeClassification.status,
           },
           {
             title: detectionTitles[2],
-            value: incoming.componentDetection.predictedResult,
+            value: incoming.componentDetection.predictedResult ?? "",
             expected: incoming.componentDetection.expected,
-            confident: incoming.componentDetection.confident,
+            confident: incoming.componentDetection.confident ?? 0,
             status: incoming.componentDetection.status,
           },
           {
             title: detectionTitles[3],
-            value: incoming.objectCounting.predictedResult,
+            value: incoming.objectCounting.predictedResult ?? "",
             expected: incoming.objectCounting.expected,
-            confident: incoming.objectCounting.confident,
+            confident: incoming.objectCounting.confident ?? 0,
             status: incoming.objectCounting.status,
           },
           {
             title: detectionTitles[4],
-            value: incoming.barcodeReading.predictedResult,
+            value: incoming.barcodeReading.predictedResult ?? "",
             expected: incoming.barcodeReading.expected,
-            confident: incoming.barcodeReading.confident,
+            confident: incoming.barcodeReading.confident ?? 0,
             status: incoming.barcodeReading.status,
           },
         ];
@@ -247,7 +247,7 @@ export default function LiveInspectionViewPage({ cameraId }: { cameraId: string 
           />
 
           {/* Summary */}
-          <div className="grid grid-cols-2 gap-4 text-center text-2xl font-semibold">
+          <div className="mt-2 grid grid-cols-2 gap-4 text-center text-2xl font-semiboldx">
             <SummaryBox label="Lot No." value={data?.lotNo} loading={loading} />
             <SummaryBox label="Total NG" value={formatNumber(toNumber(data?.totalNG))} loading={loading} />
             <SummaryBox label="Total Product" value={formatNumber(toNumber(data?.totalProduct))} loading={loading} />

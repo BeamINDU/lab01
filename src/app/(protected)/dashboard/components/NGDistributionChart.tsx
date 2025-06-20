@@ -421,7 +421,7 @@ export default function NGDistributionChart({ data, loading, error }: NGDistribu
       )}
 
       {/* Debug Information */}
-      {process.env.NODE_ENV === 'development' && (
+      {/* {process.env.NODE_ENV === 'development' && (
         <div className="mt-4 p-2 bg-gray-50 rounded text-xs">
           <details>
             <summary className="cursor-pointer font-medium">Debug Info</summary>
@@ -437,7 +437,7 @@ export default function NGDistributionChart({ data, loading, error }: NGDistribu
             </div>
           </details>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

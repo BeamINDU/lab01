@@ -118,7 +118,7 @@ export const API_ROUTES = {
     suggest_function: "",
   },
   dashboard: {
-    total_products: "/totalprod",
+    total_products: "/totalproduct",
     good_ng_ratio: "/goodngratio",
     top5_trends: "/top5trends",
     top5_defects: "/top5defects",

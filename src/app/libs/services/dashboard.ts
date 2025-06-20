@@ -73,13 +73,27 @@ export const getTopDefects = async (filters: DashboardFilters): Promise<DefectTy
 };
 
 export const getTopTrends = async (filters: DashboardFilters): Promise<TrendData[]> => {
-  const data = await fetchDashboardData<any>(API_ROUTES.dashboard.top5_trends, filters);
-  return data.map(item => ({
-    defecttype: item.defecttype || '',
-    line: item.line || '',
-    hour_slot: item.hour_slot || '',
-    quantity: Number(item.quantity) || 0
-  }));
+  try {
+    const params = {
+      start: formatDateTime(filters.startDate!),
+      end: formatDateTime(filters.endDate!),
+    };
+
+    const response = await api.get<any[]>(API_ROUTES.dashboard.top5_trends, params);
+    
+    if (Array.isArray(response)) {
+      return response.map((item: any) => ({
+        defecttype: item.defecttype || '',
+        line: item.line || '',
+        hour_slot: item.hour_slot || '',
+        quantity: Number(item.quantity) || 0
+      }));
+    }
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch top trends:', error);
+    return [];
+  }
 };
 
 export const getDefectsByCamera = async (filters: DashboardFilters): Promise<DefectCameraData[]> => {
@@ -115,7 +129,6 @@ export const getProducts = async (): Promise<ProductOption[]> => {
     if (Array.isArray(response)) {
       return response;
     }
-    // If response has nested structure (like {products: []})
     if (response?.products && Array.isArray(response.products)) {
       return response.products.map((item: any) => ({
         id: item.prodname || item.id || item.productId,
@@ -202,7 +215,7 @@ export const getDashboardData = async (filters: DashboardFilters): Promise<Dashb
   };
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('✅ Dashboard data fetched successfully:', result);
+    console.log('Dashboard data fetched successfully:', result);
   }
 
   return result;

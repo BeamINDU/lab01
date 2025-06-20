@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 import { showError } from '@/app/utils/swal';
@@ -28,6 +28,11 @@ export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // 🔄 Auto-refresh states
+  const [isAutoRefresh, setIsAutoRefresh] = useState<boolean>(true);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initialize default date range
   useEffect(() => {
@@ -39,32 +44,90 @@ export default function DashboardPage() {
     setDateTo(endOfDay);
   }, []);
 
-  // Debounced refresh function
-  const debouncedRefreshDashboardData = useCallback(
-    debounce(async (filters: DashboardFilters) => {
-      try {
+  // 🚀 Enhanced refresh function
+  const refreshDashboardData = useCallback(async (filters: DashboardFilters, isAutoRefresh = false) => {
+    try {
+      if (!isAutoRefresh) {
         setLoading(true);
         setError(null);
+      }
 
-        // เรียกใช้ service ที่ทำ data mapping ให้เสร็จแล้ว
-        const data = await getDashboardData(filters);
-        setDashboardData(data);
-        
-      } catch (error) {
-        console.error('❌ Failed to load dashboard data:', error);
-        setError('Failed to load dashboard data. Please try again.');
+      const data = await getDashboardData(filters);
+      setDashboardData(data);
+      setLastUpdated(new Date());
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`📊 Dashboard ${isAutoRefresh ? 'auto-' : ''}refreshed at:`, new Date().toLocaleTimeString());
+      }
+      
+    } catch (error) {
+      console.error('❌ Failed to load dashboard data:', error);
+      setError('Failed to load dashboard data. Please try again.');
+      if (!isAutoRefresh) {
         showError('Failed to load dashboard data');
-      } finally {
+      }
+    } finally {
+      if (!isAutoRefresh) {
         setLoading(false);
       }
-    }, 500),
-    []
+    }
+  }, []);
+
+  // Debounced refresh for manual changes
+  const debouncedRefreshDashboardData = useCallback(
+    debounce((filters: DashboardFilters) => refreshDashboardData(filters, false), 500),
+    [refreshDashboardData]
   );
 
-  // Load dashboard data when filters change
+  // 🔄 Auto-refresh setup
   useEffect(() => {
+    if (!dateFrom || !dateTo) return;
+
+    const filters: DashboardFilters = {
+      productId: selectedProduct || undefined,
+      cameraId: selectedCamera || undefined,
+      lineId: selectedLine || undefined,
+      startDate: new Date(dateFrom),
+      endDate: new Date(dateTo),
+      month: selectedMonth || undefined,
+      year: selectedYear || undefined,
+    };
+
+    // Initial load
+    debouncedRefreshDashboardData(filters);
+
+    // 🕐 Setup auto-refresh interval (1 minute = 60,000ms)
+    if (isAutoRefresh) {
+      intervalRef.current = setInterval(() => {
+        refreshDashboardData(filters, true); // Auto-refresh without loading state
+      }, 60000); // 1 minute
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 Auto-refresh enabled: Every 1 minute');
+      }
+    }
+
+    // Cleanup interval
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      debouncedRefreshDashboardData.cancel();
+    };
+  }, [selectedProduct, selectedCamera, selectedLine, selectedMonth, selectedYear, dateFrom, dateTo, isAutoRefresh, debouncedRefreshDashboardData, refreshDashboardData]);
+
+  // 🔄 Toggle auto-refresh
+  const toggleAutoRefresh = () => {
+    setIsAutoRefresh(prev => !prev);
+    if (!isAutoRefresh) {
+      setLastUpdated(new Date());
+    }
+  };
+
+  // 🔄 Manual refresh
+  const handleManualRefresh = () => {
     if (dateFrom && dateTo) {
-      // ส่ง filters ไปเลย ไม่ต้อง build parameters
       const filters: DashboardFilters = {
         productId: selectedProduct || undefined,
         cameraId: selectedCamera || undefined,
@@ -74,16 +137,11 @@ export default function DashboardPage() {
         month: selectedMonth || undefined,
         year: selectedYear || undefined,
       };
-
-      debouncedRefreshDashboardData(filters);
+      refreshDashboardData(filters, false);
     }
+  };
 
-    return () => {
-      debouncedRefreshDashboardData.cancel();
-    };
-  }, [selectedProduct, selectedCamera, selectedLine, selectedMonth, selectedYear, dateFrom, dateTo, debouncedRefreshDashboardData]);
-
-  // Event handlers - เก็บ state อย่างเดียว
+  // Event handlers
   const handleProductChange = (productId: string) => setSelectedProduct(productId);
   const handleCameraChange = (cameraId: string) => setSelectedCamera(cameraId);
   const handleLineChange = (lineId: string) => setSelectedLine(lineId);
@@ -177,22 +235,58 @@ export default function DashboardPage() {
 
   return (
     <main className="p-2">
-      <HeaderFilters 
-        selectedProduct={selectedProduct}
-        selectedCamera={selectedCamera}
-        selectedLine={selectedLine}
-        selectedMonth={selectedMonth}
-        selectedYear={selectedYear}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        onProductChange={handleProductChange}
-        onCameraChange={handleCameraChange}
-        onLineChange={handleLineChange}
-        onMonthChange={handleMonthChange}
-        onYearChange={handleYearChange}
-        onDateFromChange={handleDateFromChange}
-        onDateToChange={handleDateToChange}
-      />
+      {/* Header with Auto-refresh Controls */}
+      <div className="flex justify-between items-start mb-6">
+        <HeaderFilters 
+          selectedProduct={selectedProduct}
+          selectedCamera={selectedCamera}
+          selectedLine={selectedLine}
+          selectedMonth={selectedMonth}
+          selectedYear={selectedYear}
+          dateFrom={dateFrom}
+          dateTo={dateTo}
+          onProductChange={handleProductChange}
+          onCameraChange={handleCameraChange}
+          onLineChange={handleLineChange}
+          onMonthChange={handleMonthChange}
+          onYearChange={handleYearChange}
+          onDateFromChange={handleDateFromChange}
+          onDateToChange={handleDateToChange}
+        />
+
+        {/* 🔄 Auto-refresh Controls */}
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleManualRefresh}
+              className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+              disabled={loading}
+            >
+              🔄 Refresh
+            </button>
+            <button
+              onClick={toggleAutoRefresh}
+              className={`px-3 py-1 text-xs rounded transition-colors ${
+                isAutoRefresh 
+                  ? 'bg-green-600 text-white hover:bg-green-700' 
+                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+              }`}
+            >
+              {isAutoRefresh ? '⏸️ Auto: ON' : '▶️ Auto: OFF'}
+            </button>
+          </div>
+          
+          {/* Last Updated Time */}
+          <div className="text-xs text-gray-500">
+            Last updated: {lastUpdated.toLocaleTimeString()}
+            {isAutoRefresh && (
+              <span className="ml-2 text-green-600">
+                • Auto-refresh: 1min
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Loading overlay during refresh */}
       {loading && dashboardData && (
@@ -204,17 +298,18 @@ export default function DashboardPage() {
         </div>
       )}
 
+      {/* Dashboard Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
         {/* Left column: Total products and Good/NG Ratio stacked */}
         <div className="lg:col-span-1 space-y-6">
           <TotalProductsCard 
             data={dashboardData?.totalProducts || null} 
-            loading={loading}
+            loading={loading && !dashboardData}
             error={error}
           />
           <GoodNGRatioChart 
             data={dashboardData?.goodNgRatio || null}
-            loading={loading}
+            loading={loading && !dashboardData}
             error={error}
           />
         </div>
@@ -223,14 +318,14 @@ export default function DashboardPage() {
         <div className="lg:col-span-2">
           <TrendDetectionChart 
             data={dashboardData?.trendData || null}
-            loading={loading}
+            loading={loading && !dashboardData}
             error={error}
           />
         </div>
         <div className="lg:col-span-3">
           <FrequentDefectsChart 
             data={dashboardData?.defectsByType || null}
-            loading={loading}
+            loading={loading && !dashboardData}
             error={error}
           />
         </div>
@@ -239,14 +334,14 @@ export default function DashboardPage() {
         <div className="lg:col-span-3">
           <NGDistributionChart 
             data={dashboardData?.ngDistribution || null}
-            loading={loading}
+            loading={loading && !dashboardData}
             error={error}
           />
         </div>
         <div className="lg:col-span-3">
           <DefectByCameraChart 
             data={dashboardData?.defectsByCamera || null}
-            loading={loading}
+            loading={loading && !dashboardData}
             error={error}
           />
         </div>
