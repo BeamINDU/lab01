@@ -424,7 +424,7 @@ export default function NGDistributionChart({ data, loading, error }: NGDistribu
       {process.env.NODE_ENV === 'development' && (
         <div className="mt-4 p-2 bg-gray-50 rounded text-xs">
           <details>
-            <summary className="cursor-pointer font-medium">🐛 Debug Info</summary>
+            <summary className="cursor-pointer font-medium">Debug Info</summary>
             <div className="mt-2 space-y-1">
               <div>Raw data length: {data?.length || 0}</div>
               <div>Chart labels: {JSON.stringify(chartData.labels)}</div>

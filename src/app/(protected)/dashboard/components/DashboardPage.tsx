@@ -1,5 +1,3 @@
-// src/app/(protected)/dashboard/components/DashboardPage.tsx - แก้ไขการเรียกใช้ข้อมูล
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -39,11 +37,6 @@ export default function DashboardPage() {
     
     setDateFrom(startOfDay);
     setDateTo(endOfDay);
-    
-    console.log('🕐 Default date range set:', {
-      from: startOfDay,
-      to: endOfDay
-    });
   }, []);
 
   // Debounced refresh function
@@ -53,12 +46,9 @@ export default function DashboardPage() {
         setLoading(true);
         setError(null);
 
-        console.log('🔄 Refreshing dashboard with filters:', filters);
-        
+        // เรียกใช้ service ที่ทำ data mapping ให้เสร็จแล้ว
         const data = await getDashboardData(filters);
         setDashboardData(data);
-        
-        console.log('✅ Dashboard data updated:', data);
         
       } catch (error) {
         console.error('❌ Failed to load dashboard data:', error);
@@ -74,6 +64,7 @@ export default function DashboardPage() {
   // Load dashboard data when filters change
   useEffect(() => {
     if (dateFrom && dateTo) {
+      // ส่ง filters ไปเลย ไม่ต้อง build parameters
       const filters: DashboardFilters = {
         productId: selectedProduct || undefined,
         cameraId: selectedCamera || undefined,
@@ -84,54 +75,28 @@ export default function DashboardPage() {
         year: selectedYear || undefined,
       };
 
-      console.log('🎯 Filters changed, triggering refresh:', filters);
       debouncedRefreshDashboardData(filters);
     }
 
-    // Cleanup
     return () => {
       debouncedRefreshDashboardData.cancel();
     };
   }, [selectedProduct, selectedCamera, selectedLine, selectedMonth, selectedYear, dateFrom, dateTo, debouncedRefreshDashboardData]);
 
-  // Event handlers
-  const handleProductChange = (productId: string) => {
-    setSelectedProduct(productId);
-    console.log('🏷️ Selected Product:', productId);
-  };
-
-  const handleCameraChange = (cameraId: string) => {
-    setSelectedCamera(cameraId);
-    console.log('📷 Selected Camera:', cameraId);
-  };
-
-  const handleLineChange = (lineId: string) => {
-    setSelectedLine(lineId);
-    console.log('🏭 Selected Line:', lineId);
-  };
-
-  const handleMonthChange = (month: string) => {
-    setSelectedMonth(month);
-    console.log('📅 Selected Month:', month);
-  };
-
-  const handleYearChange = (year: string) => {
-    setSelectedYear(year);
-    console.log('📅 Selected Year:', year);
-  };
+  // Event handlers - เก็บ state อย่างเดียว
+  const handleProductChange = (productId: string) => setSelectedProduct(productId);
+  const handleCameraChange = (cameraId: string) => setSelectedCamera(cameraId);
+  const handleLineChange = (lineId: string) => setSelectedLine(lineId);
+  const handleMonthChange = (month: string) => setSelectedMonth(month);
+  const handleYearChange = (year: string) => setSelectedYear(year);
 
   const handleDateFromChange = (date: string | null) => {
     if (date) {
       setDateFrom(date);
-      
-      // ตรวจสอบว่า From Date ไม่เกิน To Date
       if (dateTo && dayjs(date).isAfter(dayjs(dateTo))) {
         const newToDate = dayjs(date).endOf('day').format('YYYY-MM-DD HH:mm');
         setDateTo(newToDate);
-        console.log('🔄 Auto-adjusted To Date to:', newToDate);
       }
-      
-      console.log('🕐 Selected Date From:', date);
     } else {
       setDateFrom('');
     }
@@ -139,33 +104,13 @@ export default function DashboardPage() {
 
   const handleDateToChange = (date: string | null) => {
     if (date) {
-      // ตรวจสอบว่า To Date ไม่น้อยกว่า From Date
       if (dateFrom && dayjs(date).isBefore(dayjs(dateFrom))) {
         showError('To Date cannot be earlier than From Date');
         return; 
       }
-      
       setDateTo(date);
-      console.log('🕐 Selected Date To:', date);
     } else {
       setDateTo('');
-    }
-  };
-
-  // Manual refresh function
-  const handleRefresh = () => {
-    if (dateFrom && dateTo) {
-      const filters: DashboardFilters = {
-        productId: selectedProduct || undefined,
-        cameraId: selectedCamera || undefined,
-        lineId: selectedLine || undefined,
-        startDate: new Date(dateFrom),
-        endDate: new Date(dateTo),
-        month: selectedMonth || undefined,
-        year: selectedYear || undefined,
-      };
-
-      debouncedRefreshDashboardData(filters);
     }
   };
 
@@ -224,12 +169,6 @@ export default function DashboardPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center text-red-500">
             <p>{error}</p>
-            <button 
-              className="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              onClick={handleRefresh}
-            >
-              Retry
-            </button>
           </div>
         </div>
       </main>
@@ -290,7 +229,7 @@ export default function DashboardPage() {
         </div>
         <div className="lg:col-span-3">
           <FrequentDefectsChart 
-            data={dashboardData?.defectsByType || null}  // แก้ไขชื่อ field
+            data={dashboardData?.defectsByType || null}
             loading={loading}
             error={error}
           />
@@ -312,22 +251,6 @@ export default function DashboardPage() {
           />
         </div>
       </div>
-
-      {/* Debug Information (แสดงในโหมด development) */}
-      {process.env.NODE_ENV === 'development' && dashboardData && (
-        <div className="mt-6 p-4 bg-gray-100 rounded-lg">
-          <h3 className="text-sm font-semibold mb-2">🐛 Debug Information:</h3>
-          <div className="text-xs text-gray-600 space-y-1">
-            <div>Total Products: {dashboardData.totalProducts?.total_products || 0}</div>
-            <div>Good/NG Ratio Records: {dashboardData.goodNgRatio?.length || 0}</div>
-            <div>Defects by Type Records: {dashboardData.defectsByType?.length || 0}</div>
-            <div>Trend Data Records: {dashboardData.trendData?.length || 0}</div>
-            <div>Camera Defects Records: {dashboardData.defectsByCamera?.length || 0}</div>
-            <div>NG Distribution Records: {dashboardData.ngDistribution?.length || 0}</div>
-            <div>Last Updated: {new Date().toLocaleTimeString()}</div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }

@@ -118,11 +118,14 @@ export const API_ROUTES = {
     suggest_function: "",
   },
   dashboard: {
-    total_products: "",
+    total_products: "/totalprod",
     good_ng_ratio: "/goodngratio",
     top5_trends: "/top5trends",
     top5_defects: "/top5defects",
     ng_distribution: "/ngdistribution",
     defects_camera: "/defects-camera",
+    products_list: "/products",
+    cameras_list: "/cameras", 
+    lines_list: "/lines",
   },
 };
