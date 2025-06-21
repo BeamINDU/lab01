@@ -62,7 +62,6 @@ export default function GoodNGRatioChart({ data, loading, error }: GoodNGRatioCh
         fontWeight="bold"
         style={{ 
           textShadow: '1px 1px 2px rgba(255,255,255,0.9)',
-          filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
         }}
       >
         {`${(percent * 100).toFixed(1)}%`}
@@ -157,12 +156,7 @@ export default function GoodNGRatioChart({ data, loading, error }: GoodNGRatioCh
         </ResponsiveContainer>
       </div>
 
-      {/* แสดงข้อมูลสรุป */}
-      {data && data.length > 0 && (
-        <div className="text-xs text-gray-500 mt-1 text-center">
-          Total LOTs: {data.length} | Good: {chartData[0].value} | NG: {chartData[1].value}
-        </div>
-      )}
+
     </div>
   );
 }

@@ -124,7 +124,7 @@ export const getNGDistribution = async (filters: DashboardFilters): Promise<NgDi
 // Dropdown data services
 export const getProducts = async (): Promise<ProductOption[]> => {
   try {
-    const response = await api.get<any>('/products');
+    const response = await api.get<any>(API_ROUTES.dashboard.products_list);
     // Handle different response formats
     if (Array.isArray(response)) {
       return response;
@@ -144,7 +144,7 @@ export const getProducts = async (): Promise<ProductOption[]> => {
 
 export const getCameras = async (): Promise<CameraOption[]> => {
   try {
-    const response = await api.get<any>('/cameras');
+    const response = await api.get<any>(API_ROUTES.dashboard.cameras_list);
     if (Array.isArray(response)) {
       return response;
     }
@@ -163,7 +163,7 @@ export const getCameras = async (): Promise<CameraOption[]> => {
 
 export const getLines = async (): Promise<LineOption[]> => {
   try {
-    const response = await api.get<any>('/lines');
+    const response = await api.get<any>(API_ROUTES.dashboard.lines_list);
     if (Array.isArray(response)) {
       return response;
     }

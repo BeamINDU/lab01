@@ -49,7 +49,7 @@ export default function DashboardPage() {
     try {
       if (!isAutoRefresh) {
         setLoading(true);
-        setError(null);
+        setError(undefined);
       }
 
       const data = await getDashboardData(filters);
@@ -283,19 +283,20 @@ return (
 
       {/* Middle: Trend and Top Defects */}
       <div className="lg:col-span-2">
-        <TrendDetectionChart 
-          data={dashboardData?.trendData || null}
-          loading={loading && !dashboardData}
-          error={error}
-        />
-      </div>
-      <div className="lg:col-span-3">
         <FrequentDefectsChart 
           data={dashboardData?.defectsByType || null}
           loading={loading && !dashboardData}
           error={error}
         />
       </div>
+      <div className="lg:col-span-3">
+        <DefectByCameraChart 
+          data={dashboardData?.defectsByCamera || null}
+          loading={loading && !dashboardData}
+          error={error}
+        />
+      </div>
+
 
       {/* Bottom row: NG Distribution and Camera Defects */}
       <div className="lg:col-span-3">
@@ -306,8 +307,8 @@ return (
         />
       </div>
       <div className="lg:col-span-3">
-        <DefectByCameraChart 
-          data={dashboardData?.defectsByCamera || null}
+        <TrendDetectionChart 
+          data={dashboardData?.trendData || null}
           loading={loading && !dashboardData}
           error={error}
         />

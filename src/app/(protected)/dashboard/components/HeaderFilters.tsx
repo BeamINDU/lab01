@@ -69,6 +69,7 @@ function SearchableDropdown({ options, selectedValue, placeholder, onSelect, loa
   };
 
   const selectedOption = options.find(opt => opt.id === selectedValue);
+  // ✅ แก้ไข: แสดง "All [placeholder]" เมื่อไม่มีการเลือก
   const displayText = selectedOption ? selectedOption.name : `All ${placeholder}`;
 
   return (
@@ -76,7 +77,7 @@ function SearchableDropdown({ options, selectedValue, placeholder, onSelect, loa
       {/* Dropdown Button */}
       <button
         type="button"
-        className="bg-violet-600 text-white px-2 py-1 rounded text-xs mt-1 flex items-center gap-1 min-w-[80px] max-w-[120px]"
+        className="bg-violet-600 text-white px-2 py-1 rounded text-xs mt-1 flex items-center gap-1 min-w-[100px] max-w-[140px]"
         onClick={() => setIsOpen(!isOpen)}
         disabled={loading}
       >
@@ -196,7 +197,7 @@ export default function HeaderFilters({
     loadDropdownData();
   }, []);
 
-  // Convert data to dropdown format (ใช้ id และ name ตามที่ dashboard service กำหนด)
+  // Convert data to dropdown format
   const productOptions = products.map(p => ({ id: p.id, name: p.name }));
   const cameraOptions = cameras.map(c => ({ id: c.id, name: c.name }));
   const lineOptions = lines.map(l => ({ id: l.id, name: l.name }));
@@ -216,13 +217,14 @@ export default function HeaderFilters({
     <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
       {/* LEFT SECTION */}
       <div className="flex flex-wrap items-center gap-2">
+        {/* ✅ เพิ่มข้อความ Dashboard กลับมา */}
         <h1 className="text-3xl font-bold mr-4">Dashboard</h1>
 
         {/* Product Searchable Dropdown */}
         <SearchableDropdown
           options={productOptions}
           selectedValue={selectedProduct || ''}
-          placeholder="Products"
+          placeholder="Products" // ✅ จะแสดงเป็น "All Products" เมื่อไม่เลือก
           onSelect={(value) => onProductChange?.(value)}
           loading={loading}
         />
@@ -231,7 +233,7 @@ export default function HeaderFilters({
         <SearchableDropdown
           options={cameraOptions}
           selectedValue={selectedCamera || ''}
-          placeholder="Cameras"
+          placeholder="Cameras" // ✅ จะแสดงเป็น "All Cameras" เมื่อไม่เลือก
           onSelect={(value) => onCameraChange?.(value)}
           loading={loading}
         />
@@ -240,13 +242,13 @@ export default function HeaderFilters({
         <SearchableDropdown
           options={lineOptions}
           selectedValue={selectedLine || ''}
-          placeholder="Lines"
+          placeholder="Lines" 
           onSelect={(value) => onLineChange?.(value)}
           loading={loading}
         />
       </div>
 
-      {/* DateFilters Component */}
+      {/* RIGHT SECTION - DateFilters Component */}
       <DateFilters
         selectedMonth={selectedMonth}
         selectedYear={selectedYear}

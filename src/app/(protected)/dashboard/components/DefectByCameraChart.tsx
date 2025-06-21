@@ -1,5 +1,4 @@
-// src/app/(protected)/dashboard/components/DefectByCameraChart.tsx
-'use client';
+// DefectByCameraChart.tsx - เปลี่ยนเป็น Chart.js stacked bar chart
 
 import { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
@@ -11,7 +10,9 @@ import {
   Title,
   Tooltip,
   Legend,
+  ChartOptions,
 } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import type { DefectCameraData } from '@/app/types/dashboard';
 
 ChartJS.register(
@@ -20,7 +21,8 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ChartDataLabels
 );
 
 interface DefectByCameraChartProps {
@@ -29,130 +31,263 @@ interface DefectByCameraChartProps {
   error?: string;
 }
 
+// สีสำหรับแต่ละ defect type
+const getDefectTypeColor = (defectType: string, opacity: number = 0.85): string => {
+  const colorPalette: Record<string, string> = {
+    'Crack': `rgba(239, 68, 68, ${opacity})`,     // Red
+    'Scratch': `rgba(59, 130, 246, ${opacity})`,  // Blue  
+    'Dent': `rgba(34, 197, 94, ${opacity})`,      // Green
+    'Missing': `rgba(245, 158, 11, ${opacity})`,  // Amber
+    'Broken': `rgba(168, 85, 247, ${opacity})`,   // Purple
+    'Dirty': `rgba(236, 72, 153, ${opacity})`,    // Pink
+    'Deform': `rgba(20, 184, 166, ${opacity})`,   // Teal
+    'Missing Part': `rgba(245, 158, 11, ${opacity})`, // Amber
+    'Misalignment': `rgba(156, 163, 175, ${opacity})`, // Gray
+  };
+  
+  return colorPalette[defectType] || `rgba(156, 163, 175, ${opacity})`;
+};
+
 export default function DefectByCameraChart({ data, loading, error }: DefectByCameraChartProps) {
   const chartData = useMemo(() => {
+    console.log('🔍 DefectByCameraChart raw data:', data);
+
     if (!data || data.length === 0) {
       return {
         labels: ['No Data'],
         datasets: [{
-          label: 'Defects Count',
+          label: 'No Data Available',
           data: [0],
-          backgroundColor: ['rgba(156, 163, 175, 0.8)'],
-          borderColor: ['rgba(156, 163, 175, 1)'],
+          backgroundColor: 'rgba(156, 163, 175, 0.6)',
+          borderColor: 'rgba(156, 163, 175, 0.8)',
           borderWidth: 2,
+          borderRadius: 8,
+          borderSkipped: false,
         }]
       };
     }
 
-    // Group by camera และ sum totalng
-    const cameraMap = new Map<string, number>();
+    // Step 1: Group by camera และ defect type
+    const cameraMap = new Map<string, Record<string, number>>();
+    const defectTypes = new Set<string>();
     
     data.forEach(item => {
+      if (!item.cameraname && !item.cameraid) {
+        console.warn('⚠️ Skipping item with missing camera data:', item);
+        return;
+      }
+      
       const cameraName = item.cameraname || item.cameraid || 'Unknown Camera';
-      const current = cameraMap.get(cameraName) || 0;
-      cameraMap.set(cameraName, current + (item.totalng || 0));
+      const defectType = item.defecttype || 'Unknown Defect';
+      const count = item.totalng || 0;
+      
+      console.log(`⏰ Processing: ${defectType} at ${cameraName} with count ${count}`);
+      
+      if (!cameraMap.has(cameraName)) {
+        cameraMap.set(cameraName, {});
+      }
+      
+      const cameraData = cameraMap.get(cameraName)!;
+      cameraData[defectType] = (cameraData[defectType] || 0) + count;
+      defectTypes.add(defectType);
     });
 
-    // แปลงเป็น arrays สำหรับ chart
-    const labels = Array.from(cameraMap.keys());
-    const defectCounts = Array.from(cameraMap.values());
+    console.log('📊 Processed cameraMap:', Object.fromEntries(cameraMap));
+    console.log('🏷️ Defect types found:', Array.from(defectTypes));
 
-    // Generate gradient colors
-    const generateColors = (count: number): string[] => {
-      const colors: string[] = [];
-      for (let i = 0; i < count; i++) {
-        const hue = 200 + (40 * i / Math.max(count - 1, 1)); // Blue hues from 200 to 240
-        colors.push(`hsla(${hue}, 85%, 60%, 0.8)`);
-      }
-      return colors;
-    };
+    // Step 2: Get top 5 cameras by total defects
+    const cameraTotals = new Map<string, number>();
+    cameraMap.forEach((defectData, cameraName) => {
+      const total = Object.values(defectData).reduce((sum, count) => sum + count, 0);
+      cameraTotals.set(cameraName, total);
+    });
+    
+    const topCameras = Array.from(cameraTotals.entries())
+      .sort((a, b) => b[1] - a[1]) // Sort by total defects DESC
+      .slice(0, 5) // Top 5
+      .map(([cameraName]) => cameraName);
 
-    const backgroundColors = generateColors(labels.length);
-    const borderColors = backgroundColors.map((color: string) => color.replace('0.8', '1'));
+    console.log('🏆 Top 5 cameras:', topCameras);
 
-    return {
-      labels,
-      datasets: [{
-        label: 'Defects Count',
-        data: defectCounts,
-        backgroundColor: backgroundColors,
-        borderColor: borderColors,
-        borderWidth: 2,
-        borderRadius: 6,
+    // Step 3: Create labels และ datasets
+    const labels = topCameras;
+    const defectTypeArray = Array.from(defectTypes).sort();
+    
+    console.log('🕐 Camera labels:', labels);
+    console.log('📋 Defect type array:', defectTypeArray);
+
+    // Step 4: Create datasets สำหรับแต่ละ defect type
+    const datasets = defectTypeArray.map((defectType) => {
+      const dataValues = labels.map(cameraName => {
+        const value = cameraMap.get(cameraName)?.[defectType] || 0;
+        return typeof value === 'number' && !isNaN(value) ? value : 0;
+      });
+
+      console.log(`📈 Dataset for ${defectType}:`, dataValues);
+
+      return {
+        label: defectType,
+        data: dataValues,
+        backgroundColor: getDefectTypeColor(defectType, 0.8),
+        borderColor: getDefectTypeColor(defectType, 1),
+        borderWidth: 1,
+        borderRadius: {
+          topLeft: 4,
+          topRight: 4,
+          bottomLeft: 4,
+          bottomRight: 4,
+        },
         borderSkipped: false,
-        hoverBackgroundColor: borderColors,
-        hoverBorderWidth: 3,
-      }]
-    };
+        hoverBackgroundColor: getDefectTypeColor(defectType, 0.95),
+        hoverBorderColor: getDefectTypeColor(defectType, 1),
+        hoverBorderWidth: 2,
+      };
+    });
+
+    const result = { labels, datasets };
+    console.log('✅ Final camera chart data:', result);
+    return result;
   }, [data]);
 
-  // Custom plugin สำหรับแสดงค่าบน bar
-  const valueDisplayPlugin = {
-    id: 'valueDisplay',
-    afterDatasetsDraw: (chart: any) => {
-      const { ctx, data, scales: { x, y } } = chart;
-      
-      ctx.save();
-      ctx.fillStyle = '#374151';
-      ctx.font = 'bold 11px Arial';
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
+  // คำนวณค่าสูงสุดของ stacked bars
+  const maxStackedValue = useMemo(() => {
+    if (chartData.datasets.length === 0) return 0;
+    
+    return Math.max(
+      ...chartData.labels.map((_, labelIndex) => 
+        chartData.datasets.reduce((sum, dataset) => 
+          sum + (dataset.data[labelIndex] || 0), 0
+        )
+      )
+    );
+  }, [chartData]);
 
-      data.datasets[0].data.forEach((value: number, index: number) => {
-        if (value > 0) {
-          const barX = x.getPixelForValue(value);
-          const barY = y.getPixelForValue(index);
-          
-          // แสดงค่าด้านขวาของ bar
-          ctx.fillText(value.toString(), barX + 8, barY);
-        }
-      });
-      
-      ctx.restore();
-    }
-  };
-
-  const options = {
-    indexAxis: 'y' as const, // Horizontal bar
+  const options: ChartOptions<'bar'> = {
+    indexAxis: 'y',
     responsive: true,
     maintainAspectRatio: false,
     layout: {
       padding: {
-        right: 40 // เพิ่มพื้นที่ด้านขวาสำหรับ labels
+        right: 50, 
+        left: 10,
+        top: 10, // ✅ ลดจาก 60 เป็น 20
+        bottom: 10
       }
     },
     plugins: {
       legend: {
-        display: false, // Hide legend for single dataset
+        position: 'bottom',
+        align: 'center',
+        labels: {
+          font: { 
+            size: 13, //  ลดขนาดตัวอักษร legend
+            weight: 'bold' as const,
+          },
+          padding: 8, //  ลด padding ระหว่าง legend items
+          usePointStyle: true,
+          pointStyle: 'circle',
+          boxWidth: 8, //  ลดขนาด icon
+          boxHeight: 8,
+          color: '#374151',
+        }
       },
       tooltip: {
         backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: 'white',
         bodyColor: 'white',
         callbacks: {
+          title: function(context: any) {
+            if (!context || !context[0] || !context[0].label) return 'Camera: --';
+            return `Camera: ${context[0].label}`;
+          },
           label: function(context: any) {
-            return `Defects: ${context.parsed.x}`;
+            if (!context || !context.dataset || typeof context.parsed?.x !== 'number') {
+              return 'Invalid data';
+            }
+            
+            const defectType = context.dataset.label || 'Unknown';
+            const count = context.parsed.x;
+            const emoji = defectType === 'Crack' ? '🔴' : 
+                         defectType === 'Scratch' ? '🔵' : 
+                         defectType === 'Dent' ? '🟢' : 
+                         defectType === 'Missing' || defectType === 'Missing Part' ? '🟡' : 
+                         defectType === 'Broken' ? '🟣' : 
+                         defectType === 'Dirty' ? '🌸' : 
+                         defectType === 'Deform' ? '🟦' : '⚪';
+            return `${emoji} ${defectType}: ${count} defects`;
+          },
+          afterBody: function(context: any) {
+            if (!context || !Array.isArray(context)) return ['📊 Total: 0'];
+            
+            const total = context.reduce((sum: number, item: any) => {
+              const value = item?.parsed?.x;
+              return sum + (typeof value === 'number' && !isNaN(value) ? value : 0);
+            }, 0);
+            return [``, `📊 Total Defects: ${total}`];
           }
         }
-      }
+      },
+      datalabels: {
+        // แสดง total สำหรับแต่ละ camera
+        display: function(context: any) {
+          return context.datasetIndex === chartData.datasets.length - 1;
+        },
+        anchor: 'end',
+        align: 'right',
+        color: '#1f2937',
+        font: {
+          weight: 'bold' as const,
+          size: 10,
+        },
+        formatter: function(value: any, context: any) {
+          const dataIndex = context.dataIndex;
+          const total = chartData.datasets.reduce((sum, dataset) => {
+            return sum + (dataset.data[dataIndex] || 0);
+          }, 0);
+          return total;
+        },
+        offset: 8,
+      },
     },
     scales: {
       x: {
         beginAtZero: true,
+        stacked: true,
+        max: Math.ceil(maxStackedValue * 1.2),
+        title: {
+          display: true,
+          text: 'Defects Count',
+          font: { size: 11, weight: 'bold' as const }
+        },
         grid: {
           color: 'rgba(0, 0, 0, 0.1)',
         },
         ticks: {
-          font: { size: 10 }
+          font: { size: 10 },
+          callback: function(value: any) {
+            return value <= maxStackedValue ? value : '';
+          }
         }
       },
       y: {
+        stacked: true,
+        title: {
+          display: true,
+          text: 'Cameras',
+          font: { size: 11, weight: 'bold' as const }
+        },
         grid: {
           display: false,
         },
         ticks: {
           font: { size: 9 },
-          maxRotation: 0,
+          callback: function(value: any, index: number) {
+            const label = this.getLabelForValue(value);
+            if (label && label.length > 15) {
+              return label.substring(0, 12) + '...';
+            }
+            return label;
+          }
         }
       }
     },
@@ -192,21 +327,9 @@ export default function DefectByCameraChart({ data, loading, error }: DefectByCa
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
         Top 5 Defects Most Found by Cameras
       </h2>
-      <div className="h-[200px] sm:h-[240px] md:h-[260px]">
-        <Bar 
-          data={chartData} 
-          options={options}
-          plugins={[valueDisplayPlugin]}
-        />
+      <div className="h-[240px] sm:h-[280px] md:h-[320px]">
+        <Bar data={chartData} options={options} />
       </div>
-      
-      {/* Debug info */}
-      {data && (
-        <div className="text-xs text-gray-500 mt-2">
-          Data count: {data.length} cameras | 
-          Total defects: {data.reduce((sum, item) => sum + (item.totalng || 0), 0)}
-        </div>
-      )}
     </div>
   );
 }

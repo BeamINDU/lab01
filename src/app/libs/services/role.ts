@@ -41,7 +41,7 @@ export const create = async (param: Partial<Role>) => {
       ...param,
       id: res.roleid,
       statusName: param.status ? 'Active' : 'Inactive',
-      createdDate: new Date(),
+      createdDate: new Date(res.createddate),
     };
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -50,11 +50,11 @@ export const create = async (param: Partial<Role>) => {
 
 export const update = async (id: number, param: Partial<Role>) => {
   try {
-    const res = await api.put<Role>(`${API_ROUTES.role.update}?roleid=${id}`, param);
+    const res = await api.put<any>(`${API_ROUTES.role.update}?roleid=${id}`, param);
     return {
       ...param,
       statusName: param.status ? 'Active' : 'Inactive',
-      updatedDate: new Date(),
+      updatedDate: new Date(res.updateddate),
     };
   } catch (error) {
     throw new Error(extractErrorMessage(error));

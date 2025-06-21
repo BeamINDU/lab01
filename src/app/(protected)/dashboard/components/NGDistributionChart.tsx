@@ -154,7 +154,7 @@ export default function NGDistributionChart({ data, loading, error }: NGDistribu
     },
     plugins: {
       legend: {
-        position: 'top',
+        position: 'bottom',
         align: 'center',
         labels: {
           font: { 
@@ -387,14 +387,14 @@ export default function NGDistributionChart({ data, loading, error }: NGDistribu
       {/* Summary */}
       {data && data.length > 0 && (
         <div className="text-xs text-gray-500 mt-3 text-center">
-          <div className="flex justify-center gap-4 flex-wrap">
+          {/* <div className="flex justify-center gap-4 flex-wrap">
             <span>Time periods: {chartData.labels.length}</span>
             <span>Defect types: {chartData.datasets.length}</span>
             <span>Total records: {data.length}</span>
-          </div>
+          </div> */}
           
           {/* แสดงสรุปแต่ละ defect type */}
-          <div className="flex justify-center gap-4 flex-wrap mt-1">
+          {/* <div className="flex justify-center gap-4 flex-wrap mt-1">
             {chartData.datasets.map((dataset, index) => {
               const total = dataset.data.reduce((sum: number, value: any) => {
                 const num = typeof value === 'number' && !isNaN(value) ? value : 0;
@@ -416,7 +416,7 @@ export default function NGDistributionChart({ data, loading, error }: NGDistribu
                 </span>
               );
             })}
-          </div>
+          </div> */}
         </div>
       )}
 

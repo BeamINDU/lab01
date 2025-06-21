@@ -42,7 +42,7 @@ export const create = async (param: Partial<DefectType>) => {
       ...param,
       id: param.defectTypeId,
       statusName: param.status ? 'Active' : 'Inactive',
-      createdDate: new Date(),
+      createdDate: new Date(res.createddate),
     };
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -51,12 +51,12 @@ export const create = async (param: Partial<DefectType>) => {
 
 export const update = async (id: string, param: Partial<DefectType>) => {
   try {
-    const res = await api.put<DefectType>(`${API_ROUTES.defect_type.update}?defectid=${id}`, param);
+    const res = await api.put<any>(`${API_ROUTES.defect_type.update}?defectid=${id}`, param);
     return {
       ...param,
       id: param.defectTypeId,
       statusName: param.status ? 'Active' : 'Inactive',
-      updatedDate: new Date(),
+      updatedDate: new Date(res.updateddate),
     };
   } catch (error) {
     throw new Error(extractErrorMessage(error));

@@ -124,7 +124,7 @@ const chartData = useMemo(() => {
         right: 50, 
         left: 10,
         top: 10,
-        bottom: 10
+        bottom: 1
       }
     },
     plugins: {
@@ -132,7 +132,7 @@ const chartData = useMemo(() => {
         position: 'bottom',
         labels: {
           font: { size: 10 },
-          padding: 8,
+          padding: 10,
           usePointStyle: true,
         }
       },
@@ -245,12 +245,12 @@ const chartData = useMemo(() => {
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
         Top 5 Most Frequent Defect Types
       </h2>
-      <div className="h-[200px] sm:h-[240px] md:h-[260px]">
+      <div className="h-[240px] sm:h-[280px] md:h-[310px]">
         <Bar data={chartData} options={options} />
       </div>
       
       {/* แสดงข้อมูลสรุปด้านล่าง */}
-      {data && data.length > 0 && (
+      {/* {data && data.length > 0 && (
         <div className="mt-2 text-xs text-gray-600 text-center">
           <div className="flex justify-center gap-4 flex-wrap">
             {chartData.labels.slice(0, 3).map((defectType, index) => {
@@ -268,7 +268,7 @@ const chartData = useMemo(() => {
             Lines: {chartData.datasets.length} | Total records: {data.length}
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }
