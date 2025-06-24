@@ -1,7 +1,6 @@
-// src/app/(protected)/dashboard/components/GoodNGRatioChart.tsx
 'use client';
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import type { GoodNGRatioData } from '@/app/types/dashboard';
 
@@ -11,21 +10,23 @@ interface GoodNGRatioChartProps {
   error?: string;
 }
 
-const colors = ['#60a5fa', '#ef4444'];
+const COLORS = ['#60a5fa', '#ef4444'];
 
-export default function GoodNGRatioChart({ data, loading, error }: GoodNGRatioChartProps) {
+const GoodNGRatioChart = React.memo<GoodNGRatioChartProps>(({ data, loading, error }) => {
   const chartData = useMemo(() => {
     if (!data || data.length === 0) {
-      // Default fallback data
       return [
-        { name: "Good", value: 900 },
-        { name: "Not Good", value: 100 },
+        { name: "No Data", value: 0 }
       ];
     }
 
-    // Aggregate total_ok และ total_ng จากทุก LOT
     const totalOk = data.reduce((sum, item) => sum + (item.total_ok || 0), 0);
     const totalNg = data.reduce((sum, item) => sum + (item.total_ng || 0), 0);
+
+
+    if (totalOk === 0 && totalNg === 0) {
+      return [{ name: "No Data", value: 0 }];
+    }
 
     return [
       { name: "Good", value: totalOk },
@@ -33,22 +34,13 @@ export default function GoodNGRatioChart({ data, loading, error }: GoodNGRatioCh
     ];
   }, [data]);
 
-  const chartKey = useMemo(() => {
-    return `pie-chart-${chartData[0].value}-${chartData[1].value}-${Date.now()}`;
-  }, [chartData]);
-
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
-  const goodPercentage = total > 0 ? ((chartData[0].value / total) * 100).toFixed(1) : '0.0';
-  const ngPercentage = total > 0 ? ((chartData[1].value / total) * 100).toFixed(1) : '0.0';
 
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
     const RADIAN = Math.PI / 180;
-    
-    const isSmall = percent < 0.1;
-    const radius = outerRadius + (isSmall ? 25 : 15);
+    const radius = outerRadius + 20; 
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
     const color = name === 'Good' ? '#1e40af' : '#dc2626';
 
     return (
@@ -58,18 +50,14 @@ export default function GoodNGRatioChart({ data, loading, error }: GoodNGRatioCh
         fill={color}
         textAnchor={x > cx ? 'start' : 'end'} 
         dominantBaseline="central"
-        fontSize={isSmall ? 10 : 11}
+        fontSize={12}  
         fontWeight="bold"
-        style={{ 
-          textShadow: '1px 1px 2px rgba(255,255,255,0.9)',
-        }}
       >
         {`${(percent * 100).toFixed(1)}%`}
       </text>
     );
   };
 
-  // Custom tooltip
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0];
@@ -85,78 +73,72 @@ export default function GoodNGRatioChart({ data, loading, error }: GoodNGRatioCh
     return null;
   };
 
-  if (loading) {
-    return (
-      <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full min-h-[200px] md:min-h-[220px]">
-        <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-1"> 
-          Good / NG Ratio
-        </h2>
-        <div className="h-[160px] md:h-[170px] flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        </div>
-      </div>
-    );
-  }
 
-  if (error) {
-    return (
-      <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full min-h-[200px] md:min-h-[220px]">
-        <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-1"> 
-          Good / NG Ratio
-        </h2>
-        <div className="h-[160px] md:h-[170px] flex items-center justify-center">
-          <p className="text-red-500 text-center text-sm">{error}</p>
-        </div>
-      </div>
-    );
-  }
+
+  const LoadingState = () => (
+    <div className="h-full flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+    </div>
+  );
+
+  const ErrorState = () => (
+    <div className="h-full flex items-center justify-center">
+      <p className="text-red-500 text-center text-sm">{error}</p>
+    </div>
+  );
 
   return (
-    <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full min-h-[200px] md:min-h-[220px]">
+    <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full min-h-[240px] md:min-h-[260px]">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-1"> 
         Good / NG Ratio
       </h2>
       
-      <div className="h-[160px] md:h-[170px] relative">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart key={chartKey}>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              labelLine={true} 
-              label={renderCustomizedLabel}
-              outerRadius={50} 
-              innerRadius={22} 
-              fill="#8884d8"
-              dataKey="value"
-              animationBegin={0} 
-              animationDuration={800}
-              minAngle={5} 
-            >
-              {chartData.map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}-${entry.value}`} 
-                  fill={colors[index % colors.length]}
-                  stroke="#ffffff"
-                  strokeWidth={2} 
-                />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend
-              verticalAlign="bottom"
-              iconType="circle"
-              wrapperStyle={{ 
-                bottom: -5,
-                fontSize: '0.625rem'
-              }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+      <div className="h-[200px] md:h-[210px] relative">
+        {loading ? (
+          <LoadingState />
+        ) : error ? (
+          <ErrorState />
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false} 
+                label={renderCustomizedLabel}
+                outerRadius={70} 
+                innerRadius={30} 
+                fill="#8884d8"
+                dataKey="value"
+                animationDuration={800}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={COLORS[index % COLORS.length]}
+                    stroke="#ffffff"
+                    strokeWidth={2} 
+                  />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend
+                verticalAlign="bottom"
+                iconType="circle"
+                wrapperStyle={{ 
+                  bottom: 10, 
+                  fontSize: '0.7rem'
+                }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
       </div>
-
-
     </div>
   );
-}
+});
+
+GoodNGRatioChart.displayName = 'GoodNGRatioChart';
+
+export default GoodNGRatioChart;

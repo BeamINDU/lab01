@@ -39,7 +39,7 @@ const fetchDashboardData = async <T>(endpoint: string, filters: DashboardFilters
   }
 };
 
-// Dashboard data services
+// Dashboard data services - ✅ ใช้ API_ROUTES แล้ว
 export const getTotalProducts = async (filters: DashboardFilters): Promise<TotalProductsData> => {
   const data = await fetchDashboardData<{ total_products: number }>(
     API_ROUTES.dashboard.total_products, 
@@ -79,6 +79,7 @@ export const getTopTrends = async (filters: DashboardFilters): Promise<TrendData
       end: formatDateTime(filters.endDate!),
     };
 
+    // ✅ ใช้ API_ROUTES แทน hardcode
     const response = await api.get<any[]>(API_ROUTES.dashboard.top5_trends, params);
     
     if (Array.isArray(response)) {
@@ -121,21 +122,11 @@ export const getNGDistribution = async (filters: DashboardFilters): Promise<NgDi
   }));
 };
 
-// Dropdown data services
+
 export const getProducts = async (): Promise<ProductOption[]> => {
   try {
     const response = await api.get<any>(API_ROUTES.dashboard.products_list);
-    // Handle different response formats
-    if (Array.isArray(response)) {
-      return response;
-    }
-    if (response?.products && Array.isArray(response.products)) {
-      return response.products.map((item: any) => ({
-        id: item.prodname || item.id || item.productId,
-        name: item.prodname || item.name || item.productName
-      }));
-    }
-    return [];
+    return Array.isArray(response) ? response : [];
   } catch (error) {
     console.error('Failed to fetch products:', error);
     return [];
@@ -145,16 +136,7 @@ export const getProducts = async (): Promise<ProductOption[]> => {
 export const getCameras = async (): Promise<CameraOption[]> => {
   try {
     const response = await api.get<any>(API_ROUTES.dashboard.cameras_list);
-    if (Array.isArray(response)) {
-      return response;
-    }
-    if (response?.cameras && Array.isArray(response.cameras)) {
-      return response.cameras.map((item: any) => ({
-        id: item.cameraid || item.id,
-        name: item.cameraname || item.name
-      }));
-    }
-    return [];
+    return Array.isArray(response) ? response : [];
   } catch (error) {
     console.error('Failed to fetch cameras:', error);
     return [];
@@ -164,31 +146,23 @@ export const getCameras = async (): Promise<CameraOption[]> => {
 export const getLines = async (): Promise<LineOption[]> => {
   try {
     const response = await api.get<any>(API_ROUTES.dashboard.lines_list);
-    if (Array.isArray(response)) {
-      return response;
-    }
-    // Handle different possible response formats
-    if (response?.lines && Array.isArray(response.lines)) {
-      return response.lines;
-    }
-    return [];
+    return Array.isArray(response) ? response : [];
   } catch (error) {
     console.error('Failed to fetch lines:', error);
     return [];
   }
 };
 
-// Main function สำหรับดึงข้อมูล dashboard ทั้งหมด
+
 export const getDashboardData = async (filters: DashboardFilters): Promise<DashboardData> => {
   if (!filters.startDate || !filters.endDate) {
     throw new Error('Start date and end date are required');
   }
 
   if (process.env.NODE_ENV === 'development') {
-    console.log('🔄 Fetching dashboard data with filters:', filters);
+    console.log('Fetching dashboard data with filters:', filters);
   }
 
-  // Fetch all data in parallel
   const [
     totalProducts,
     goodNgRatio, 

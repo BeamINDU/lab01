@@ -44,7 +44,7 @@ export default function DashboardPage() {
     setDateTo(endOfDay);
   }, []);
 
-  // 🚀 Enhanced refresh function
+
   const refreshDashboardData = useCallback(async (filters: DashboardFilters, isAutoRefresh = false) => {
     try {
       if (!isAutoRefresh) {
@@ -57,11 +57,11 @@ export default function DashboardPage() {
       setLastUpdated(new Date());
       
       if (process.env.NODE_ENV === 'development') {
-        console.log(`📊 Dashboard ${isAutoRefresh ? 'auto-' : ''}refreshed at:`, new Date().toLocaleTimeString());
+        console.log(`Dashboard ${isAutoRefresh ? 'auto-' : ''}refreshed at:`, new Date().toLocaleTimeString());
       }
       
     } catch (error) {
-      console.error('❌ Failed to load dashboard data:', error);
+      console.error('Failed to load dashboard data:', error);
       setError('Failed to load dashboard data. Please try again.');
       if (!isAutoRefresh) {
         showError('Failed to load dashboard data');
@@ -79,7 +79,7 @@ export default function DashboardPage() {
     [refreshDashboardData]
   );
 
-  // 🔄 Auto-refresh setup
+  //  Auto-refresh setup
   useEffect(() => {
     if (!dateFrom || !dateTo) return;
 
@@ -96,14 +96,14 @@ export default function DashboardPage() {
     // Initial load
     debouncedRefreshDashboardData(filters);
 
-    // 🕐 Setup auto-refresh interval (1 minute = 60,000ms)
+    //  Setup auto-refresh interval (1 minute = 60,000ms)
     if (isAutoRefresh) {
       intervalRef.current = setInterval(() => {
-        refreshDashboardData(filters, true); // Auto-refresh without loading state
+        refreshDashboardData(filters, true);
       }, 60000); // 1 minute
 
       if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 Auto-refresh enabled: Every 1 minute');
+        console.log(' Auto-refresh enabled: Every 1 minute');
       }
     }
 
@@ -117,7 +117,7 @@ export default function DashboardPage() {
     };
   }, [selectedProduct, selectedCamera, selectedLine, selectedMonth, selectedYear, dateFrom, dateTo, isAutoRefresh, debouncedRefreshDashboardData, refreshDashboardData]);
 
-  // 🔄 Toggle auto-refresh
+  //  Toggle auto-refresh
   const toggleAutoRefresh = () => {
     setIsAutoRefresh(prev => !prev);
     if (!isAutoRefresh) {
@@ -125,7 +125,7 @@ export default function DashboardPage() {
     }
   };
 
-  // 🔄 Manual refresh
+  //  Manual refresh
   const handleManualRefresh = () => {
     if (dateFrom && dateTo) {
       const filters: DashboardFilters = {
@@ -233,7 +233,6 @@ export default function DashboardPage() {
     );
   }
 
-// ใน DashboardPage.tsx - แทนที่ส่วน Header + Auto-refresh Controls เดิม
 
 return (
   <main className="p-2">

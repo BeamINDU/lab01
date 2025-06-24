@@ -1,5 +1,3 @@
-// src/app/(protected)/dashboard/components/TotalProductsCard.tsx
-
 import type { TotalProductsData } from '@/app/types/dashboard';
 
 interface TotalProductsCardProps {

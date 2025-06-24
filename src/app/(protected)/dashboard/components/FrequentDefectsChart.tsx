@@ -1,8 +1,8 @@
-// src/app/(protected)/dashboard/components/FrequentDefectsChart.tsx
 'use client';
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
+import { groupBy, sumBy } from 'lodash';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -32,7 +32,7 @@ interface FrequentDefectsChartProps {
   error?: string;
 }
 
-// สีสำหรับแต่ละ line
+// ✅ ปรับปรุง: ใช้ function แทน inline
 const getColorForLine = (lineIndex: number): string => {
   const colors = [
     'rgba(30, 58, 138, 0.8)',
@@ -44,67 +44,61 @@ const getColorForLine = (lineIndex: number): string => {
   return colors[lineIndex % colors.length];
 };
 
-export default function FrequentDefectsChart({ data, loading, error }: FrequentDefectsChartProps) {
-const chartData = useMemo(() => {
-  if (!data || data.length === 0) {
-    return {
-      labels: ['No Data'],
-      datasets: [{
-        label: 'No Data',
-        data: [0],
-        backgroundColor: 'rgba(156, 163, 175, 0.8)',
-        borderColor: 'rgba(156, 163, 175, 1)',
-        borderWidth: 1,
-      }]
-    };
-  }
-
-  // Group by defecttype และ collect lines (จัดการ null values)
-  const defectMap = new Map<string, Record<string, number>>();
-  const linesSet = new Set<string>();
-  
-  data.forEach(item => {
-    const lineLabel = item.line || 'Unknown Line'; // จัดการ null line
-    
-    if (!defectMap.has(item.defecttype)) {
-      defectMap.set(item.defecttype, {});
+const FrequentDefectsChart = React.memo<FrequentDefectsChartProps>(({ data, loading, error }) => {
+  const chartData = useMemo(() => {
+    if (!data || data.length === 0) {
+      return {
+        labels: ['No Data'],
+        datasets: [{
+          label: 'No Data',
+          data: [0],
+          backgroundColor: 'rgba(156, 163, 175, 0.8)',
+          borderColor: 'rgba(156, 163, 175, 1)',
+          borderWidth: 1,
+        }]
+      };
     }
+
+    const groupedByDefect = groupBy(data, 'defecttype');
+    const linesSet = new Set(data.map(item => item.line || 'Unknown Line'));
     
-    const defectData = defectMap.get(item.defecttype)!;
-    defectData[lineLabel] = (defectData[lineLabel] || 0) + (item.quantity || 0);
-    linesSet.add(lineLabel);
-  });
 
-  // สร้าง labels (defect types) sorted by total quantity
-  const defectTotals = new Map<string, number>();
-  defectMap.forEach((lineData, defectType) => {
-    const total = Object.values(lineData).reduce((sum, qty) => sum + qty, 0);
-    defectTotals.set(defectType, total);
-  });
-  
-  const labels = Array.from(defectTotals.entries())
-    .sort((a, b) => b[1] - a[1]) // Sort by total quantity desc
-    .slice(0, 5) // Top 5
-    .map(([defectType]) => defectType);
+    const defectTotals = Object.entries(groupedByDefect).map(([defectType, items]) => ({
+      defectType,
+      total: sumBy(items, 'quantity')
+    }));
 
-  const linesArray = Array.from(linesSet).sort();
-  
-  // สร้าง datasets สำหรับแต่ละ line
-  const datasets = linesArray.map((line, index) => ({
-    label: line,
-    data: labels.map(defectType => defectMap.get(defectType)?.[line] || 0),
-    backgroundColor: getColorForLine(index),
-    borderColor: getColorForLine(index).replace('0.8', '1'),
-    borderWidth: 1,
-    borderRadius: 4,
-    borderSkipped: false,
-  }));
 
-  return { labels, datasets };
-}, [data]);
+    const top5Defects = defectTotals
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 5)
+      .map(item => item.defectType);
+
+    const linesArray = Array.from(linesSet).sort();
+    
+
+    const datasets = linesArray.map((line, index) => ({
+      label: line,
+      data: top5Defects.map(defectType => {
+        const items = groupedByDefect[defectType] || [];
+        return sumBy(items.filter(item => (item.line || 'Unknown Line') === line), 'quantity');
+      }),
+      backgroundColor: getColorForLine(index),
+      borderColor: getColorForLine(index).replace('0.8', '1'),
+      borderWidth: 1,
+      borderRadius: 4,
+      borderSkipped: false,
+    }));
+
+    return { 
+      labels: top5Defects, 
+      datasets 
+    };
+  }, [data]);
+
 
   const maxStackedValue = useMemo(() => {
-    if (chartData.datasets.length === 0) return 0;
+    if (!chartData.datasets.length) return 0;
     
     return Math.max(
       ...chartData.labels.map((_, labelIndex) => 
@@ -120,12 +114,7 @@ const chartData = useMemo(() => {
     responsive: true,
     maintainAspectRatio: false,
     layout: {
-      padding: {
-        right: 50, 
-        left: 10,
-        top: 10,
-        bottom: 1
-      }
+      padding: { right: 50, left: 10, top: 10, bottom: 1 }
     },
     plugins: {
       legend: {
@@ -141,40 +130,29 @@ const chartData = useMemo(() => {
         titleColor: 'white',
         bodyColor: 'white',
         callbacks: {
-          title: function(context: any) {
-            return `Defect: ${context[0].label}`;
-          },
-          label: function(context: any) {
-            return `${context.dataset.label}: ${context.parsed.x}`;
-          },
-          afterBody: function(context: any) {
-            const dataIndex = context[0].dataIndex;
+          title: (context: any) => `Defect: ${context[0].label}`,
+          label: (context: any) => `${context.dataset.label}: ${context.parsed.x}`,
+          afterBody: (context: any) => {
             const total = chartData.datasets.reduce((sum, dataset) => {
-              return sum + (dataset.data[dataIndex] || 0);
+              return sum + (dataset.data[context[0].dataIndex] || 0);
             }, 0);
             return [`Total: ${total}`];
           }
         }
       },
       datalabels: {
-        display: function(context: any) {
-          return context.datasetIndex === chartData.datasets.length - 1;
-        },
+        display: (context: any) => context.datasetIndex === chartData.datasets.length - 1,
         anchor: 'end',
         align: 'right',
         color: '#1f2937',
-        font: {
-          weight: 'bold',
-          size: 10,
-        },
-        formatter: function(value: number, context: any) {
-          const dataIndex = context.dataIndex;
-          const total = chartData.datasets.reduce((sum, dataset) => {
-            return sum + (dataset.data[dataIndex] || 0);
-          }, 0);
+        font: { weight: 'bold', size: 10 },
+        formatter: (value: number, context: any) => {
+          const total = chartData.datasets.reduce((sum, dataset) => 
+            sum + (dataset.data[context.dataIndex] || 0), 0
+          );
           return total;
         },
-        offset: 8, 
+        offset: 8,
       },
     },
     scales: {
@@ -182,93 +160,74 @@ const chartData = useMemo(() => {
         beginAtZero: true,
         stacked: true,
         max: Math.ceil(maxStackedValue * 1.2),
-        grid: {
-          color: 'rgba(0, 0, 0, 0.1)',
+        title: {
+          display: true,
+          text: 'Quantity',
+          font: { size: 12, weight: 'bold' },
+          color: '#374151',
         },
+        grid: { color: 'rgba(0, 0, 0, 0.1)' },
         ticks: {
           font: { size: 10 },
-          callback: function(value: any) {
-            return value <= maxStackedValue ? value : '';
-          }
+          callback: (value: any) => value <= maxStackedValue ? value : ''
         }
       },
       y: {
         stacked: true,
-        grid: {
-          display: false,
+        title: {
+          display: true,
+          text: 'Defect Types',
+          font: { size: 12, weight: 'bold' },
+          color: '#374151',
         },
+        grid: { display: false },
         ticks: {
           font: { size: 9 },
-          callback: function(value: any, index: number) {
+          callback: function(value: any) {
             const label = this.getLabelForValue(value);
-            if (label && label.length > 20) {
-              return label.substring(0, 17) + '...';
-            }
-            return label;
+            return label && label.length > 20 ? label.substring(0, 17) + '...' : label;
           }
         }
       }
     },
-    animation: {
-      duration: 1200,
-    }
+    animation: { duration: 1200 }
   };
 
-  if (loading) {
-    return (
-      <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
-        <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
-          Top 5 Most Frequent Defect Types
-        </h2>
-        <div className="h-[200px] sm:h-[240px] md:h-[260px] flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        </div>
-      </div>
-    );
-  }
 
-  if (error) {
-    return (
-      <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
-        <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
-          Top 5 Most Frequent Defect Types
-        </h2>
-        <div className="h-[200px] sm:h-[240px] md:h-[260px] flex items-center justify-center">
-          <p className="text-red-500 text-center">{error}</p>
-        </div>
-      </div>
-    );
-  }
+
+  const LoadingState = () => (
+    <div className="h-[200px] sm:h-[240px] md:h-[260px] flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+    </div>
+  );
+
+  const ErrorState = () => (
+    <div className="h-[200px] sm:h-[240px] md:h-[260px] flex items-center justify-center">
+      <p className="text-red-500 text-center">{error}</p>
+    </div>
+  );
+
+
 
   return (
     <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
         Top 5 Most Frequent Defect Types
       </h2>
-      <div className="h-[240px] sm:h-[280px] md:h-[310px]">
-        <Bar data={chartData} options={options} />
-      </div>
       
-      {/* แสดงข้อมูลสรุปด้านล่าง */}
-      {/* {data && data.length > 0 && (
-        <div className="mt-2 text-xs text-gray-600 text-center">
-          <div className="flex justify-center gap-4 flex-wrap">
-            {chartData.labels.slice(0, 3).map((defectType, index) => {
-              const total = chartData.datasets.reduce((sum, dataset) => 
-                sum + (dataset.data[index] || 0), 0
-              );
-              return (
-                <span key={index} className="whitespace-nowrap">
-                  <strong>{defectType}:</strong> {total}
-                </span>
-              );
-            })}
-          </div>
-          <div className="mt-1">
-            Lines: {chartData.datasets.length} | Total records: {data.length}
-          </div>
+      {loading ? (
+        <LoadingState />
+      ) : error ? (
+        <ErrorState />
+      ) : (
+        <div className="h-[240px] sm:h-[280px] md:h-[330px]">
+          <Bar data={chartData} options={options} />
         </div>
-      )} */}
+      )}
     </div>
   );
-}
+});
+
+FrequentDefectsChart.displayName = 'FrequentDefectsChart';
+
+export default FrequentDefectsChart;

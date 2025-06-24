@@ -1,7 +1,8 @@
-// DefectByCameraChart.tsx - เปลี่ยนเป็น Chart.js stacked bar chart
+'use client';
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
+import { groupBy, sumBy, orderBy } from 'lodash';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -31,105 +32,80 @@ interface DefectByCameraChartProps {
   error?: string;
 }
 
-// สีสำหรับแต่ละ defect type
-const getDefectTypeColor = (defectType: string, opacity: number = 0.85): string => {
+
+const getDefectTypeColor = (defectType: string): string => {
   const colorPalette: Record<string, string> = {
-    'Crack': `rgba(239, 68, 68, ${opacity})`,     // Red
-    'Scratch': `rgba(59, 130, 246, ${opacity})`,  // Blue  
-    'Dent': `rgba(34, 197, 94, ${opacity})`,      // Green
-    'Missing': `rgba(245, 158, 11, ${opacity})`,  // Amber
-    'Broken': `rgba(168, 85, 247, ${opacity})`,   // Purple
-    'Dirty': `rgba(236, 72, 153, ${opacity})`,    // Pink
-    'Deform': `rgba(20, 184, 166, ${opacity})`,   // Teal
-    'Missing Part': `rgba(245, 158, 11, ${opacity})`, // Amber
-    'Misalignment': `rgba(156, 163, 175, ${opacity})`, // Gray
+    'Crack': 'rgba(239, 68, 68, 0.8)',
+    'Scratch': 'rgba(59, 130, 246, 0.8)',
+    'Dent': 'rgba(34, 197, 94, 0.8)',
+    'Missing': 'rgba(245, 158, 11, 0.8)',
+    'Missing Part': 'rgba(245, 158, 11, 0.8)',
+    'Broken': 'rgba(168, 85, 247, 0.8)',
+    'Dirty': 'rgba(236, 72, 153, 0.8)',
+    'Deform': 'rgba(20, 184, 166, 0.8)',
+    'Misalignment': 'rgba(156, 163, 175, 0.8)',
   };
-  
-  return colorPalette[defectType] || `rgba(156, 163, 175, ${opacity})`;
+  return colorPalette[defectType] || 'rgba(156, 163, 175, 0.8)';
 };
 
-export default function DefectByCameraChart({ data, loading, error }: DefectByCameraChartProps) {
+const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loading, error }) => {
   const chartData = useMemo(() => {
-    console.log('🔍 DefectByCameraChart raw data:', data);
-
     if (!data || data.length === 0) {
       return {
         labels: ['No Data'],
         datasets: [{
-          label: 'No Data Available',
+          label: 'No Data',
           data: [0],
           backgroundColor: 'rgba(156, 163, 175, 0.6)',
           borderColor: 'rgba(156, 163, 175, 0.8)',
           borderWidth: 2,
           borderRadius: 8,
-          borderSkipped: false,
         }]
       };
     }
 
-    // Step 1: Group by camera และ defect type
-    const cameraMap = new Map<string, Record<string, number>>();
-    const defectTypes = new Set<string>();
-    
-    data.forEach(item => {
-      if (!item.cameraname && !item.cameraid) {
-        console.warn('⚠️ Skipping item with missing camera data:', item);
-        return;
-      }
-      
+
+    const validData = data.filter(item => 
+      (item.cameraname || item.cameraid) && item.defecttype
+    );
+
+
+    const cameraTotals = Object.entries(groupBy(validData, item => 
+      item.cameraname || item.cameraid || 'Unknown Camera'
+    )).map(([cameraName, items]) => ({
+      cameraName,
+      total: sumBy(items, 'totalng')
+    }));
+
+    const topCameras = orderBy(cameraTotals, 'total', 'desc')
+      .slice(0, 5)
+      .map(item => item.cameraName);
+
+
+    const filteredData = validData.filter(item => {
       const cameraName = item.cameraname || item.cameraid || 'Unknown Camera';
-      const defectType = item.defecttype || 'Unknown Defect';
-      const count = item.totalng || 0;
-      
-      console.log(`⏰ Processing: ${defectType} at ${cameraName} with count ${count}`);
-      
-      if (!cameraMap.has(cameraName)) {
-        cameraMap.set(cameraName, {});
-      }
-      
-      const cameraData = cameraMap.get(cameraName)!;
-      cameraData[defectType] = (cameraData[defectType] || 0) + count;
-      defectTypes.add(defectType);
+      return topCameras.includes(cameraName);
     });
 
-    console.log('📊 Processed cameraMap:', Object.fromEntries(cameraMap));
-    console.log('🏷️ Defect types found:', Array.from(defectTypes));
 
-    // Step 2: Get top 5 cameras by total defects
-    const cameraTotals = new Map<string, number>();
-    cameraMap.forEach((defectData, cameraName) => {
-      const total = Object.values(defectData).reduce((sum, count) => sum + count, 0);
-      cameraTotals.set(cameraName, total);
-    });
-    
-    const topCameras = Array.from(cameraTotals.entries())
-      .sort((a, b) => b[1] - a[1]) // Sort by total defects DESC
-      .slice(0, 5) // Top 5
-      .map(([cameraName]) => cameraName);
+    const defectTypes = [...new Set(filteredData.map(item => item.defecttype))].sort();
 
-    console.log('🏆 Top 5 cameras:', topCameras);
 
-    // Step 3: Create labels และ datasets
-    const labels = topCameras;
-    const defectTypeArray = Array.from(defectTypes).sort();
-    
-    console.log('🕐 Camera labels:', labels);
-    console.log('📋 Defect type array:', defectTypeArray);
+    const datasets = defectTypes.map(defectType => {
+      const defectData = filteredData.filter(item => item.defecttype === defectType);
+      const cameraDefectData = groupBy(defectData, item => 
+        item.cameraname || item.cameraid || 'Unknown Camera'
+      );
 
-    // Step 4: Create datasets สำหรับแต่ละ defect type
-    const datasets = defectTypeArray.map((defectType) => {
-      const dataValues = labels.map(cameraName => {
-        const value = cameraMap.get(cameraName)?.[defectType] || 0;
-        return typeof value === 'number' && !isNaN(value) ? value : 0;
-      });
-
-      console.log(`📈 Dataset for ${defectType}:`, dataValues);
+      const dataValues = topCameras.map(cameraName => 
+        sumBy(cameraDefectData[cameraName] || [], 'totalng')
+      );
 
       return {
         label: defectType,
         data: dataValues,
-        backgroundColor: getDefectTypeColor(defectType, 0.8),
-        borderColor: getDefectTypeColor(defectType, 1),
+        backgroundColor: getDefectTypeColor(defectType),
+        borderColor: getDefectTypeColor(defectType).replace('0.8', '1'),
         borderWidth: 1,
         borderRadius: {
           topLeft: 4,
@@ -138,20 +114,18 @@ export default function DefectByCameraChart({ data, loading, error }: DefectByCa
           bottomRight: 4,
         },
         borderSkipped: false,
-        hoverBackgroundColor: getDefectTypeColor(defectType, 0.95),
-        hoverBorderColor: getDefectTypeColor(defectType, 1),
+        hoverBackgroundColor: getDefectTypeColor(defectType).replace('0.8', '0.95'),
+        hoverBorderColor: getDefectTypeColor(defectType).replace('0.8', '1'),
         hoverBorderWidth: 2,
       };
     });
 
-    const result = { labels, datasets };
-    console.log('✅ Final camera chart data:', result);
-    return result;
+    return { labels: topCameras, datasets };
   }, [data]);
 
-  // คำนวณค่าสูงสุดของ stacked bars
+
   const maxStackedValue = useMemo(() => {
-    if (chartData.datasets.length === 0) return 0;
+    if (!chartData.datasets.length) return 0;
     
     return Math.max(
       ...chartData.labels.map((_, labelIndex) => 
@@ -167,28 +141,15 @@ export default function DefectByCameraChart({ data, loading, error }: DefectByCa
     responsive: true,
     maintainAspectRatio: false,
     layout: {
-      padding: {
-        right: 50, 
-        left: 10,
-        top: 10, // ✅ ลดจาก 60 เป็น 20
-        bottom: 10
-      }
+      padding: { right: 50, left: 10, top: 10, bottom: 10 }
     },
     plugins: {
       legend: {
         position: 'bottom',
-        align: 'center',
         labels: {
-          font: { 
-            size: 13, //  ลดขนาดตัวอักษร legend
-            weight: 'bold' as const,
-          },
-          padding: 8, //  ลด padding ระหว่าง legend items
+          font: { size: 10 },
+          padding: 10,
           usePointStyle: true,
-          pointStyle: 'circle',
-          boxWidth: 8, //  ลดขนาด icon
-          boxHeight: 8,
-          color: '#374151',
         }
       },
       tooltip: {
@@ -196,57 +157,61 @@ export default function DefectByCameraChart({ data, loading, error }: DefectByCa
         titleColor: 'white',
         bodyColor: 'white',
         callbacks: {
-          title: function(context: any) {
-            if (!context || !context[0] || !context[0].label) return 'Camera: --';
-            return `Camera: ${context[0].label}`;
-          },
-          label: function(context: any) {
-            if (!context || !context.dataset || typeof context.parsed?.x !== 'number') {
+          title: (context: any) => `Camera: ${context[0].label}`,
+          label: (context: any) => {
+            try {
+              const defectType = context.dataset.label;
+              const count = context.parsed?.x || 0;
+              const emoji = defectType === 'Crack' ? '🔴' : 
+                           defectType === 'Scratch' ? '🔵' : 
+                           defectType === 'Dent' ? '🟢' : 
+                           defectType === 'Missing' || defectType === 'Missing Part' ? '🟡' : 
+                           defectType === 'Broken' ? '🟣' : 
+                           defectType === 'Dirty' ? '🌸' : 
+                           defectType === 'Deform' ? '🟦' : '⚪';
+              return `${emoji} ${defectType}: ${count} defects`;
+            } catch {
               return 'Invalid data';
             }
-            
-            const defectType = context.dataset.label || 'Unknown';
-            const count = context.parsed.x;
-            const emoji = defectType === 'Crack' ? '🔴' : 
-                         defectType === 'Scratch' ? '🔵' : 
-                         defectType === 'Dent' ? '🟢' : 
-                         defectType === 'Missing' || defectType === 'Missing Part' ? '🟡' : 
-                         defectType === 'Broken' ? '🟣' : 
-                         defectType === 'Dirty' ? '🌸' : 
-                         defectType === 'Deform' ? '🟦' : '⚪';
-            return `${emoji} ${defectType}: ${count} defects`;
           },
-          afterBody: function(context: any) {
-            if (!context || !Array.isArray(context)) return ['📊 Total: 0'];
-            
-            const total = context.reduce((sum: number, item: any) => {
-              const value = item?.parsed?.x;
-              return sum + (typeof value === 'number' && !isNaN(value) ? value : 0);
-            }, 0);
-            return [``, `📊 Total Defects: ${total}`];
+          afterBody: (context: any) => {
+            try {
+              const total = context.reduce((sum: number, item: any) => {
+                const value = item?.parsed?.x;
+                return sum + (typeof value === 'number' && !isNaN(value) ? value : 0);
+              }, 0);
+              return [``, `Total Defects: ${total}`];
+            } catch {
+              return [`Total: --`];
+            }
           }
         }
       },
+
       datalabels: {
-        // แสดง total สำหรับแต่ละ camera
-        display: function(context: any) {
-          return context.datasetIndex === chartData.datasets.length - 1;
+        display: true,
+        anchor: 'center',
+        align: 'center',
+        color: '#0000',
+        font: { 
+          size: 11 
         },
-        anchor: 'end',
-        align: 'right',
-        color: '#1f2937',
-        font: {
-          weight: 'bold' as const,
-          size: 10,
+        formatter: (value: any) => {
+          try {
+            return (value && value > 0) ? value.toString() : '';
+          } catch {
+            return '';
+          }
         },
-        formatter: function(value: any, context: any) {
-          const dataIndex = context.dataIndex;
-          const total = chartData.datasets.reduce((sum, dataset) => {
-            return sum + (dataset.data[dataIndex] || 0);
-          }, 0);
-          return total;
+        borderRadius: 3,
+        padding: { 
+          top: 2, 
+          bottom: 2, 
+          left: 3, 
+          right: 3 
         },
-        offset: 8,
+        textStrokeColor: 'rgba(0, 0, 0, 0.8)',
+        textStrokeWidth: 1,
       },
     },
     scales: {
@@ -281,7 +246,7 @@ export default function DefectByCameraChart({ data, loading, error }: DefectByCa
         },
         ticks: {
           font: { size: 9 },
-          callback: function(value: any, index: number) {
+          callback: function(value: any) {
             const label = this.getLabelForValue(value);
             if (label && label.length > 15) {
               return label.substring(0, 12) + '...';
@@ -296,40 +261,37 @@ export default function DefectByCameraChart({ data, loading, error }: DefectByCa
     }
   };
 
-  if (loading) {
-    return (
-      <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
-        <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
-          Top 5 Defects Most Found by Cameras
-        </h2>
-        <div className="h-[200px] sm:h-[240px] md:h-[260px] flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        </div>
-      </div>
-    );
-  }
+  const LoadingState = () => (
+    <div className="h-[200px] sm:h-[240px] md:h-[260px] flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+    </div>
+  );
 
-  if (error) {
-    return (
-      <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
-        <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
-          Top 5 Defects Most Found by Cameras
-        </h2>
-        <div className="h-[200px] sm:h-[240px] md:h-[260px] flex items-center justify-center">
-          <p className="text-red-500 text-center">{error}</p>
-        </div>
-      </div>
-    );
-  }
+  const ErrorState = () => (
+    <div className="h-[200px] sm:h-[240px] md:h-[260px] flex items-center justify-center">
+      <p className="text-red-500 text-center">{error}</p>
+    </div>
+  );
 
   return (
     <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
         Top 5 Defects Most Found by Cameras
       </h2>
-      <div className="h-[240px] sm:h-[280px] md:h-[320px]">
-        <Bar data={chartData} options={options} />
-      </div>
+      
+      {loading ? (
+        <LoadingState />
+      ) : error ? (
+        <ErrorState />
+      ) : (
+        <div className="h-[240px] sm:h-[280px] md:h-[340px]">
+          <Bar data={chartData} options={options} />
+        </div>
+      )}
     </div>
   );
-}
+});
+
+DefectByCameraChart.displayName = 'DefectByCameraChart';
+
+export default DefectByCameraChart;

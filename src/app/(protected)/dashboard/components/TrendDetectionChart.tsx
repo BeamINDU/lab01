@@ -1,8 +1,8 @@
-// src/app/(protected)/dashboard/components/TrendDetectionChart.tsx
 'use client';
 
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Line } from 'react-chartjs-2';
+import { groupBy, sumBy, orderBy } from 'lodash';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -14,6 +14,7 @@ import {
   Legend,
   Filler
 } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import type { TrendData } from '@/app/types/dashboard';
 
 ChartJS.register(
@@ -24,7 +25,8 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  Filler
+  Filler,
+  ChartDataLabels
 );
 
 interface TrendDetectionChartProps {
@@ -33,31 +35,29 @@ interface TrendDetectionChartProps {
   error?: string;
 }
 
-// สีสำหรับแต่ละ defect type (ใช้สีที่แตกต่างกันชัดเจน)
+
 const getColorForDefectType = (index: number): string => {
   const colors = [
-    'rgb(239, 68, 68)',    // Red
-    'rgb(59, 130, 246)',   // Blue  
-    'rgb(34, 197, 94)',    // Green
-    'rgb(245, 158, 11)',   // Amber
-    'rgb(168, 85, 247)',   // Purple
-    'rgb(236, 72, 153)',   // Pink
-    'rgb(20, 184, 166)',   // Teal
-    'rgb(156, 163, 175)',  // Gray
+    'rgb(239, 68, 68)',    
+    'rgb(59, 130, 246)',     
+    'rgb(34, 197, 94)',    
+    'rgb(245, 158, 11)',   
+    'rgb(168, 85, 247)',   
+    'rgb(236, 72, 153)',  
+    'rgb(20, 184, 166)',   
+    'rgb(156, 163, 175)',  
   ];
   return colors[index % colors.length];
 };
 
-export default function TrendDetectionChart({ data, loading, error }: TrendDetectionChartProps) {
+const TrendDetectionChart = React.memo<TrendDetectionChartProps>(({ data, loading, error }) => {
   const chartData = useMemo(() => {
-    console.log('🔍 TrendDetection raw data:', data);
-
     if (!data || data.length === 0) {
       return {
-        labels: ['9:00', '12:00', '15:00', '18:00', '21:00'],
+        labels: ['No Data'],
         datasets: [{
           label: 'No Data',
-          data: [0, 0, 0, 0, 0],
+          data: [0],
           borderColor: 'rgba(156, 163, 175, 0.8)',
           backgroundColor: 'rgba(156, 163, 175, 0.1)',
           borderWidth: 2,
@@ -67,70 +67,50 @@ export default function TrendDetectionChart({ data, loading, error }: TrendDetec
       };
     }
 
-    // ✅ Step 1: สร้าง Map สำหรับ time slots และ defect types
-    const timeSlotMap = new Map<string, Record<string, number>>();
-    const defectTypesSet = new Set<string>();
-    
-    data.forEach(item => {
-      // จัดการ hour_slot ให้เป็น format ที่อ่านง่าย
-      const hourSlot = new Date(item.hour_slot).toLocaleTimeString('en-US', { 
+
+    const validData = data.filter(item => item.hour_slot && item.defecttype);
+
+
+    const defectTotals = Object.entries(groupBy(validData, 'defecttype'))
+      .map(([defectType, items]) => ({
+        defectType,
+        total: sumBy(items, 'quantity')
+      }));
+
+    const top5DefectTypes = orderBy(defectTotals, 'total', 'desc')
+      .slice(0, 5)
+      .map(item => item.defectType);
+
+
+    const filteredData = validData.filter(item => 
+      top5DefectTypes.includes(item.defecttype)
+    );
+
+ 
+    const timeSlots = [...new Set(filteredData.map(item => 
+      new Date(item.hour_slot).toLocaleTimeString('en-US', { 
         hour: '2-digit', 
         minute: '2-digit', 
         hour12: false 
-      });
-      
-      // สร้าง defect type key (รวม line ถ้ามี)
-      const defectKey = item.line ? 
-        `${item.defecttype} (${item.line})` : 
-        item.defecttype;
-      
-      // เพิ่มเข้าใน Map
-      if (!timeSlotMap.has(hourSlot)) {
-        timeSlotMap.set(hourSlot, {});
-      }
-      
-      const timeData = timeSlotMap.get(hourSlot)!;
-      const currentQuantity = timeData[defectKey] || 0;
-      timeData[defectKey] = currentQuantity + (item.quantity || 0);
-      
-      defectTypesSet.add(defectKey);
-      
-      console.log(`⏰ Processing: ${defectKey} at ${hourSlot} = ${item.quantity}`);
-    });
+      })
+    ))].sort();
 
-    console.log('🕐 Time slots found:', Array.from(timeSlotMap.keys()));
-    console.log('🏷️ Defect types found:', Array.from(defectTypesSet));
-
-    // ✅ Step 2: เรียงลำดับ time slots และ limit defect types ที่ 5
-    const sortedTimeSlots = Array.from(timeSlotMap.keys()).sort();
-    
-    // หา Top 5 defect types โดยรวม quantity ทั้งหมด
-    const defectTotals = new Map<string, number>();
-    defectTypesSet.forEach(defectType => {
-      let total = 0;
-      sortedTimeSlots.forEach(timeSlot => {
-        total += timeSlotMap.get(timeSlot)?.[defectType] || 0;
-      });
-      defectTotals.set(defectType, total);
-    });
-
-    const top5DefectTypes = Array.from(defectTotals.entries())
-      .sort((a, b) => b[1] - a[1]) // เรียงจากมากไปน้อย
-      .slice(0, 5) // เอาแค่ 5 อันดับแรก
-      .map(([defectType]) => defectType);
-
-    console.log('🏆 Top 5 defect types:', top5DefectTypes);
-
-    // ✅ Step 3: สร้าง datasets สำหรับแต่ละ defect type
     const datasets = top5DefectTypes.map((defectType, index) => {
       const color = getColorForDefectType(index);
       
-      const dataPoints = sortedTimeSlots.map(timeSlot => {
-        const value = timeSlotMap.get(timeSlot)?.[defectType] || 0;
-        return value;
-      });
+      // Group data by time for this defect type
+      const defectTimeData = groupBy(
+        filteredData.filter(item => item.defecttype === defectType), 
+        item => new Date(item.hour_slot).toLocaleTimeString('en-US', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          hour12: false 
+        })
+      );
 
-      console.log(`📈 Dataset for ${defectType}:`, dataPoints);
+      const dataPoints = timeSlots.map(timeSlot => 
+        sumBy(defectTimeData[timeSlot] || [], 'quantity')
+      );
 
       return {
         label: defectType,
@@ -148,13 +128,7 @@ export default function TrendDetectionChart({ data, loading, error }: TrendDetec
       };
     });
 
-    const result = {
-      labels: sortedTimeSlots,
-      datasets
-    };
-
-    console.log('✅ Final trend chart data:', result);
-    return result;
+    return { labels: timeSlots, datasets };
   }, [data]);
 
   const options = {
@@ -167,9 +141,10 @@ export default function TrendDetectionChart({ data, loading, error }: TrendDetec
     plugins: {
       legend: {
         position: 'bottom' as const,
+        align: 'center' as const,
         labels: {
           font: { size: 12 },
-          padding: 10,
+          padding: 8,
           usePointStyle: true,
           boxWidth: 8,
           boxHeight: 8,
@@ -184,27 +159,52 @@ export default function TrendDetectionChart({ data, loading, error }: TrendDetec
         borderColor: 'rgba(75, 85, 99, 0.3)',
         borderWidth: 1,
         cornerRadius: 8,
-        titleFont: {
-          size: 13,
-          weight: 'bold' as const,
-        },
-        bodyFont: {
-          size: 12,
-        },
+        titleFont: { size: 13, weight: 'bold' as const },
+        bodyFont: { size: 12 },
         padding: 12,
         callbacks: {
-          title: function(context: any) {
-            return `Time: ${context[0].label}`;
-          },
-          label: function(context: any) {
-            return `${context.dataset.label}: ${context.parsed.y}`;
-          },
-          afterBody: function(context: any) {
-            const total = context.reduce((sum: number, item: any) => sum + item.parsed.y, 0);
-            return [``, `📊 Total: ${total}`];
+          title: (context: any) => `Time: ${context[0].label}`,
+          label: (context: any) => `${context.dataset.label}: ${context.parsed.y}`,
+          afterBody: (context: any) => {
+            try {
+              const total = context.reduce((sum: number, item: any) => 
+                sum + (item.parsed?.y || 0), 0
+              );
+              return [``, `Total: ${total}`];
+            } catch {
+              return [`Total: --`];
+            }
           }
         }
-      }
+      },
+      datalabels: {
+        display: true,
+        anchor: 'end' as const,
+        align: 'top' as const,
+        color: '#374151',
+        font: { 
+          weight: 'bold' as const, 
+          size: 10 
+        },
+        formatter: (value: any) => {
+          try {
+            return (value && value > 0) ? value.toString() : '';
+          } catch {
+            return '';
+          }
+        },
+        //backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        //borderColor: 'rgba(107, 114, 128, 0.3)',
+        borderWidth: 1,
+        borderRadius: 4,
+        padding: { 
+          top: 2, 
+          bottom: 2, 
+          left: 4, 
+          right: 4 
+        },
+        offset: 3,
+      },
     },
     scales: {
       x: {
@@ -212,10 +212,7 @@ export default function TrendDetectionChart({ data, loading, error }: TrendDetec
         title: {
           display: true,
           text: 'Time (Hour)',
-          font: { 
-            size: 12,
-            weight: 'bold' as const,
-          },
+          font: { size: 12, weight: 'bold' as const },
           color: '#374151',
         },
         grid: {
@@ -233,10 +230,7 @@ export default function TrendDetectionChart({ data, loading, error }: TrendDetec
         title: {
           display: true,
           text: 'Quantity',
-          font: { 
-            size: 12,
-            weight: 'bold' as const,
-          },
+          font: { size: 12, weight: 'bold' as const },
           color: '#374151',
         },
         grid: {
@@ -248,6 +242,10 @@ export default function TrendDetectionChart({ data, loading, error }: TrendDetec
           color: '#6B7280',
         },
         beginAtZero: true,
+        suggestedMax: function(context: any) {
+          const maxValue = Math.max(...context.chart.data.datasets.flatMap((dataset: any) => dataset.data));
+          return Math.ceil(maxValue * 1.3); 
+        },
       }
     },
     animation: {
@@ -255,70 +253,42 @@ export default function TrendDetectionChart({ data, loading, error }: TrendDetec
       easing: 'easeInOutCubic' as const,
     },
     elements: {
-      point: {
-        hoverRadius: 8,
-      },
-      line: {
-        tension: 0.4,
-      }
+      point: { hoverRadius: 8 },
+      line: { tension: 0.4 }
     }
   };
 
-  if (loading) {
-    return (
-      <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
-        <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
-          Trend of Top 5 Detection Types
-        </h2>
-        <div className="h-[200px] sm:h-[240px] md:h-[280px] flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        </div>
-      </div>
-    );
-  }
+  const LoadingState = () => (
+    <div className="h-[200px] sm:h-[240px] md:h-[280px] flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+    </div>
+  );
 
-  if (error) {
-    return (
-      <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
-        <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
-          Trend of Top 5 Detection Types
-        </h2>
-        <div className="h-[200px] sm:h-[240px] md:h-[280px] flex items-center justify-center">
-          <p className="text-red-500 text-center">{error}</p>
-        </div>
-      </div>
-    );
-  }
+  const ErrorState = () => (
+    <div className="h-[200px] sm:h-[240px] md:h-[280px] flex items-center justify-center">
+      <p className="text-red-500 text-center">{error}</p>
+    </div>
+  );
 
   return (
     <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
         Trend of Top 5 Detection Types
       </h2>
-      <div className="h-[220px] sm:h-[260px] md:h-[330px]"> 
-        <Line data={chartData} options={options} />
-      </div>
       
-      {/* Summary info */}
-
-      {/* Debug Information - Development only */}
-      {/* {process.env.NODE_ENV === 'development' && data && (
-        <div className="mt-2 p-2 bg-gray-50 rounded text-xs">
-          <details>
-            <summary className="cursor-pointer font-medium">🔍 Debug Info</summary>
-            <div className="mt-2 space-y-1">
-              <div>Raw data length: {data.length}</div>
-              <div>Chart time slots: {JSON.stringify(chartData.labels)}</div>
-              <div>Chart datasets: {chartData.datasets.length}</div>
-              {chartData.datasets.map((dataset, index) => (
-                <div key={index} className="text-xs">
-                  <strong>{dataset.label}:</strong> [{dataset.data.join(', ')}]
-                </div>
-              ))}
-            </div>
-          </details>
+      {loading ? (
+        <LoadingState />
+      ) : error ? (
+        <ErrorState />
+      ) : (
+        <div className="h-[220px] sm:h-[260px] md:h-[340px]"> 
+          <Line data={chartData} options={options} />
         </div>
-      )} */}
+      )}
     </div>
   );
-}
+});
+
+TrendDetectionChart.displayName = 'TrendDetectionChart';
+
+export default TrendDetectionChart;
