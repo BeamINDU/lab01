@@ -67,17 +67,18 @@ export const API_ROUTES = {
     suggest_role_name: "",
   },
   permission: {
-    get: "",
+    get: "/permissions", // PUT request with roleid parameter (ตาม backend)
     detail: "",
     insert: "/add_permission", 
-    update: "/update_permission",
-    delete: "/delete_permission",
+    update: "/update_permission", // PUT with permissionid parameter
+    delete: "/delete_permission", // DELETE with permissionid parameter
   },
+  // แก้ไข menu endpoints ตามที่มีจริงใน backend  
   menu: {
-    get: "",
+    get: "/menu", // POST request (ตาม backend)
     detail: "",
     insert: "/add_menu", 
-    update: "/update_menu",
+    update: "/update_menu", // PUT with menuid parameter
     delete: "",
   },
   report_product: {
