@@ -3,6 +3,7 @@ import { ShapeType } from "@/app/constants/shape-type";
 
 export type DetectionModel = {
   modelId?: number | null,
+  modelVersionId?: number | null,
   modelName: string,
   productId: string,
   description?: string,
@@ -24,12 +25,14 @@ export type ParamSearch = {
 }
 
 export type FormData = {
+  modelVersionId?: number | null,
   modelId?: number | null,
   statusId?: string,
   currentVersion?: number,
   currentStep?: number,
   functions?: number[] | undefined;
   modelName: string | undefined,
+  productId: string,
   description: string | undefined,
   trainDataset: number | undefined,
   testDataset: number | undefined,
@@ -53,13 +56,13 @@ export type Annotation = {
   id: string
   type: ShapeType
   color?: string
-  points: number[]
+  label: ClassName,
   startX: number
   startY: number
   width: number
   height: number
   radius: number
-  label: ClassName,
+  points: number[]
 };
 
   // cameraId?: string,

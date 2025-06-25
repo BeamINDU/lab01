@@ -10,7 +10,7 @@ interface GoodNGRatioChartProps {
   error?: string;
 }
 
-const COLORS = ['#60a5fa', '#ef4444'];
+const COLORS = ['#60a5fa', '#ef4444']; 
 
 const GoodNGRatioChart = React.memo<GoodNGRatioChartProps>(({ data, loading, error }) => {
   const chartData = useMemo(() => {
@@ -22,7 +22,6 @@ const GoodNGRatioChart = React.memo<GoodNGRatioChartProps>(({ data, loading, err
 
     const totalOk = data.reduce((sum, item) => sum + (item.total_ok || 0), 0);
     const totalNg = data.reduce((sum, item) => sum + (item.total_ng || 0), 0);
-
 
     if (totalOk === 0 && totalNg === 0) {
       return [{ name: "No Data", value: 0 }];
@@ -36,7 +35,9 @@ const GoodNGRatioChart = React.memo<GoodNGRatioChartProps>(({ data, loading, err
 
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: any) => {
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, value }: any) => {
+    if (value === 0) return null;
+
     const RADIAN = Math.PI / 180;
     const radius = outerRadius + 20; 
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -73,8 +74,6 @@ const GoodNGRatioChart = React.memo<GoodNGRatioChartProps>(({ data, loading, err
     return null;
   };
 
-
-
   const LoadingState = () => (
     <div className="h-full flex items-center justify-center">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -87,56 +86,63 @@ const GoodNGRatioChart = React.memo<GoodNGRatioChartProps>(({ data, loading, err
     </div>
   );
 
-  return (
-    <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full min-h-[240px] md:min-h-[260px]">
-      <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-1"> 
-        Good / NG Ratio
-      </h2>
-      
-      <div className="h-[200px] md:h-[210px] relative">
-        {loading ? (
-          <LoadingState />
-        ) : error ? (
-          <ErrorState />
-        ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={chartData}
-                cx="50%"
-                cy="50%"
-                labelLine={false} 
-                label={renderCustomizedLabel}
-                outerRadius={70} 
-                innerRadius={30} 
-                fill="#8884d8"
-                dataKey="value"
-                animationDuration={800}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={COLORS[index % COLORS.length]}
-                    stroke="#ffffff"
-                    strokeWidth={2} 
-                  />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend
-                verticalAlign="bottom"
-                iconType="circle"
-                wrapperStyle={{ 
-                  bottom: 10, 
-                  fontSize: '0.7rem'
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        )}
-      </div>
+
+  console.log('Chart Data:', chartData, 'Total:', total);
+
+return (
+  <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full h-[220px]"> 
+    <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-1"> 
+      Good / NG Ratio
+    </h2>
+    
+    <div className="h-[150px] relative"> 
+      {loading ? (
+        <div className="h-full flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      ) : error ? (
+        <div className="h-full flex items-center justify-center">
+          <p className="text-red-500 text-center text-sm">{error}</p>
+        </div>
+      ) : (
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              labelLine={false} 
+              label={renderCustomizedLabel}
+              outerRadius={40} 
+              innerRadius={20} 
+              fill="#8884d8"
+              dataKey="value"
+              animationDuration={800}
+            >
+              {chartData.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={COLORS[index % COLORS.length]}
+                  stroke="#ffffff"
+                  strokeWidth={2} 
+                />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+            <Legend
+              verticalAlign="bottom"
+              iconType="circle"
+              wrapperStyle={{ 
+                bottom: 5, 
+                fontSize: '0.6rem' 
+              }}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      )}
     </div>
-  );
+  </div>
+);
 });
 
 GoodNGRatioChart.displayName = 'GoodNGRatioChart';

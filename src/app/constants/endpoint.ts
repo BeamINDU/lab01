@@ -84,6 +84,7 @@ export const API_ROUTES = {
     get: "/report-product-defect",
     detail: "/report-product-defect-detail",
     update: "/update-product-detail",
+    upload: "",
   },
   report_defect: {
     get: "/report-defect-summary",
@@ -107,8 +108,9 @@ export const API_ROUTES = {
   },
   detection_model: {
     get: "/detection-model",
+    detail: "/model-detail", 
     insert: "/add-model", 
-    update: "/update-model",
+    // update: "/update-model",
     delete: "/delete-model",
     update_step1: "/update-model-step1",
     update_step2: "/update-model-step2",
@@ -117,6 +119,7 @@ export const API_ROUTES = {
     model_function: "/model-function",
     model_version: "/model-version",
     model_image: "/model-image",
+    model_camera: "/model-camera",
     function: "/function",
     label_class: "/label-class",
     suggest_model: "",

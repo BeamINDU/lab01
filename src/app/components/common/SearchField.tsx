@@ -287,20 +287,24 @@ export default function SearchField({
         case 'modal':
           return (
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal text-sm">
-                {label}
-                {required && <span className="text-red-500 ml-1">*</span>}:
-              </label>
+              {label !== '' && (
+                <label className="font-normal text-sm">
+                  {label}
+                  {required && <span className="text-red-500 ml-1">*</span>}:
+                </label>
+              )}
               <div className="w-full min-w-0">{inputElement}</div>
             </div>
           );
         case 'inline':
           return (
             <div className="flex items-center gap-2">
-              <label className="font-semibold whitespace-nowrap" style={{ width: labelWidth }}>
-                {label}
-                {required && <span className="text-red-500 ml-1">*</span>}:
-              </label>
+              {label !== '' && (
+                <label className="font-semibold whitespace-nowrap" style={{ width: labelWidth }}>
+                  {label}
+                  {required && <span className="text-red-500 ml-1">*</span>}:
+                </label>
+              )}
               <div className="flex-1 min-w-0">{inputElement}</div>
             </div>
           );
@@ -308,11 +312,12 @@ export default function SearchField({
         default:
           return (
             <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr] items-start sm:items-center gap-2">
-              <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[130px] sm:min-w-[150px]">
-               {/* <label className="font-semibold w-[120px]"> */}
-                {label}
-                {required && <span className="text-red-500 ml-1">*</span>}
-              </label>
+              {label !== '' && (
+                <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[130px] sm:min-w-[150px]">
+                  {label}
+                  {required && <span className="text-red-500 ml-1">*</span>}
+                </label>
+              )}
               <div className="w-full min-w-0">{inputElement}</div>
             </div>
           );

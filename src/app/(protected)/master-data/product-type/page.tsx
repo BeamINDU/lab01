@@ -124,12 +124,11 @@ const handleSearch = async () => {
         setData(prev => prev.map(item => (item.id === formData.id ? updatedData : item)));
       }
       showSuccess(`Saved successfully`)
+      reset();
+      setIsFormModalOpen(false);
     } catch (error) {
       console.error('Save operation failed:', error);
       showError(`Save failed: ${extractErrorMessage(error)}`);
-    } finally {
-      reset();
-      setIsFormModalOpen(false);
     }
   };
 

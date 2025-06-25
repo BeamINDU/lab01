@@ -29,7 +29,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | undefined>(undefined);
   
-  //  Auto-refresh states
+  // Auto-refresh states
   const [isAutoRefresh, setIsAutoRefresh] = useState<boolean>(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -43,7 +43,6 @@ export default function DashboardPage() {
     setDateFrom(startOfDay);
     setDateTo(endOfDay);
   }, []);
-
 
   const refreshDashboardData = useCallback(async (filters: DashboardFilters, isAutoRefresh = false) => {
     try {
@@ -73,13 +72,13 @@ export default function DashboardPage() {
     }
   }, []);
 
-  // Debounced refresh for manual changes
+  // Debounced refresh for non-date filters
   const debouncedRefreshDashboardData = useCallback(
     debounce((filters: DashboardFilters) => refreshDashboardData(filters, false), 500),
     [refreshDashboardData]
   );
 
-  //  Auto-refresh setup
+  // Auto-refresh setup สำหรับ non-date filters
   useEffect(() => {
     if (!dateFrom || !dateTo) return;
 
@@ -93,17 +92,17 @@ export default function DashboardPage() {
       year: selectedYear || undefined,
     };
 
-    // Initial load
+    // เฉพาะ non-date filters ที่จะ auto-refresh
     debouncedRefreshDashboardData(filters);
 
-    //  Setup auto-refresh interval (1 minute = 60,000ms)
+    // Setup auto-refresh interval (1 minute = 60,000ms)
     if (isAutoRefresh) {
       intervalRef.current = setInterval(() => {
         refreshDashboardData(filters, true);
       }, 60000); // 1 minute
 
       if (process.env.NODE_ENV === 'development') {
-        console.log(' Auto-refresh enabled: Every 1 minute');
+        console.log('Auto-refresh enabled: Every 1 minute');
       }
     }
 
@@ -115,9 +114,28 @@ export default function DashboardPage() {
       }
       debouncedRefreshDashboardData.cancel();
     };
-  }, [selectedProduct, selectedCamera, selectedLine, selectedMonth, selectedYear, dateFrom, dateTo, isAutoRefresh, debouncedRefreshDashboardData, refreshDashboardData]);
+    // ไม่รวม dateFrom, dateTo ใน dependency เพื่อไม่ให้ auto-refresh เมื่อเปลี่ยนวันที่
+  }, [selectedProduct, selectedCamera, selectedLine, selectedMonth, selectedYear, isAutoRefresh, debouncedRefreshDashboardData, refreshDashboardData]);
 
-  //  Toggle auto-refresh
+  // แยก useEffect สำหรับ initial load และเมื่อ dateFrom/dateTo เปลี่ยน
+  useEffect(() => {
+    if (!dateFrom || !dateTo) return;
+
+    const filters: DashboardFilters = {
+      productId: selectedProduct || undefined,
+      cameraId: selectedCamera || undefined,
+      lineId: selectedLine || undefined,
+      startDate: new Date(dateFrom),
+      endDate: new Date(dateTo),
+      month: selectedMonth || undefined,
+      year: selectedYear || undefined,
+    };
+
+    // Refresh เมื่อ date range เปลี่ยน (จากการกด OK ใน DateTimePicker)
+    refreshDashboardData(filters, false);
+  }, [dateFrom, dateTo, refreshDashboardData]); // เฉพาะ date range
+
+  // Toggle auto-refresh
   const toggleAutoRefresh = () => {
     setIsAutoRefresh(prev => !prev);
     if (!isAutoRefresh) {
@@ -125,7 +143,7 @@ export default function DashboardPage() {
     }
   };
 
-  //  Manual refresh
+  // Manual refresh
   const handleManualRefresh = () => {
     if (dateFrom && dateTo) {
       const filters: DashboardFilters = {
@@ -148,9 +166,12 @@ export default function DashboardPage() {
   const handleMonthChange = (month: string) => setSelectedMonth(month);
   const handleYearChange = (year: string) => setSelectedYear(year);
 
+  // Date handlers - จะถูกเรียกเมื่อกด OK ใน DateTimePicker
   const handleDateFromChange = (date: string | null) => {
     if (date) {
       setDateFrom(date);
+      
+      // Auto-adjust To date if From date is after To date
       if (dateTo && dayjs(date).isAfter(dayjs(dateTo))) {
         const newToDate = dayjs(date).endOf('day').format('YYYY-MM-DD HH:mm');
         setDateTo(newToDate);
@@ -233,86 +254,84 @@ export default function DashboardPage() {
     );
   }
 
+  return (
+    <main className="p-2">
+      {/* Header */}
+      <HeaderFilters 
+        selectedProduct={selectedProduct}
+        selectedCamera={selectedCamera}
+        selectedLine={selectedLine}
+        selectedMonth={selectedMonth}
+        selectedYear={selectedYear}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onProductChange={handleProductChange}
+        onCameraChange={handleCameraChange}
+        onLineChange={handleLineChange}
+        onMonthChange={handleMonthChange}
+        onYearChange={handleYearChange}
+        onDateFromChange={handleDateFromChange}
+        onDateToChange={handleDateToChange}
+      />
 
-return (
-  <main className="p-2">
-    {/* Header แบบง่าย - ไม่มี Auto-refresh Controls */}
-    <HeaderFilters 
-      selectedProduct={selectedProduct}
-      selectedCamera={selectedCamera}
-      selectedLine={selectedLine}
-      selectedMonth={selectedMonth}
-      selectedYear={selectedYear}
-      dateFrom={dateFrom}
-      dateTo={dateTo}
-      onProductChange={handleProductChange}
-      onCameraChange={handleCameraChange}
-      onLineChange={handleLineChange}
-      onMonthChange={handleMonthChange}
-      onYearChange={handleYearChange}
-      onDateFromChange={handleDateFromChange}
-      onDateToChange={handleDateToChange}
-    />
+      {/* Loading overlay during refresh */}
+      {loading && dashboardData && (
+        <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
+          <div className="bg-white p-4 rounded-lg shadow-lg">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
+            <p className="text-sm text-gray-600">Updating data...</p>
+          </div>
+        </div>
+      )}
 
-    {/* Loading overlay during refresh */}
-    {loading && dashboardData && (
-      <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
-        <div className="bg-white p-4 rounded-lg shadow-lg">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
-          <p className="text-sm text-gray-600">Updating data...</p>
+      {/* Dashboard Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
+        {/* Left column: Total products and Good/NG Ratio stacked */}
+        <div className="lg:col-span-1 space-y-6">
+          <TotalProductsCard 
+            data={dashboardData?.totalProducts || null} 
+            loading={loading && !dashboardData}
+            error={error}
+          />
+          <GoodNGRatioChart 
+            data={dashboardData?.goodNgRatio || null}
+            loading={loading && !dashboardData}
+            error={error}
+          />
+        </div>
+
+        {/* Middle: Trend and Top Defects */}
+        <div className="lg:col-span-2">
+          <FrequentDefectsChart 
+            data={dashboardData?.defectsByType || null}
+            loading={loading && !dashboardData}
+            error={error}
+          />
+        </div>
+        <div className="lg:col-span-3">
+          <DefectByCameraChart 
+            data={dashboardData?.defectsByCamera || null}
+            loading={loading && !dashboardData}
+            error={error}
+          />
+        </div>
+
+        {/* Bottom row: NG Distribution and Camera Defects */}
+        <div className="lg:col-span-3">
+          <NGDistributionChart 
+            data={dashboardData?.ngDistribution || null}
+            loading={loading && !dashboardData}
+            error={error}
+          />
+        </div>
+        <div className="lg:col-span-3">
+          <TrendDetectionChart 
+            data={dashboardData?.trendData || null}
+            loading={loading && !dashboardData}
+            error={error}
+          />
         </div>
       </div>
-    )}
-
-    {/* Dashboard Charts Grid */}
-    <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
-      {/* Left column: Total products and Good/NG Ratio stacked */}
-      <div className="lg:col-span-1 space-y-6">
-        <TotalProductsCard 
-          data={dashboardData?.totalProducts || null} 
-          loading={loading && !dashboardData}
-          error={error}
-        />
-        <GoodNGRatioChart 
-          data={dashboardData?.goodNgRatio || null}
-          loading={loading && !dashboardData}
-          error={error}
-        />
-      </div>
-
-      {/* Middle: Trend and Top Defects */}
-      <div className="lg:col-span-2">
-        <FrequentDefectsChart 
-          data={dashboardData?.defectsByType || null}
-          loading={loading && !dashboardData}
-          error={error}
-        />
-      </div>
-      <div className="lg:col-span-3">
-        <DefectByCameraChart 
-          data={dashboardData?.defectsByCamera || null}
-          loading={loading && !dashboardData}
-          error={error}
-        />
-      </div>
-
-
-      {/* Bottom row: NG Distribution and Camera Defects */}
-      <div className="lg:col-span-3">
-        <NGDistributionChart 
-          data={dashboardData?.ngDistribution || null}
-          loading={loading && !dashboardData}
-          error={error}
-        />
-      </div>
-      <div className="lg:col-span-3">
-        <TrendDetectionChart 
-          data={dashboardData?.trendData || null}
-          loading={loading && !dashboardData}
-          error={error}
-        />
-      </div>
-    </div>
-  </main>
-);
+    </main>
+  );
 }

@@ -32,20 +32,18 @@ interface DefectByCameraChartProps {
   error?: string;
 }
 
-
-const getDefectTypeColor = (defectType: string): string => {
-  const colorPalette: Record<string, string> = {
-    'Crack': 'rgba(239, 68, 68, 0.8)',
-    'Scratch': 'rgba(59, 130, 246, 0.8)',
-    'Dent': 'rgba(34, 197, 94, 0.8)',
-    'Missing': 'rgba(245, 158, 11, 0.8)',
-    'Missing Part': 'rgba(245, 158, 11, 0.8)',
-    'Broken': 'rgba(168, 85, 247, 0.8)',
-    'Dirty': 'rgba(236, 72, 153, 0.8)',
-    'Deform': 'rgba(20, 184, 166, 0.8)',
-    'Misalignment': 'rgba(156, 163, 175, 0.8)',
-  };
-  return colorPalette[defectType] || 'rgba(156, 163, 175, 0.8)';
+const getCameraColor = (cameraIndex: number): string => {
+  const colorPalette = [
+    'rgba(59, 130, 246, 0.8)',    // Blue
+    'rgba(34, 197, 94, 0.8)',     // Green  
+    'rgba(239, 68, 68, 0.8)',     // Red
+    'rgba(245, 158, 11, 0.8)',    // Orange
+    'rgba(168, 85, 247, 0.8)',    // Purple
+    'rgba(236, 72, 153, 0.8)',    // Pink
+    'rgba(20, 184, 166, 0.8)',    // Teal
+    'rgba(156, 163, 175, 0.8)',   // Gray
+  ];
+  return colorPalette[cameraIndex % colorPalette.length];
 };
 
 const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loading, error }) => {
@@ -64,12 +62,11 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
       };
     }
 
-
     const validData = data.filter(item => 
       (item.cameraname || item.cameraid) && item.defecttype
     );
 
-
+    // หา Top 5 cameras ตาม total defects
     const cameraTotals = Object.entries(groupBy(validData, item => 
       item.cameraname || item.cameraid || 'Unknown Camera'
     )).map(([cameraName, items]) => ({
@@ -81,7 +78,7 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
       .slice(0, 5)
       .map(item => item.cameraName);
 
-
+    // กรองข้อมูลเฉพาะ top cameras
     const filteredData = validData.filter(item => {
       const cameraName = item.cameraname || item.cameraid || 'Unknown Camera';
       return topCameras.includes(cameraName);
@@ -91,21 +88,22 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
     const defectTypes = [...new Set(filteredData.map(item => item.defecttype))].sort();
 
 
-    const datasets = defectTypes.map(defectType => {
-      const defectData = filteredData.filter(item => item.defecttype === defectType);
-      const cameraDefectData = groupBy(defectData, item => 
-        item.cameraname || item.cameraid || 'Unknown Camera'
+    const datasets = topCameras.map((cameraName, index) => {
+      const cameraData = filteredData.filter(item => 
+        (item.cameraname || item.cameraid || 'Unknown Camera') === cameraName
       );
+      
+      const cameraDefectData = groupBy(cameraData, 'defecttype');
 
-      const dataValues = topCameras.map(cameraName => 
-        sumBy(cameraDefectData[cameraName] || [], 'totalng')
+      const dataValues = defectTypes.map(defectType => 
+        sumBy(cameraDefectData[defectType] || [], 'totalng')
       );
 
       return {
-        label: defectType,
+        label: cameraName,
         data: dataValues,
-        backgroundColor: getDefectTypeColor(defectType),
-        borderColor: getDefectTypeColor(defectType).replace('0.8', '1'),
+        backgroundColor: getCameraColor(index),
+        borderColor: getCameraColor(index).replace('0.8', '1'),
         borderWidth: 1,
         borderRadius: {
           topLeft: 4,
@@ -114,15 +112,14 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
           bottomRight: 4,
         },
         borderSkipped: false,
-        hoverBackgroundColor: getDefectTypeColor(defectType).replace('0.8', '0.95'),
-        hoverBorderColor: getDefectTypeColor(defectType).replace('0.8', '1'),
+        hoverBackgroundColor: getCameraColor(index).replace('0.8', '0.95'),
+        hoverBorderColor: getCameraColor(index).replace('0.8', '1'),
         hoverBorderWidth: 2,
       };
     });
 
-    return { labels: topCameras, datasets };
+    return { labels: defectTypes, datasets };
   }, [data]);
-
 
   const maxStackedValue = useMemo(() => {
     if (!chartData.datasets.length) return 0;
@@ -157,19 +154,12 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
         titleColor: 'white',
         bodyColor: 'white',
         callbacks: {
-          title: (context: any) => `Camera: ${context[0].label}`,
+          title: (context: any) => `Defect Type: ${context[0].label}`,
           label: (context: any) => {
             try {
-              const defectType = context.dataset.label;
+              const cameraName = context.dataset.label;
               const count = context.parsed?.x || 0;
-              const emoji = defectType === 'Crack' ? '🔴' : 
-                           defectType === 'Scratch' ? '🔵' : 
-                           defectType === 'Dent' ? '🟢' : 
-                           defectType === 'Missing' || defectType === 'Missing Part' ? '🟡' : 
-                           defectType === 'Broken' ? '🟣' : 
-                           defectType === 'Dirty' ? '🌸' : 
-                           defectType === 'Deform' ? '🟦' : '⚪';
-              return `${emoji} ${defectType}: ${count} defects`;
+              return `${cameraName}: ${count} defects`;
             } catch {
               return 'Invalid data';
             }
@@ -187,14 +177,14 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
           }
         }
       },
-
       datalabels: {
         display: true,
         anchor: 'center',
         align: 'center',
-        color: '#0000',
+        color: '#00000',
         font: { 
-          size: 11 
+          size: 11  ,
+          //weight: 'bold'
         },
         formatter: (value: any) => {
           try {
@@ -202,13 +192,6 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
           } catch {
             return '';
           }
-        },
-        borderRadius: 3,
-        padding: { 
-          top: 2, 
-          bottom: 2, 
-          left: 3, 
-          right: 3 
         },
         textStrokeColor: 'rgba(0, 0, 0, 0.8)',
         textStrokeWidth: 1,
@@ -238,7 +221,7 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
         stacked: true,
         title: {
           display: true,
-          text: 'Cameras',
+          text: 'Defect Types',
           font: { size: 11, weight: 'bold' as const }
         },
         grid: {
@@ -274,7 +257,7 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
   );
 
   return (
-    <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
+     <div className="bg-white rounded-xl shadow p-3 md:p-4 h-[345px]">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
         Top 5 Defects Most Found by Cameras
       </h2>
@@ -284,7 +267,7 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
       ) : error ? (
         <ErrorState />
       ) : (
-        <div className="h-[240px] sm:h-[280px] md:h-[340px]">
+        <div className="h-[240px] sm:h-[250px] md:h-[290px]">
           <Bar data={chartData} options={options} />
         </div>
       )}

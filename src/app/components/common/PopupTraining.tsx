@@ -56,7 +56,7 @@ export const PopupTraining = () => {
   
   return (
     <div
-      className={`fixed bottom-5 right-5 z-[1000] rounded-2xl shadow-2xl border-2 w-[430px] min-h-[90px] flex flex-col justify-center items-center text-center transition-all duration-300 ${getStatusStyles()}`}
+      className={`fixed bottom-5 right-5 z-[2000] rounded-2xl shadow-2xl border-2 w-[430px] min-h-[90px] flex flex-col justify-center items-center text-center transition-all duration-300 ${getStatusStyles()}`}
     >
       <button
         onClick={hidePopup}

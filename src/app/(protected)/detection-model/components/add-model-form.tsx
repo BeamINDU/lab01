@@ -72,10 +72,10 @@ export default function DetectionModelFormModal({
   const onSubmit: SubmitHandler<AddModelFormValues> = async (formData) => {
     const formWithMeta: DetectionModel = {
       ...formData,
-      // currentVersion: 0,
+      currentVersion: 1,
       statusId: ModelStatus.Processing,
       createdBy: session?.user?.userid,
-      updatedBy: session?.user?.userid,
+      updatedBy: null,
     };
     onSave(formWithMeta);
   };
@@ -99,7 +99,6 @@ export default function DetectionModelFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('modelId')} />
-
           {/* <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Model ID</label>

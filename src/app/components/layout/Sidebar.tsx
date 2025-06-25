@@ -86,12 +86,20 @@ export default function Sidebar({sidebarOpen, setSidebarOpen, toggleSidebar}: Si
   }
 
   const isMenuActive = (item: MenuItem): boolean => {
-    if (item.path === pathname) return true;
+    const currentPath = pathname ?? '';
+
+    const normalizedPath = item.path?.endsWith('/') ? item.path : item.path + '/';
+    const normalizedCurrent = currentPath.endsWith('/') ? currentPath : currentPath + '/';
+
+    if (normalizedCurrent.startsWith(normalizedPath)) return true;
+
     if (item.children) {
       return item.children.some((child) => isMenuActive(child));
     }
+
     return false;
   };
+
 
   const mapIconNameToIcon = (iconName: string): React.ReactNode => {
     const iconMap: Record<string, React.ReactNode> = {

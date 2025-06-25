@@ -78,19 +78,19 @@ const NGDistributionChart = React.memo<NGDistributionChartProps>(({ data, loadin
     const timeLabels = Object.keys(groupedByHour).sort();
 
 
-    const datasets = defectTypes.map(defectType => ({
-      label: defectType,
-      data: timeLabels.map(hour => {
-        const hourData = groupedByHour[hour] || [];
-        return sumBy(hourData.filter(item => item.defecttype === defectType), 'defect_count');
-      }),
-      backgroundColor: getDefectTypeColor(defectType),
-      borderColor: getDefectTypeColor(defectType).replace('0.8', '1'),
-      borderWidth: 2,
-      borderRadius: 8,
-      borderSkipped: false,
-      
-    }));
+
+  const datasets = defectTypes.map(defectType => ({
+    label: defectType,
+    data: timeLabels.map(hour => {
+      const hourData = groupedByHour[hour] || [];
+      return sumBy(hourData.filter(item => item.defecttype === defectType), 'defect_count');
+    }),
+    backgroundColor: getDefectTypeColor(defectType),
+    borderColor: getDefectTypeColor(defectType).replace('0.8', '1'),
+    borderWidth: 1, 
+    borderRadius: 0, 
+    borderSkipped: false,
+  }));
 
     return { labels: timeLabels, datasets };
   }, [data]);
@@ -242,12 +242,12 @@ const NGDistributionChart = React.memo<NGDistributionChartProps>(({ data, loadin
   );
 
   return (
-    <div className="p-3 md:p-6 bg-white rounded-xl shadow w-full">
+     <div className="bg-white rounded-xl shadow p-3 md:p-4 h-[345px]">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-3 md:mb-6">
         Defect Distribution by Hour
       </h2>
       
-      <div className="h-[240px] sm:h-[280px] md:h-[340px]">
+      <div className="h-[240px] sm:h-[250px] md:h-[280px]">
         {loading ? (
           <LoadingState />
         ) : error ? (

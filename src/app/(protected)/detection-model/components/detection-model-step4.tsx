@@ -11,27 +11,30 @@ import { SelectOption } from "@/app/types/select-option";
 import { ModelStatus } from "@/app/constants/status"
 import { getCameraIdOptions } from "@/app/libs/services/camera";
 import { useSession } from "next-auth/react";
-import { getCamera, detail, updateStep4 } from "@/app/libs/services/detection-model";
+import {updateStep4, getVersion,  getCamera, getModelCamera } from "@/app/libs/services/detection-model";
 import { usePopupTraining } from '@/app/contexts/popup-training-context';
 import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
+import { is } from "date-fns/locale";
 
 type Props = {
   prev: () => void;
   next: (data: any) => void;
   startTraining: () => Promise<boolean>;
   formData: FormData;
-  modelId: number;
+  modelVersionId: number;
+  isEditMode: boolean;
+  // modelId: number;
 };
 
 export const step4Schema = z.object({
-  modelId: z.number(),
+  modelVersionId: z.number(),
   cameraId: z.string().min(1, "Camera ID is required"),
   version: z.number().min(1, "Model Version is required"),
 });
 
 type Step4Data = z.infer<typeof step4Schema>;
 
-export default function DetectionModelStep4Page({ prev, next, modelId, formData, startTraining }: Props) {
+export default function DetectionModelStep4Page({ prev, next, modelVersionId, formData, isEditMode, startTraining }: Props) {
   // console.log("formData3:", formData);
   const { data: session } = useSession();
   const { isTraining, cancelConnection } = useTrainingSocketStore();
@@ -44,8 +47,8 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
   //--------------------------------------------------------------------------------------------
   
   useEffect(() => {
-    if(!isTraining) {
-      handleStartTraining();
+    if(isEditMode && !isTraining) {
+      // handleStartTraining();
     }
   }, []);
 
@@ -76,7 +79,7 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
   //-------------------------------------------------------------------------------------------
 
   const defaultValues: Step4Data = {
-    modelId: modelId,
+    modelVersionId: modelVersionId,
     cameraId: '',
     version: 0,
   };
@@ -108,28 +111,6 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
   
     return versions as SelectOption[];
   };
-  
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const result = await detail(modelId);
-        if (result) {
-          reset({
-            modelId: modelId,
-            version: selectedVersion,
-            cameraId: selectedCamera,
-          });
-        } 
-        reset({
-          modelId: modelId,
-        });
-      } catch (error) {
-        console.error("Failed to load model:", error);
-      }
-    };
-    fetchData();
-  }, [reset]);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -148,6 +129,28 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (!formData?.modelId) return;
+
+    const fetchModelCamera = async () => {
+      try {
+        const modelCamera = await getModelCamera(modelVersionId);
+        if (modelCamera) {
+          reset({
+            modelVersionId: modelVersionId,
+            version: modelCamera.modelVersionId, // selectedVersion,
+            cameraId: modelCamera.cameraId, // selectedCamera,
+          });
+        } 
+        reset(defaultValues);
+      } catch (error) {
+        console.error("Failed to load model functions:", error);
+      }
+    };
+
+    fetchModelCamera();
+  }, [formData?.modelId, modelVersionId, reset]);
+
 
   useEffect(() => {
     setValue("cameraId", selectedCamera);
@@ -160,6 +163,8 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
 
 
   const onPrevious = async () => {
+    if (!isEditMode) prev();
+    
     if (!isTraining) {
       prev();
       return;
@@ -179,27 +184,33 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
 
   
   const onSubmitHandler = async () => {
-    const data = getValues();
+    try {
+      const data = getValues();
 
-    if (!data.cameraId || !data.version) {
-      showError("Please complete all required fields.");
-      return;
+      if (!data.cameraId || !data.version) {
+        showError("Please complete all required fields.");
+        return;
+      }
+
+      const updatedFormData: FormData = {
+        ...formData,
+        currentStep: 4,
+        cameraId: data.cameraId,
+        version: data.version,
+        updatedBy: session?.user?.userid,
+      };
+      
+      if (isEditMode) {
+        console.log("Submit data4:", updatedFormData);
+        await updateStep4(modelVersionId, updatedFormData);
+      }
+
+      await showSuccess("Saved successfully!");
+      next(updatedFormData);
+    } catch (error) {
+      console.error('Save step1 failed:', error);
+      showError('Save failed')
     }
-
-    const updatedFormData: FormData = {
-      ...formData,
-      currentStep: 4,
-      cameraId: data.cameraId,
-      version: data.version,
-      updatedBy: session?.user?.userid,
-    };
-
-    console.log("Submit data4:", updatedFormData);
-    await updateStep4(modelId, updatedFormData);
-
-    next(updatedFormData);
-
-    showSuccess("Saved successfully!");
   };
 
   // console.log("Form Errors:", errors);
@@ -207,7 +218,7 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
   return (
     <div className="w-full">
       <div className="h-80 bg-white border border-gray-300 flex items-center justify-center mb-6">
-        {isTraining ? (
+        {isEditMode && isTraining ? (
           <span className="text-2xl font-medium">PLEASE WAIT....</span>
         ) : (
           <span className="text-3xl font-medium leading-relaxed text-center">
@@ -217,7 +228,7 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
       </div>
 
       <div className="grid grid-cols-1 gap-4 mb-6">
-        <input type="hidden" {...register("modelId")} />
+        <input type="hidden" {...register("modelVersionId")} />
 
         {/* Camera ID */}
         <div className="flex items-center">
@@ -290,13 +301,15 @@ export default function DetectionModelStep4Page({ prev, next, modelId, formData,
         >
           Previous
         </button>
-        <button 
-          className={`px-4 py-2 rounded gap-2 w-32 ${isTraining ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "btn-primary-dark text-white"}`}
-          onClick={handleSubmit(onSubmitHandler)}
-          disabled={isTraining}
-        >
-          Finish
-        </button>
+        {isEditMode && (
+          <button 
+            className={`px-4 py-2 rounded gap-2 w-32 ${isTraining ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "btn-primary-dark text-white"}`}
+            onClick={handleSubmit(onSubmitHandler)}
+            disabled={isTraining}
+          >
+            Finish
+          </button>
+        )}
       </div>
     </div>
   );

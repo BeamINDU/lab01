@@ -127,6 +127,7 @@ export default function Page() {
         setData(prev => prev.map(item => item.id === formData.id ? updatedData : item ));
       }
       showSuccess('Product updated successfully');
+      reset();
       setIsFormModalOpen(false);
     } catch (error) {
       console.error('Save operation failed:', error);

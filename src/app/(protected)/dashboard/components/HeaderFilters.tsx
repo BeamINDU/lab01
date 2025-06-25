@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from 'react';
-import { ChevronDown, Search } from "lucide-react";
+import { useEffect, useState } from 'react';
 import { getProducts, getCameras, getLines } from "@/app/libs/services/dashboard";
 import type { ProductOption, CameraOption, LineOption } from '@/app/types/dashboard';
 import { showError } from '@/app/utils/swal';
 import DateFilters from './DateFilters';
+import SearchableDropdown from './SearchableDropdown'; 
 
 interface HeaderFiltersProps {
   selectedProduct?: string;
@@ -22,242 +22,94 @@ interface HeaderFiltersProps {
   onDateToChange?: (date: string | null) => void;
 }
 
-interface SearchableDropdownProps {
-  options: Array<{id: string, name: string}>;
-  selectedValue: string;
-  placeholder: string;
-  onSelect: (value: string) => void;
-  loading?: boolean;
-}
+export default function HeaderFilters(props: HeaderFiltersProps) {
+  const [options, setOptions] = useState({
+    products: [] as ProductOption[],
+    cameras: [] as CameraOption[],
+    lines: [] as LineOption[],
+    loading: true
+  });
 
-function SearchableDropdown({ options, selectedValue, placeholder, onSelect, loading }: SearchableDropdownProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredOptions, setFilteredOptions] = useState(options);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Filter options based on search term
+  // Load all dropdown data in one useEffect
   useEffect(() => {
-    const filtered = options.filter(option => 
-      option?.name?.toLowerCase()?.includes(searchTerm.toLowerCase()) || false
-    );
-    setFilteredOptions(filtered);
-  }, [searchTerm, options]);
-
-  // Handle click outside to close dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        setSearchTerm('');
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
-
-  const handleSelect = (value: string) => {
-    onSelect(value);
-    setIsOpen(false);
-    setSearchTerm('');
-  };
-
-  const selectedOption = options.find(opt => opt.id === selectedValue);
-  // ✅ แก้ไข: แสดง "All [placeholder]" เมื่อไม่มีการเลือก
-  const displayText = selectedOption ? selectedOption.name : `All ${placeholder}`;
-
-  return (
-    <div className="relative" ref={dropdownRef}>
-      {/* Dropdown Button */}
-      <button
-        type="button"
-        className="bg-violet-600 text-white px-2 py-1 rounded text-xs mt-1 flex items-center gap-1 min-w-[100px] max-w-[140px]"
-        onClick={() => setIsOpen(!isOpen)}
-        disabled={loading}
-      >
-        {loading ? (
-          <span>Loading...</span>
-        ) : (
-          <>
-            <span className="truncate" title={displayText}>{displayText}</span>
-            <ChevronDown size={12} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-          </>
-        )}
-      </button>
-
-      {/* Dropdown Menu */}
-      {isOpen && !loading && (
-        <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-300 rounded shadow-lg z-50 max-h-60 overflow-hidden">
-          {/* Search Input */}
-          <div className="p-2 border-b">
-            <div className="relative">
-              <Search size={14} className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder={`Search ${placeholder.toLowerCase()}...`}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-8 pr-3 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-violet-500"
-                autoFocus
-              />
-            </div>
-          </div>
-
-          {/* Options List */}
-          <div className="max-h-40 overflow-y-auto">
-            {/* All option */}
-            <button
-              type="button"
-              onClick={() => handleSelect('')}
-              className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-100 ${
-                !selectedValue ? 'bg-violet-50 text-violet-700' : 'text-gray-700'
-              }`}
-            >
-              All {placeholder}
-            </button>
-
-            {/* Filtered options */}
-            {filteredOptions.length > 0 ? (
-              filteredOptions.map(option => (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => handleSelect(option.id)}
-                  className={`w-full text-left px-3 py-2 text-xs hover:bg-gray-100 ${
-                    selectedValue === option.id ? 'bg-violet-50 text-violet-700' : 'text-gray-700'
-                  }`}
-                >
-                  {option.name}
-                </button>
-              ))
-            ) : (
-              <div className="px-3 py-2 text-xs text-gray-500">
-                No results found
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function HeaderFilters({
-  selectedProduct,
-  selectedCamera,
-  selectedLine,
-  selectedMonth,
-  selectedYear,
-  dateFrom,
-  dateTo,
-  onProductChange,
-  onCameraChange,
-  onLineChange,
-  onMonthChange,
-  onYearChange,
-  onDateFromChange,
-  onDateToChange
-}: HeaderFiltersProps) {
-  const [products, setProducts] = useState<ProductOption[]>([]);
-  const [cameras, setCameras] = useState<CameraOption[]>([]);
-  const [lines, setLines] = useState<LineOption[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Load dropdown data on component mount
-  useEffect(() => {
-    const loadDropdownData = async () => {
+    const loadAllData = async () => {
       try {
-        setLoading(true);
-        
-        // Load all data in parallel
-        const [productsData, camerasData, linesData] = await Promise.all([
+        const [products, cameras, lines] = await Promise.all([
           getProducts(),
           getCameras(),
           getLines()
         ]);
 
-        setProducts(productsData);
-        setCameras(camerasData);
-        setLines(linesData);
-        
+        setOptions({
+          products,
+          cameras,
+          lines,
+          loading: false
+        });
       } catch (error) {
         console.error('Failed to load dropdown data:', error);
         showError('Failed to load filter options');
-      } finally {
-        setLoading(false);
+        setOptions(prev => ({ ...prev, loading: false }));
       }
     };
 
-    loadDropdownData();
+    loadAllData();
   }, []);
 
-  // Convert data to dropdown format
-  const productOptions = products.map(p => ({ id: p.id, name: p.name }));
-  const cameraOptions = cameras.map(c => ({ id: c.id, name: c.name }));
-  const lineOptions = lines.map(l => ({ id: l.id, name: l.name }));
-
-  if (loading) {
+  if (options.loading) {
     return (
-      <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-3xl font-bold mr-4">Dashboard</h1>
-          <div className="text-gray-500">Loading filters...</div>
-        </div>
+      <div className="flex justify-between items-center gap-4 mb-6">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <div className="text-gray-500">Loading filters...</div>
       </div>
     );
   }
 
+  // Convert to dropdown format
+  const dropdownOptions = {
+    products: options.products.map(p => ({ id: p.id, name: p.name })),
+    cameras: options.cameras.map(c => ({ id: c.id, name: c.name })),
+    lines: options.lines.map(l => ({ id: l.id, name: l.name }))
+  };
+
   return (
-    <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+    <div className="flex justify-between items-center gap-4 mb-6">
       {/* LEFT SECTION */}
-      <div className="flex flex-wrap items-center gap-2">
-        {/* ✅ เพิ่มข้อความ Dashboard กลับมา */}
+      <div className="flex items-center gap-2">
         <h1 className="text-3xl font-bold mr-4">Dashboard</h1>
-
-        {/* Product Searchable Dropdown */}
+        
         <SearchableDropdown
-          options={productOptions}
-          selectedValue={selectedProduct || ''}
-          placeholder="Products" // ✅ จะแสดงเป็น "All Products" เมื่อไม่เลือก
-          onSelect={(value) => onProductChange?.(value)}
-          loading={loading}
+          options={dropdownOptions.products}
+          selectedValue={props.selectedProduct || ''}
+          placeholder="Products"
+          onSelect={props.onProductChange}
         />
-
-        {/* Camera Searchable Dropdown */}
+        
         <SearchableDropdown
-          options={cameraOptions}
-          selectedValue={selectedCamera || ''}
-          placeholder="Cameras" // ✅ จะแสดงเป็น "All Cameras" เมื่อไม่เลือก
-          onSelect={(value) => onCameraChange?.(value)}
-          loading={loading}
+          options={dropdownOptions.cameras}
+          selectedValue={props.selectedCamera || ''}
+          placeholder="Cameras"
+          onSelect={props.onCameraChange}
         />
-
-        {/* Line Searchable Dropdown */}
+        
         <SearchableDropdown
-          options={lineOptions}
-          selectedValue={selectedLine || ''}
-          placeholder="Lines" 
-          onSelect={(value) => onLineChange?.(value)}
-          loading={loading}
+          options={dropdownOptions.lines}
+          selectedValue={props.selectedLine || ''}
+          placeholder="Lines"
+          onSelect={props.onLineChange}
         />
       </div>
 
-      {/* RIGHT SECTION - DateFilters Component */}
+      {/* RIGHT SECTION */}
       <DateFilters
-        selectedMonth={selectedMonth}
-        selectedYear={selectedYear}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        onMonthChange={onMonthChange}
-        onYearChange={onYearChange}
-        onDateFromChange={onDateFromChange}
-        onDateToChange={onDateToChange}
+        selectedMonth={props.selectedMonth}
+        selectedYear={props.selectedYear}
+        dateFrom={props.dateFrom}
+        dateTo={props.dateTo}
+        onMonthChange={props.onMonthChange}
+        onYearChange={props.onYearChange}
+        onDateFromChange={props.onDateFromChange}
+        onDateToChange={props.onDateToChange}
       />
     </div>
   );

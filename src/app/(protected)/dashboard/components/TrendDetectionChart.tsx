@@ -271,7 +271,7 @@ const TrendDetectionChart = React.memo<TrendDetectionChartProps>(({ data, loadin
   );
 
   return (
-    <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
+     <div className="bg-white rounded-xl shadow p-3 md:p-4 h-[345px]">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
         Trend of Top 5 Detection Types
       </h2>
@@ -281,7 +281,7 @@ const TrendDetectionChart = React.memo<TrendDetectionChartProps>(({ data, loadin
       ) : error ? (
         <ErrorState />
       ) : (
-        <div className="h-[220px] sm:h-[260px] md:h-[340px]"> 
+        <div className="h-[240px] sm:h-[250px] md:h-[280px]">
           <Line data={chartData} options={options} />
         </div>
       )}

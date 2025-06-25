@@ -1,12 +1,12 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { SquarePen } from "lucide-react";
+import { SquarePen, Eye } from "lucide-react";
 import { DetectionModel } from "@/app/types/detection-model"
 import { formatDateTime } from "@/app/utils/date";
 import { ModelStatus } from '@/app/constants/status';
 
 interface DetectionModelColumnProps {
   showCheckbox?: boolean;
-  openEditModal: (modelId: number) => void;
+  onAction: (modelVersionId: number, mode: string) => void;
   selectedIds: number[];
   setSelectedIds: (updater: (prevState: number[]) => number[]) => void;
   data: DetectionModel[];
@@ -15,18 +15,18 @@ interface DetectionModelColumnProps {
 
 export default function DetectionModelColumns({
   showCheckbox,
-  openEditModal, 
+  onAction, 
   selectedIds,
   setSelectedIds,
   data,
   canEdit,
 }: DetectionModelColumnProps): ColumnDef<DetectionModel>[] {
 
-  const toggleSelect = (modelId: number) => {
+  const toggleSelect = (modelVersionId: number) => {
     setSelectedIds((prev) =>
-      prev.includes(modelId)
-        ? prev.filter((selectedId) => selectedId !== modelId)
-        : [...prev, modelId]
+      prev.includes(modelVersionId)
+        ? prev.filter((selectedId) => selectedId !== modelVersionId)
+        : [...prev, modelVersionId]
     );
   };
   
@@ -35,7 +35,7 @@ export default function DetectionModelColumns({
       prev.length === data.length
         ? []
         : data
-            .map((item) => item.modelId)
+            .map((item) => item.modelVersionId)
             .filter((id): id is number => typeof id === "number")
     );
   };
@@ -53,7 +53,7 @@ export default function DetectionModelColumns({
                   checked={
                     data.length > 0 &&
                     selectedIds.length === data.length &&
-                    data.every((item) => typeof item.modelId === "number" && selectedIds.includes(item.modelId))
+                    data.every((item) => typeof item.modelVersionId === "number" && selectedIds.includes(item.modelVersionId))
                   }
                   onChange={toggleSelectAll}
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
@@ -64,8 +64,8 @@ export default function DetectionModelColumns({
               <div className="flex items-center justify-center">
                 <input
                   type="checkbox"
-                  checked={selectedIds.includes(row.original.modelId)}
-                  onChange={() => toggleSelect(row.original.modelId)} 
+                  checked={selectedIds.includes(row.original.modelVersionId)}
+                  onChange={() => toggleSelect(row.original.modelVersionId)} 
                   className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
                 />
               </div>
@@ -150,17 +150,31 @@ export default function DetectionModelColumns({
       header: "Actions",
       cell: ({ row }) => (
         <div className="flex items-center justify-center gap-2">
+          {canEdit && (
+            <button 
+              className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary"
+              onClick={() => {
+                const id = row.original.modelVersionId;
+                if (typeof id === "number") {
+                  onAction(id, 'edit');
+                }
+              }}
+            >
+              Edit
+              <SquarePen size={16} />
+            </button>
+          )}
           <button 
-            className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary"
+            className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary-dark"
             onClick={() => {
-              const id = row.original.modelId;
+              const id = row.original.modelVersionId;
               if (typeof id === "number") {
-                openEditModal(id);
+                onAction(id, 'view');
               }
             }}
           >
-            {canEdit ? 'Edit' : 'Detail'}
-            <SquarePen size={16} />
+            View
+            <Eye size={16} />
           </button>
         </div>
       ),

@@ -115,6 +115,15 @@ const request = async <T>(
 ): Promise<T> => {
   let config: AxiosRequestConfig = { ...configOverride };
 
+  const isFormData = typeof FormData !== 'undefined' && dataOrConfig instanceof FormData;
+
+  if (isFormData) {
+    config.headers = {
+      ...config.headers,
+      'Content-Type': 'multipart/form-data',
+    };
+  }
+
   if (method === 'get' || method === 'delete') {
     config = { ...dataOrConfig, ...configOverride };
     const res: AxiosResponse<T> = await instance[method](url, config);
@@ -126,13 +135,13 @@ const request = async <T>(
 };
 
 // Params helper
-const buildQueryString = (params?: Record<string, any>): string => {
-  if (!params) return '';
-  const stringified = Object.fromEntries(
-    Object.entries(params).map(([k, v]) => [k, String(v)])
-  );
-  return new URLSearchParams(stringified).toString();
-};
+// const buildQueryString = (params?: Record<string, any>): string => {
+//   if (!params) return '';
+//   const stringified = Object.fromEntries(
+//     Object.entries(params).map(([k, v]) => [k, String(v)])
+//   );
+//   return new URLSearchParams(stringified).toString();
+// };
 
 // Upload helper
 const uploadFile = async <T>(url: string, formData: FormData, config?: AxiosRequestConfig): Promise<T> => {
@@ -148,10 +157,17 @@ const uploadFile = async <T>(url: string, formData: FormData, config?: AxiosRequ
 
 // API
 export const api = {
+  // get: <T>(url: string, params?: Record<string, any>, config?: AxiosRequestConfig) => {
+  //   const queryString = buildQueryString(params);
+  //   const fullUrl = queryString ? `${url}?${queryString}` : url;
+  //   return request<T>('get', fullUrl, undefined, config);
+  // },
+
   get: <T>(url: string, params?: Record<string, any>, config?: AxiosRequestConfig) => {
-    const queryString = buildQueryString(params);
-    const fullUrl = queryString ? `${url}?${queryString}` : url;
-    return request<T>('get', fullUrl, undefined, config);
+    return request<T>('get', url, undefined, {
+      ...config,
+      params,
+    });
   },
 
   post: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>

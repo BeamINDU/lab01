@@ -32,6 +32,10 @@ export default function DateFilters({
   const [showMonthDropdown, setShowMonthDropdown] = useState(false);
   const [showYearDropdown, setShowYearDropdown] = useState(false);
   
+  // State สำหรับเก็บค่าชั่วคราวก่อนกด OK
+  const [tempDateFrom, setTempDateFrom] = useState<string | null>(dateFrom || null);
+  const [tempDateTo, setTempDateTo] = useState<string | null>(dateTo || null);
+  
   const monthDropdownRef = useRef<HTMLDivElement>(null);
   const yearDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -65,14 +69,82 @@ export default function DateFilters({
     return { value: year.toString(), label: year.toString() };
   });
 
-  // กำหนด style เฉพาะส่วน Time Picker (ตัวเลขชั่วโมง)
+  // อัพเดท temp state เมื่อ props เปลี่ยน
+  useEffect(() => {
+    setTempDateFrom(dateFrom || null);
+  }, [dateFrom]);
+
+  useEffect(() => {
+    setTempDateTo(dateTo || null);
+  }, [dateTo]);
+
+  // Handle date changes (ยังไม่ apply จนกว่าจะกด OK)
+  const handleTempDateFromChange = (date: dayjs.Dayjs | null) => {
+    const formattedDate = date ? date.format(dateFormat) : null;
+    setTempDateFrom(formattedDate);
+    
+    // Auto-adjust To date if From date is after To date
+    if (formattedDate && tempDateTo && dayjs(formattedDate).isAfter(dayjs(tempDateTo))) {
+      const newToDate = dayjs(formattedDate).endOf('day').format(dateFormat);
+      setTempDateTo(newToDate);
+    }
+  };
+
+  const handleTempDateToChange = (date: dayjs.Dayjs | null) => {
+    const formattedDate = date ? date.format(dateFormat) : null;
+    
+    if (formattedDate && tempDateFrom && dayjs(formattedDate).isBefore(dayjs(tempDateFrom))) {
+      alert('To Date cannot be earlier than From Date');
+      return;
+    }
+    
+    setTempDateTo(formattedDate);
+  };
+
+  // Handle OK button in DateTimePicker
+  const handleDateFromAccept = (date: dayjs.Dayjs | null) => {
+    const formattedDate = date ? date.format(dateFormat) : null;
+    
+    // Apply the change immediately when OK is clicked
+    onDateFromChange?.(formattedDate);
+    
+    // Auto-adjust To date if needed
+    if (formattedDate && dateTo && dayjs(formattedDate).isAfter(dayjs(dateTo))) {
+      const newToDate = dayjs(formattedDate).endOf('day').format(dateFormat);
+      onDateToChange?.(newToDate);
+    }
+  };
+
+  const handleDateToAccept = (date: dayjs.Dayjs | null) => {
+    const formattedDate = date ? date.format(dateFormat) : null;
+    
+    if (formattedDate && dateFrom && dayjs(formattedDate).isBefore(dayjs(dateFrom))) {
+      alert('To Date cannot be earlier than From Date');
+      return;
+    }
+    
+    // Apply the change immediately when OK is clicked
+    onDateToChange?.(formattedDate);
+  };
+
+  // Handle Cancel button in DateTimePicker
+  const handleDateFromCancel = () => {
+    // Reset temp value to original value
+    setTempDateFrom(dateFrom || null);
+  };
+
+  const handleDateToCancel = () => {
+    // Reset temp value to original value
+    setTempDateTo(dateTo || null);
+  };
+
+  // Style สำหรับ Time Picker
   const getTimePickerStyles = () => ({
     sx: {
-      //  เฉพาะ Time picker digits (ตัวเลขชั่วโมง/นาที)
       '& .MuiMultiSectionDigitalClock-root': {
         '& .MuiMenuItem-root': {
-          fontSize: '12px',           // ขนาดตัวเลขชั่วโมง/นาที
-          minHeight: '40px',          // ความสูงของแต่ละรายการ
+          fontSize: '12px',
+          minHeight: '40px',
           paddingTop: '8px',
           paddingBottom: '8px',
           fontWeight: '500'
@@ -103,12 +175,14 @@ export default function DateFilters({
         <div className="flex items-center gap-1">
           <label className="font-semibold text-xs">From:</label>
           <DateTimePicker
-            value={dateFrom ? dayjs(dateFrom) : null}
-            onChange={(date) => onDateFromChange?.(date ? date.format(dateFormat) : null)}
+            value={tempDateFrom ? dayjs(tempDateFrom) : null}
+            onChange={handleTempDateFromChange}
+            onAccept={handleDateFromAccept}
+            onClose={handleDateFromCancel}
             format={dateFormat}
             ampm={false}
             timeSteps={{ minutes: 1 }}
-            closeOnSelect={false}
+            closeOnSelect={false} // ต้องกด OK ถึงจะปิด
             minutesStep={1}
             slotProps={{
               textField: {
@@ -140,8 +214,10 @@ export default function DateFilters({
                   }
                 }
               },
-              //  ใช้ custom time picker styles
-              popper: getTimePickerStyles()
+              popper: getTimePickerStyles(),
+              actionBar: {
+                actions: ['cancel', 'accept'], // แสดงปุ่ม Cancel และ OK
+              },
             }}
           />
         </div>
@@ -150,12 +226,14 @@ export default function DateFilters({
         <div className="flex items-center gap-1">
           <label className="font-semibold text-xs">To:</label>
           <DateTimePicker
-            value={dateTo ? dayjs(dateTo) : null}
-            onChange={(date) => onDateToChange?.(date ? date.format(dateFormat) : null)}
+            value={tempDateTo ? dayjs(tempDateTo) : null}
+            onChange={handleTempDateToChange}
+            onAccept={handleDateToAccept}
+            onClose={handleDateToCancel}
             format={dateFormat}
             ampm={false}
             timeSteps={{ minutes: 1 }}
-            closeOnSelect={false}
+            closeOnSelect={false} // ต้องกด OK ถึงจะปิด
             minutesStep={1}
             slotProps={{
               textField: {
@@ -187,8 +265,10 @@ export default function DateFilters({
                   }
                 }
               },
-              //  ใช้ style เดียวกันสำหรับ Date To
-              popper: getTimePickerStyles()
+              popper: getTimePickerStyles(),
+              actionBar: {
+                actions: ['cancel', 'accept'], // แสดงปุ่ม Cancel และ OK
+              },
             }}
           />
         </div>
@@ -198,12 +278,16 @@ export default function DateFilters({
       {/* Month Dropdown */}
       <div className="relative" ref={monthDropdownRef}>
         <button 
-          className="flex items-center bg-violet-600 text-white px-2 py-1 rounded text-xs mt-1"
+          className="flex items-center justify-between bg-violet-600 text-white px-2 py-1 rounded text-xs min-w-[100px] max-w-[140px] h-[28px]"
           onClick={() => setShowMonthDropdown(!showMonthDropdown)}
         >
-          <CalendarIcon className="w-3 h-3 mr-1" />
-          {selectedMonth ? months.find(m => m.value === selectedMonth)?.label : 'Month'}
-          <ChevronDown size={12} className={`ml-1 transition-transform ${showMonthDropdown ? 'rotate-180' : ''}`} />
+          <div className="flex items-center gap-1">
+            <CalendarIcon className="w-3 h-3" />
+            <span className="truncate">
+              {selectedMonth ? months.find(m => m.value === selectedMonth)?.label : 'Month'}
+            </span>
+          </div>
+          <ChevronDown size={12} className={`transition-transform flex-shrink-0 ${showMonthDropdown ? 'rotate-180' : ''}`} />
         </button>
 
         {showMonthDropdown && (
@@ -242,12 +326,16 @@ export default function DateFilters({
       {/* Year Dropdown */}
       <div className="relative" ref={yearDropdownRef}>
         <button 
-          className="flex items-center bg-violet-600 text-white px-2 py-1 rounded text-xs mt-1"
+          className="flex items-center justify-between bg-violet-600 text-white px-2 py-1 rounded text-xs min-w-[100px] max-w-[140px] h-[28px]"
           onClick={() => setShowYearDropdown(!showYearDropdown)}
         >
-          <CalendarIcon className="w-3 h-3 mr-1" />
-          {selectedYear || 'Year'}
-          <ChevronDown size={12} className={`ml-1 transition-transform ${showYearDropdown ? 'rotate-180' : ''}`} />
+          <div className="flex items-center gap-1">
+            <CalendarIcon className="w-3 h-3" />
+            <span className="truncate">
+              {selectedYear || 'Year'}
+            </span>
+          </div>
+          <ChevronDown size={12} className={`transition-transform flex-shrink-0 ${showYearDropdown ? 'rotate-180' : ''}`} />
         </button>
 
         {showYearDropdown && (

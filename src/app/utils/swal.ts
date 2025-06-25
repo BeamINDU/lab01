@@ -1,7 +1,7 @@
 import Swal, { SweetAlertIcon, SweetAlertOptions } from 'sweetalert2'
 
 const DEFAULT_CONFIRM_COLOR = '#004798';
-const DEFAULT_CANCEL_COLOR = '#ef4444';
+const DEFAULT_CANCEL_COLOR = '#747b87';
 
 const baseAlert = (options: SweetAlertOptions) => {
   return Swal.fire({

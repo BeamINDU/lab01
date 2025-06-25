@@ -9,7 +9,7 @@ interface TotalProductsCardProps {
 export default function TotalProductsCard({ data, loading, error }: TotalProductsCardProps) {
   if (loading) {
     return (
-      <div className="bg-white p-3 md:p-4 rounded shadow w-full min-h-[120px] flex flex-col justify-center">
+      <div className="bg-white p-3 md:p-4 rounded shadow w-full h-[150px] flex flex-col justify-center"> {/* เปลี่ยนจาก min-h-[120px] เป็น h-[150px] */}
         <h2 className="text-lg md:text-xl font-semibold text-center mb-2">
           Total all products
         </h2>
@@ -22,7 +22,7 @@ export default function TotalProductsCard({ data, loading, error }: TotalProduct
 
   if (error) {
     return (
-      <div className="bg-white p-3 md:p-4 rounded shadow w-full min-h-[120px] flex flex-col justify-center">
+      <div className="bg-white p-3 md:p-4 rounded shadow w-full h-[150px] flex flex-col justify-center"> {/* เปลี่ยนจาก min-h-[120px] เป็น h-[150px] */}
         <h2 className="text-lg md:text-xl font-semibold text-center mb-2">
           Total all products
         </h2>
@@ -34,7 +34,7 @@ export default function TotalProductsCard({ data, loading, error }: TotalProduct
   const totalProducts = data?.total_products || 0;
 
   return (
-    <div className="bg-white p-3 md:p-4 rounded shadow w-full min-h-[120px] flex flex-col justify-center">
+    <div className="bg-white p-3 md:p-4 rounded shadow w-full h-[100px] flex flex-col justify-center"> {/* เปลี่ยนจาก min-h-[120px] เป็น h-[150px] */}
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2">
         Total all products
       </h2>

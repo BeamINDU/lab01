@@ -31,7 +31,7 @@ const AnnotationModal = ({
 }: AnnotationModalProps) => {
   const { data: session } = useSession();
   const [pictureList, setPictureList] = useState<ModelPicture[]>([]);
-  const [tool, setTool] = useState<ShapeType>('rect');
+  const [tool, setTool] = useState<ShapeType>('rectangle');
   const [classNames, setClassNames] = useState<ClassName[]>([]);
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [newAnnotation, setNewAnnotation] = useState<Annotation | null>(null);
@@ -128,7 +128,7 @@ const AnnotationModal = ({
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
 
-    if (tool === 'rect') {
+    if (tool === 'rectangle') {
       setNewAnnotation({
         ...newAnnotation,
         width: point.x - newAnnotation.startX,
@@ -156,7 +156,7 @@ const AnnotationModal = ({
     setIsDrawing(false);
 
     // Don't add empty annotations
-    if (tool === 'rect' && (Math.abs(newAnnotation.width) < 5 || Math.abs(newAnnotation.height) < 5)) {
+    if (tool === 'rectangle' && (Math.abs(newAnnotation.width) < 5 || Math.abs(newAnnotation.height) < 5)) {
       setNewAnnotation(null);
       return;
     }
@@ -221,7 +221,7 @@ const AnnotationModal = ({
     let labelX = ann.startX;
     let labelY = ann.startY - 15;
 
-    if (ann.type === 'rect') {
+    if (ann.type === 'rectangle') {
       labelX = ann.startX + ann.width / 2;
       labelY = ann.startY - 15;
     } else if (ann.type === 'circle') {
@@ -232,7 +232,7 @@ const AnnotationModal = ({
     return (
       <Group key={ann.id}>
         {/* Annotation shape */}
-        {ann.type === 'rect' && (
+        {ann.type === 'rectangle' && (
           <Rect
             id={ann.id}
             x={ann.startX}
@@ -363,15 +363,16 @@ const AnnotationModal = ({
       refId: img.refId,
       url: img.url,
       annotations: img.annotations?.map((ann) => {
-        const isRect = ann.type === 'rect';
+        const isRect = ann.type === 'rectangle';
         const isCircle = ann.type === 'circle';
+        const isPoint = ann.type === 'point';
         return {
           id: ann.id,
           type: ann.type,
           color: ann.color,
           label: ann.label,
-          startX: isRect || isCircle ? ann.startX : 0,
-          startY: isRect || isCircle ? ann.startY : 0,
+          startX: isRect || isCircle || isPoint ? ann.startX : 0,
+          startY: isRect || isCircle || isPoint ? ann.startY : 0,
           width: isRect ? ann.width ?? 0 : 0,
           height: isRect ? ann.height ?? 0 : 0,
           radius: isCircle ? ann.radius ?? 0 : 0,
@@ -519,13 +520,13 @@ const AnnotationModal = ({
 }
 
 interface ToolSelectorProps {
-  tool: ShapeType | 'select';
+  tool: ShapeType | 'rectangle';
   setTool: (id: ShapeType) => void;
 }
 function AnnotationToolSelector({ tool, setTool }: ToolSelectorProps) {
   const tools: { id: ShapeType; label: string; icon?: JSX.Element }[] = [
-    // { id: 'select', label: 'Select', icon: <MousePointerClick size={24} /> },
-    { id: 'rect', label: 'Rectangle', icon: <Square size={24} /> },
+    { id: 'point', label: 'Point', icon: <MousePointerClick size={24} /> },
+    { id: 'rectangle', label: 'Rectangle', icon: <Square size={24} /> },
     { id: 'circle', label: 'Circle', icon: <CircleIcon size={24} /> },
     { id: 'polygon', label: 'Polygon', icon: <Edit3 size={24} /> },
   ];

@@ -209,23 +209,27 @@ const FrequentDefectsChart = React.memo<FrequentDefectsChartProps>(({ data, load
 
 
 
-  return (
-    <div className="bg-white rounded-xl shadow p-3 md:p-4 h-full">
-      <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
-        Top 5 Most Frequent Defect Types
-      </h2>
-      
-      {loading ? (
-        <LoadingState />
-      ) : error ? (
-        <ErrorState />
-      ) : (
-        <div className="h-[240px] sm:h-[280px] md:h-[330px]">
-          <Bar data={chartData} options={options} />
-        </div>
-      )}
-    </div>
-  );
+return (
+   <div className="bg-white rounded-xl shadow p-3 md:p-4 h-[345px]">
+    <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
+      Top 5 Most Frequent Defect Types
+    </h2>
+    
+    {loading ? (
+      <div className="h-[240px] flex items-center justify-center"> 
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      </div>
+    ) : error ? (
+      <div className="h-[240px] flex items-center justify-center"> 
+        <p className="text-red-500 text-center">{error}</p>
+      </div>
+    ) : (
+      <div className="h-[240px] sm:h-[250px] md:h-[280px]">
+        <Bar data={chartData} options={options} />
+      </div>
+    )}
+  </div>
+);
 });
 
 FrequentDefectsChart.displayName = 'FrequentDefectsChart';

@@ -81,10 +81,13 @@ export default function Page() {
     }
   };
 
-  const handleEdit = async (modelId: number) => {
+  const handleModelAction = async (modelVersionId: number, mode: string) => {
     try {
       loaderRef.current?.start();
-      router.push(`/detection-model/${modelId}`);
+      const path = mode === 'edit' 
+        ? `/detection-model/edit/${modelVersionId}` 
+        : `/detection-model/view/${modelVersionId}`;
+      router.push(path);
     } catch (error) {
       console.error('Failed to open modal:', error);
       showError('Failed to load  details');
@@ -184,7 +187,7 @@ export default function Page() {
           columns={DetectionModelColumns({
             showCheckbox: hasPermission(Menu.DetectionModel, Action.Delete),
             canEdit: hasPermission(Menu.DetectionModel, Action.Edit),
-            openEditModal:handleEdit,
+            onAction:handleModelAction,
             selectedIds,
             setSelectedIds,
             data,

@@ -1,1 +1,1 @@
-export type ShapeType = 'select' | 'rect' | 'circle' | 'polygon';
+export type ShapeType = 'point' | 'rectangle' | 'circle' | 'polygon';
