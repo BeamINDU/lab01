@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { showConfirm, showSuccess, showError, showWarning } from '@/app/utils/swal'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { useSession } from "next-auth/react";
 import { updateStep1, getFunctions, getModelFunction } from "@/app/libs/services/detection-model";
 import { SelectOption } from "@/app/types/select-option";
@@ -107,7 +108,7 @@ export default function DetectionModelStep1({ next, modelVersionId, formData, is
       };
 
       if (isEditMode) {
-        console.log("Submit data1:", updatedFormData);
+        // console.log("Submit data1:", updatedFormData);
         const res = await updateStep1(modelVersionId, updatedFormData);
         const isNewModelVersionId = modelVersionId != res.modelVersionId;
 
@@ -122,7 +123,7 @@ export default function DetectionModelStep1({ next, modelVersionId, formData, is
       next(updatedFormData);
     } catch (error) {
       console.error('Save step1 failed:', error);
-      showError('Save failed')
+      showError(`Save failed: ${extractErrorMessage(error)}`);
     }
   };
 

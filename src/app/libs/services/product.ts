@@ -72,9 +72,10 @@ export const remove = async (id: string) => {
   }  
 };
 
-export const upload = async (file: File) => {
+export const upload = async (uploadby: string, file: File) => {
   try {
     const formData = new FormData();
+    formData.append('uploadby', uploadby);
     formData.append('file', file);
 
     const res = await api.upload<Product[]>(`${API_ROUTES.product.upload}`, formData);

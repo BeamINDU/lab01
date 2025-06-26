@@ -53,12 +53,13 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
         setFormData(prev => ({
           ...prev,
           modelVersionId,
-          currentStep: result?.currentStep ?? 1,
           modelId: result?.modelId,
           modelName: result?.modelName,
           statusId: result?.statusId,
+          currentVersion:  result?.currentVersion,
+          currentStep: result?.currentStep ?? 1,
         }));
-        setStep(result?.currentStep ?? 1);
+        setStep(Math.min((result?.currentStep ?? 1) + 1, MAX_STEP));
       } catch (error) {
         console.error("Failed to load model:", error);
       }
@@ -114,14 +115,35 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
     }
   };
 
+  const renderStatusBadge = (statusId: string | undefined) => {
+    const statusMap: Record<string, { label: string; className: string }> = {
+      Using: { label: "Using", className: "bg-green-100 text-green-800" },
+      Processing: { label: "Processing", className: "bg-yellow-100 text-yellow-800" },
+      Ready: { label: "Ready", className: "bg-blue-100 text-blue-800" },
+    };
+
+    const status = statusMap[statusId ?? ""] || { label: "", className: "bg-gray-100 text-gray-800" };
+
+    return (
+      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium ${status.className}`}>
+        {status.label}
+      </span>
+    );
+  };
+
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-2 ml-3">Detection Model: {formData.modelName}</h2>
+      <h2 className="text-2xl font-bold mb-2 ml-3">
+        Detection Model:{' '}
+        <span className="font-light">{formData.modelName}</span>{' '}
+        <span className="font-bold">version</span>{' '}
+        <span className="font-light">{formData.currentVersion}</span>{' '}
+        {renderStatusBadge(formData.statusId)}
+      </h2>
       <div className="p-3 mx-auto">
         <div className="flex items-center justify-between mt-1 mb-5 px-2">
           {stepOptions.map((label, index) => {
-            // const currentStep = (formData.statusId !== ModelStatus.Processing) ? 1 : (formData.currentStep ?? 1); 
-            const currentStep = formData.currentStep ?? 1;
+            const currentStep = Math.min((formData?.currentStep ?? 1) + 1, MAX_STEP);
             const stepIndex = index + 1;
 
             const isActive = step === stepIndex;

@@ -41,6 +41,9 @@ export type FormData = {
   cameraId?: string | undefined,
   version?: number,
   updatedBy?: string | null,
+  fileName?: string | null,
+  base64?: string | null,
+  annotate?: string | null,
 };
 
 export type ModelPicture = {

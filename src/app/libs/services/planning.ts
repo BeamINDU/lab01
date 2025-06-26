@@ -72,9 +72,10 @@ export const remove = async (id: string) => {
   }  
 };
 
-export const upload = async (file: File) => {
+export const upload = async (uploadby: string, file: File) => {
   try {
     const formData = new FormData();
+    formData.append('uploadby', uploadby);
     formData.append('file', file);
 
     const res = await api.upload<Planning[]>(`${API_ROUTES.planning.upload}`, formData);
@@ -125,7 +126,6 @@ export const startPlansConfirmation = async (param?: ParamSearch) => {
     return mockPlans;
 
     // const res =  await api.get<any>(`${API_ROUTES.planning.plans_confirmation}?${param}`);
-
     // const mapData: Planning[] = res?.planning?.map((item) => ({
     //   planId: item.planid,
     //   productId: item.prodid,

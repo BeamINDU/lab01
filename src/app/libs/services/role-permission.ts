@@ -4,7 +4,7 @@ import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { search as searchMenus } from './menu';
 import { search as searchPermissions, update as updatePermissions } from './permission';
 
-// Export functions that match the existing pattern
+
 export const getMenus = async (): Promise<UserPermission[]> => {
   try {
     return await searchMenus();

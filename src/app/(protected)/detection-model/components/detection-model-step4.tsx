@@ -4,17 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-// import SearchField from '@/app/components/common/SearchField';
 import SelectField from '@/app/components/common/SelectField';
 import { FormData, DetectionModel } from "@/app/types/detection-model";
 import { SelectOption } from "@/app/types/select-option";
 import { ModelStatus } from "@/app/constants/status"
-import { getCameraIdOptions } from "@/app/libs/services/camera";
 import { useSession } from "next-auth/react";
-import {updateStep4, getVersion,  getCamera, getModelCamera } from "@/app/libs/services/detection-model";
+import { updateStep4, getVersion, getModelVersion } from "@/app/libs/services/detection-model";
 import { usePopupTraining } from '@/app/contexts/popup-training-context';
 import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
-import { is } from "date-fns/locale";
 
 type Props = {
   prev: () => void;
@@ -23,25 +20,20 @@ type Props = {
   formData: FormData;
   modelVersionId: number;
   isEditMode: boolean;
-  // modelId: number;
 };
 
 export const step4Schema = z.object({
   modelVersionId: z.number(),
-  cameraId: z.string().min(1, "Camera ID is required"),
-  version: z.number().min(1, "Model Version is required"),
+  version: z.number().min(1, "Version is required"),
 });
 
 type Step4Data = z.infer<typeof step4Schema>;
 
 export default function DetectionModelStep4Page({ prev, next, modelVersionId, formData, isEditMode, startTraining }: Props) {
-  // console.log("formData3:", formData);
   const { data: session } = useSession();
   const { isTraining, cancelConnection } = useTrainingSocketStore();
   const { displayProcessing, displaySuccess, displayError, hidePopup } = usePopupTraining();
-  const [cameraOptions, setCameraOptions] = useState<SelectOption[]>([]);
   const [versionOptions, setVersionOptions] = useState<SelectOption[]>([]);
-  const [selectedCamera, setSelectedCamera] = useState<string>("");
   const [selectedVersion, setSelectedVersion] = useState<number>(0);
 
   //--------------------------------------------------------------------------------------------
@@ -80,7 +72,6 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
 
   const defaultValues: Step4Data = {
     modelVersionId: modelVersionId,
-    cameraId: '',
     version: 0,
   };
 
@@ -97,69 +88,31 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
     defaultValues
   });
 
-  const getModelVersion = async () => {
-    const baseVersion = (formData.statusId === ModelStatus.Processing && formData.currentVersion != null) 
-      ? 0 
-      : formData.currentVersion ?? 0;
-  
-    const maxVersion = baseVersion + 1;
-  
-    const versions = Array.from({ length: maxVersion }, (_, i) => {
-      const version = maxVersion - i;
-      return { label: `${version}`, value: `${version}` };
-    });
-  
-    return versions as SelectOption[];
-  };
-
   useEffect(() => {
-    const fetchData = async () => {
+    if (!formData?.modelId) return;
+
+    const fetchVersion = async () => {
       try {
-        const [cameraResult, versionResult] = await Promise.all([
-          getCamera(),
-          getModelVersion(),
-        ]);
-        setCameraOptions(cameraResult);
-        setVersionOptions(versionResult);
+        const result = await getVersion(formData.modelId ?? 0);
+        setVersionOptions(result);
       } catch (error) {
         console.error("Failed to load data:", error);
       }
     };
   
-    fetchData();
+    fetchVersion();
   }, []);
-
+  
   useEffect(() => {
-    if (!formData?.modelId) return;
+    if (!formData?.modelId || formData.currentVersion == null || modelVersionId == null) return;
 
-    const fetchModelCamera = async () => {
-      try {
-        const modelCamera = await getModelCamera(modelVersionId);
-        if (modelCamera) {
-          reset({
-            modelVersionId: modelVersionId,
-            version: modelCamera.modelVersionId, // selectedVersion,
-            cameraId: modelCamera.cameraId, // selectedCamera,
-          });
-        } 
-        reset(defaultValues);
-      } catch (error) {
-        console.error("Failed to load model functions:", error);
-      }
-    };
+    setSelectedVersion(formData.currentVersion);
 
-    fetchModelCamera();
-  }, [formData?.modelId, modelVersionId, reset]);
-
-
-  useEffect(() => {
-    setValue("cameraId", selectedCamera);
-  }, [selectedCamera, setValue]);
-
-
-  useEffect(() => {
-    setValue("version", selectedVersion);
-  }, [selectedVersion, setValue]);
+    reset({
+      modelVersionId,
+      version: formData.currentVersion,
+    });
+  }, [formData?.modelId, formData?.currentVersion, modelVersionId, reset]);
 
 
   const onPrevious = async () => {
@@ -182,20 +135,18 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
     }
   };
 
-  
   const onSubmitHandler = async () => {
     try {
       const data = getValues();
 
-      if (!data.cameraId || !data.version) {
-        showError("Please complete all required fields.");
+      if (!data.version) {
+        showError("Version is required");
         return;
       }
 
       const updatedFormData: FormData = {
         ...formData,
         currentStep: 4,
-        cameraId: data.cameraId,
         version: data.version,
         updatedBy: session?.user?.userid,
       };
@@ -206,14 +157,15 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
       }
 
       await showSuccess("Saved successfully!");
-      next(updatedFormData);
+      next({
+        ...updatedFormData,
+        statusId: 'Using',
+      });
     } catch (error) {
       console.error('Save step1 failed:', error);
-      showError('Save failed')
+      showError(`Save failed: ${extractErrorMessage(error)}`);
     }
   };
-
-  // console.log("Form Errors:", errors);
   
   return (
     <div className="w-full">
@@ -230,57 +182,16 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
       <div className="grid grid-cols-1 gap-4 mb-6">
         <input type="hidden" {...register("modelVersionId")} />
 
-        {/* Camera ID */}
-        <div className="flex items-center">
-          {/* <div className="w-[20%]">
-            <SearchField
-              register={register}
-              setValue={setValue}
-              fieldName="cameraId"
-              label="Camera ID"
-              placeholder="Search or enter camera ID..."
-              dataLoader={getCameraIdOptions}
-              labelField="label"
-              valueField="value"
-              allowFreeText={true}
-            />
-          </div> */}
-          <label className="w-64 font-medium">Camera ID :</label>
-          <div className="w-64">
-            <SelectField
-              value={selectedCamera}
-              onChange={(value) => {
-                setSelectedCamera(value);
-                clearErrors("cameraId");
-              }}
-              options={cameraOptions}
-              disabled={isTraining}
-            />
-          </div>
-        </div>
-        {errors.cameraId && (<p className="text-red-500 ml-260">{errors.cameraId.message}</p>)}
-
         {/* Model Version */}
         <div className="flex items-center">
-          {/* <div className="w-[20%]">
-            <SearchField
-              register={register}
-              setValue={setValue}
-              fieldName="version"
-              label="Version"
-              placeholder="Search or enter Version..."
-              dataLoader={getModelVersion}
-              labelField="label"
-              valueField="value"
-              allowFreeText={true}
-            />
-          </div> */}
           <label className="w-64 font-medium">Version :</label>
           <div className="w-64">
             <SelectField
               value={String(selectedVersion)}
               onChange={(value) => {
-                setSelectedVersion(parseInt(value));
+                const parsed = parseInt(value);
+                setSelectedVersion(parsed);
+                setValue("version", parsed, { shouldValidate: true });
                 clearErrors("version");
               }}
               options={versionOptions}

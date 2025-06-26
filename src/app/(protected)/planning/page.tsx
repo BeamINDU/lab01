@@ -9,6 +9,7 @@ import { ExportType } from '@/app/constants/export-type';
 import { Planning, ParamSearch } from "@/app/types/planning"
 import { search, detail, create, update, remove, upload } from "@/app/libs/services/planning";
 import { usePermission } from '@/app/contexts/permission-context';
+import { useSession } from "next-auth/react";
 import { Menu, Action } from '@/app/constants/menu';
 import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { formatDateTime } from "@/app/utils/date";
@@ -20,6 +21,7 @@ import PlanningFilterForm from './components/planning-filter';
 import PlanningFormModal from "./components/planning-form";
 
 export default function Page() {
+  const { data: session } = useSession();
   const { hasPermission } = usePermission();
   const { register, getValues, setValue, reset ,control} = useForm();
   const [data, setData] = useState<Planning[]>([]);
@@ -73,7 +75,7 @@ export default function Page() {
 
   const handleUpload = async (file: File) => {
     try {
-      await upload(file);
+      await upload(session?.user?.userid ?? '', file);
       showSuccess(`Uploaded: ${file.name}`);
     } catch (error) {
       console.error("Upload operation failed:", error);

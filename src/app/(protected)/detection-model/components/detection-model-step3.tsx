@@ -12,12 +12,11 @@ import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { SelectOption } from "@/app/types/select-option";
 import { ShapeType } from "@/app/constants/shape-type";
 import { FormData, DetectionModel, ModelPicture, Annotation } from "@/app/types/detection-model";
-import { getPicture } from "@/app/libs/services/detection-model";
+import { updateStep3, getPicture, annotateImage } from "@/app/libs/services/detection-model";
 import { useSession } from "next-auth/react";
 import ImageLoading from "@/app/components/loading/ImageLoading";
 import SpinnerLoading from "@/app/components/loading/SpinnerLoading";
 import AnnotationModal from "./annotation-modal";
-import { detail, updateStep3 } from "@/app/libs/services/detection-model";
 import { nanoid } from 'nanoid';
 import { usePopupTraining } from '@/app/contexts/popup-training-context';
 import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
@@ -37,7 +36,6 @@ type Props = {
 // type Step3Data = z.infer<typeof step2Schema>;
 
 export default function DetectionModelStep3Page({ next, prev, modelVersionId, formData, isEditMode }: Props) {
-  // console.log("formData:", formData);
   const { data: session } = useSession();
   const { hasPermission } = usePermission();
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -366,18 +364,18 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
       };
 
       if (isEditMode) {
-        console.log("Submit data3:", updatedFormData);
-        // await updateStep2(modelVersionId, updatedFormData);
-        // await showSuccess(`Saved successfully`)
+        // console.log("Submit data3:", updatedFormData);
+        await updateStep3(modelVersionId, updatedFormData);
+        await showSuccess(`Saved successfully`)
       }
       next(updatedFormData);
     } catch (error) {
       console.error('Save step3 failed:', error);
-      showError('Save failed')
+      showError(`Save failed: ${extractErrorMessage(error)}`);
     }
   }
 
-  const onNext = async () => {
+  const handleNext = async () => {
     const updatedFormData: FormData = {
       ...formData,
       currentStep: 3,
@@ -496,13 +494,6 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
                       {annotations.map(ann => renderAnnotation(ann))}
                     </Layer>
                   </Stage>
-                  // <img
-                  //   src={selectedPicture.url ?? ""}
-                  //   alt="preview"
-                  //   className="w-full max-w-[680px] object-contain"
-                  //   onLoad={() => setIsImageLoading(false)}
-                  //   onError={() => setIsImageLoading(false)}
-                  // />
                 )}
               </div>
             </div>
@@ -532,7 +523,7 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
           ) : (
             <button 
               className="px-4 py-2 btn-primary-dark rounded gap-2 w-32"
-              onClick={onNext}
+              onClick={handleNext}
             >
               Next
             </button>

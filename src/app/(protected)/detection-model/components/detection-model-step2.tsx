@@ -5,10 +5,12 @@ import { z } from "zod";
 import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { FormData, DetectionModel } from "@/app/types/detection-model";
-import { updateStep2, getModelVersion } from "@/app/libs/services/detection-model";
+import { updateStep2, getModelVersion,  getCamera, getModelCamera } from "@/app/libs/services/detection-model";
 import { useSession } from "next-auth/react";
 import { getProductIdOptions } from "@/app/libs/services/product";
+import { getCameraIdOptions } from "@/app/libs/services/camera";
 import { SearchFieldModal } from '@/app/components/common/SearchField';
+import SelectField from '@/app/components/common/SelectField';
 
 type Props = {
   next: (data: any) => void;
@@ -16,39 +18,39 @@ type Props = {
   formData: FormData;
   modelVersionId: number;
   isEditMode: boolean;
-  // modelId: number;
 };
 
 export const step2Schema = z.object({
   modelVersionId: z.number(),
   modelId: z.number(),
   modelName: z.string().min(1, "Model Name is required"),
-  productId: z.string().min(1, "Product ID is required"),
   description: z.string(),
-  trainDataset: z.number(), //.min(1, "Train Dataset Percentage is required"),
-  testDataset: z.number(), //.min(1, "Test Dataset Percentage is required"),
-  validationDataset: z.number(), //.min(1, "Validation Dataset Percentage is required"),
-  epochs: z.number(), //.min(1, "Epochs is required"),
-  version: z.number().optional()
+  trainDataset: z.number().gt(0, { message: "Train Dataset Percentage must be greater than 0" }),
+  testDataset: z.number().gt(0, { message: "Test Dataset Percentage is required"}),
+  validationDataset: z.number().gt(0, {message: "Validation Dataset Percentage is required"}),
+  epochs: z.number().gt(0, {message: "Epochs is required"}),
+  productId: z.string().min(1, "Product ID is required"),
+  cameraId: z.string().min(1, "Camera ID is required"),
+  // version: z.number().min(1, "Model Version is required"),
 });
 
 type Step3Data = z.infer<typeof step2Schema>;
 
 export default function DetectionModelStep2Page({ next, prev, modelVersionId, formData, isEditMode }: Props) {
-  // console.log("formData:", formData);
   const { data: session } = useSession();
 
   const defaultValues: Step3Data = {
     modelVersionId: modelVersionId,
     modelId: 0,
     modelName: '',
-    productId: '',
     description: '',
     trainDataset: 0,
     testDataset: 0,
     validationDataset: 0,
     epochs: 0,
-    version: 0
+    productId: '',
+    cameraId: '',
+    // version: 0
   };
 
   const {
@@ -70,19 +72,20 @@ export default function DetectionModelStep2Page({ next, prev, modelVersionId, fo
 
     const fetchModelVersion = async () => {
       try {
-        const modelVersion = await getModelVersion(formData.modelId ?? 0);
+        const modelVersion = await getModelVersion(modelVersionId);
         if (modelVersion) {
           reset({
             modelVersionId: modelVersionId,
             modelId: modelVersion.modelId ?? 0,
             modelName: modelVersion.modelName ?? '',
-            productId: modelVersion.productId,
             description: modelVersion.description ?? '',
             trainDataset: modelVersion.trainDataset ?? 0,
             testDataset: modelVersion.testDataset ?? 0,
             validationDataset: modelVersion.validationDataset ?? 0,
             epochs: modelVersion.epochs ?? 0,
-            version: modelVersion.currentVersion,
+            productId: modelVersion.productId,
+            cameraId: modelVersion.cameraId ?? '',
+            // version: modelVersion.currentVersion,
           });
         } else {
           reset(defaultValues);
@@ -95,8 +98,6 @@ export default function DetectionModelStep2Page({ next, prev, modelVersionId, fo
     fetchModelVersion();
   }, [formData?.modelId, modelVersionId, reset]);
 
-
-  
   const onSubmitHandler = async (data: Step3Data) => {
     try {
       const updatedFormData: FormData = {
@@ -104,25 +105,26 @@ export default function DetectionModelStep2Page({ next, prev, modelVersionId, fo
         currentStep: 2,
         modelId: data.modelId,
         modelName: data.modelName,
-        productId: data.productId,
         description: data.description,
         trainDataset: data.trainDataset,
         testDataset: data.testDataset,
         validationDataset: data.validationDataset,
         epochs: data.epochs,
+        productId: data.productId,
+        cameraId: data.cameraId,
         updatedBy: session?.user?.userid,
       };
 
       if (isEditMode) {
-        console.log("Submit data2:", updatedFormData);
-        // await updateStep3(modelVersionId, updatedFormData);
+        // console.log("Submit data2:", updatedFormData);
+        await updateStep2(modelVersionId, updatedFormData);
         await showSuccess(`Saved successfully`)
       }
 
       next(updatedFormData);
     } catch (error) {
       console.error('Save step2 failed:', error);
-      showError('Save failed')
+      showError(`Save failed: ${extractErrorMessage(error)}`);
     }
   }
 
@@ -145,11 +147,23 @@ export default function DetectionModelStep2Page({ next, prev, modelVersionId, fo
             </div>
             {errors.modelName && (<p className="text-red-500 ml-260">{errors.modelName.message}</p>)}
 
+             {/* Model Description */}
+            <div className="flex items-center">
+              <label className="w-64 font-medium">Model Description :</label>
+              <input
+                type="text"
+                className="flex-1 rounded-md px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                {...register("description")}
+              />
+            </div>
+            {errors.description && (<p className="text-red-500 ml-260">{errors.description.message}</p>)}
+
             {/* Product ID */}
             <div className="flex items-center">
               <label className="w-64 font-medium">Product ID :</label>
-              <div className="w-96 font-medium">
+              <div className="">
                 <SearchFieldModal
+                  className=""
                   register={register}
                   setValue={setValue}
                   fieldName="productId"
@@ -169,16 +183,30 @@ export default function DetectionModelStep2Page({ next, prev, modelVersionId, fo
             </div>
             {errors.productId && (<p className="text-red-500 ml-260">{errors.productId.message}</p>)}
 
-            {/* Model Description */}
+            {/* Camera ID */}
             <div className="flex items-center">
-              <label className="w-64 font-medium">Model Description :</label>
-              <input
-                type="text"
-                className="flex-1 rounded-md px-3 py-2 border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                {...register("description")}
-              />
+              <label className="w-64 font-medium">Camera ID :</label>
+              <div className="">
+                <SearchFieldModal
+                  className=""
+                  register={register}
+                  setValue={setValue}
+                  fieldName="cameraId"
+                  label=""
+                  placeholder="Select camera..."
+                  dataLoader={getCameraIdOptions}
+                  labelField="label"
+                  valueField="value"
+                  allowFreeText={true}
+                  initialValue={watch('cameraId')}
+                  onSelectionChange={(value, option) => {
+                    console.log('Camera ID selected:', value, option);
+                    setValue("cameraId", value, { shouldValidate: true });
+                  }}
+                />
+              </div>
             </div>
-            {errors.description && (<p className="text-red-500 ml-260">{errors.description.message}</p>)}
+            {errors.cameraId && (<p className="text-red-500 ml-260">{errors.cameraId.message}</p>)}
 
             {/* Train Percentage */}
             <div className="flex items-center">
@@ -190,7 +218,7 @@ export default function DetectionModelStep2Page({ next, prev, modelVersionId, fo
               />
               <span className="ml-2">%</span>
             </div>
-            {/* {errors.trainDataset && (<p className="text-red-500 ml-260">{errors.trainDataset.message}</p>)} */}
+            {errors.trainDataset && (<p className="text-red-500 ml-260">{errors.trainDataset.message}</p>)}
 
             {/* Test Percentage */}
             <div className="flex items-center">
@@ -202,7 +230,7 @@ export default function DetectionModelStep2Page({ next, prev, modelVersionId, fo
               />
               <span className="ml-2">%</span>
             </div>
-            {/* {errors.testDataset && (<p className="text-red-500 ml-260">{errors.testDataset.message}</p>)} */}
+            {errors.testDataset && (<p className="text-red-500 ml-260">{errors.testDataset.message}</p>)}
 
             {/* Validation Percentage */}
             <div className="flex items-center">
@@ -214,7 +242,7 @@ export default function DetectionModelStep2Page({ next, prev, modelVersionId, fo
               />
               <span className="ml-2">%</span>
             </div>
-            {/* {errors.validationDataset && (<p className="text-red-500 ml-260">{errors.validationDataset.message}</p>)} */}
+            {errors.validationDataset && (<p className="text-red-500 ml-260">{errors.validationDataset.message}</p>)}
 
             {/* Epochs */}
             <div className="flex items-center">
@@ -225,8 +253,8 @@ export default function DetectionModelStep2Page({ next, prev, modelVersionId, fo
                 {...register("epochs", { valueAsNumber: true })}
               />
             </div>
-            {/* {errors.epochs && (<p className="text-red-500 ml-260">{errors.epochs.message}</p>)} */}
-
+            {errors.epochs && (<p className="text-red-500 ml-260">{errors.epochs.message}</p>)}
+            
             {/* Buttons */}
             <div
               className="fixed bottom-0 right-0 p-7 flex justify-between"

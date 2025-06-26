@@ -65,18 +65,18 @@ export const API_ROUTES = {
     suggest_role_name: "/suggest-role-name",
   },
   permission: {
-    get: "/permissions", // PUT request with roleid parameter (ตาม backend)
+    get: "/permissions",
     detail: "",
     insert: "/add_permission", 
-    update: "/update_permission", // PUT with permissionid parameter
-    delete: "/delete_permission", // DELETE with permissionid parameter
+    update: "/update_permission",
+    delete: "/delete_permission", 
   },
-  // แก้ไข menu endpoints ตามที่มีจริงใน backend  
+
   menu: {
-    get: "/menu", // POST request (ตาม backend)
+    get: "/menu",
     detail: "",
     insert: "/add_menu", 
-    update: "/update_menu", // PUT with menuid parameter
+    update: "/update_menu", 
     delete: "",
   },
   report_product: {
@@ -109,6 +109,7 @@ export const API_ROUTES = {
     detail: "/model-detail", 
     insert: "/add-model", 
     delete: "/delete-model",
+    annotate_image: '/annotate-image',
     update_step1: "/update-model-step1",
     update_step2: "/update-model-step2",
     update_step3: "/update-model-step3",
@@ -117,6 +118,7 @@ export const API_ROUTES = {
     model_version: "/model-version",
     model_image: "/model-image",
     model_camera: "/model-camera",
+    version: "/version",
     function: "/function",
     label_class: "/label-class",
     suggest_model: "/suggest-modelname",

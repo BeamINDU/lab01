@@ -69,9 +69,10 @@ export const remove = async (id: number) => {
   }  
 };
 
-export const upload = async (file: File) => {
+export const upload = async (uploadby: string, file: File) => {
   try {
     const formData = new FormData();
+    formData.append('uploadby', uploadby);
     formData.append('file', file);
 
     const res = await api.upload<Role[]>(`${API_ROUTES.role.upload}`, formData);

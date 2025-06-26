@@ -17,18 +17,16 @@ export interface UpdatePermissionRequest {
   }[];
 }
 
-// ตาม backend: PUT /permissions?roleid={roleId}
+
 export const search = async (roleId: number) => {
   try {
-    console.log('🔍 Fetching permissions for roleId:', roleId);
+    console.log('Fetching permissions for roleId:', roleId);
     
-    // ใช้ PUT request กับ query parameter ตาม backend API structure
     const res = await api.put<any>(`${API_ROUTES.permission.get}?roleid=${roleId}`);
     
-    console.log('📡 Permission API response:', res);
+    console.log('Permission API response:', res);
     
-    // Handle different response formats based on backend
-    let permissionData: any[] = []; // Explicitly type as any array
+    let permissionData: any[] = []; 
     
     if (res?.permissions && Array.isArray(res.permissions)) {
       permissionData = res.permissions;
@@ -53,12 +51,11 @@ export const search = async (roleId: number) => {
                [1] // Default to View permission
     }));
 
-    console.log('✅ Mapped permission data:', mapData);
+    console.log('Mapped permission data:', mapData);
     return mapData;
     
   } catch (error) {
-    console.warn('⚠️ Permission API failed for roleId:', roleId, 'Error:', extractErrorMessage(error));
-    // Return empty permissions as fallback
+    console.warn('Permission API failed for roleId:', roleId, 'Error:', extractErrorMessage(error));
     return [];
   }
 };
@@ -75,13 +72,12 @@ export const create = async (param: PermissionCreateRequest) => {
   }
 };
 
-// ตาม backend: PUT /update_permission?permissionid=${roleId}
+
 export const update = async (roleId: number, param: UpdatePermissionRequest) => {
   try {
     console.log('🔄 Updating permissions for roleId:', roleId, param);
     
-    // ใช้ PUT request ตาม backend API structure
-    const res = await api.put<any>(`${API_ROUTES.permission.update}?permissionid=${roleId}`, param);
+    const res = await api.put<any>(`${API_ROUTES.permission.update}?roleid=${roleId}`, param);
     
     console.log('✅ Permission update response:', res);
     

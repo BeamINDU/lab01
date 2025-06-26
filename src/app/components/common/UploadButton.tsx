@@ -3,7 +3,8 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { X, Upload } from 'lucide-react';
-import { toastError } from '@/app/utils/toast';
+import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 type UploadButtonProps = {
   onUpload: (file: File) => void;
@@ -17,7 +18,7 @@ export default function UploadButton({ onUpload }: UploadButtonProps) {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const selectedFile = acceptedFiles[0];
     if (selectedFile?.size > 25 * 1024 * 1024) {
-      toastError('File size must not exceed 25MB.');
+      showError('File size must not exceed 25MB.');
       return;
     }
     setFile(selectedFile);
@@ -26,20 +27,26 @@ export default function UploadButton({ onUpload }: UploadButtonProps) {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: false,
-    accept: { 'text/csv': [] },
+    accept: {
+      'text/csv': [],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [], // .xlsx
+      // 'application/vnd.ms-excel': [], // .xls
+    },
   });
 
   const handleUpload = async () => {
-    if (!file) return;
-    setIsUploading(true);
     try {
+      if (!file) return;
+
+      setIsUploading(true);
       await Promise.resolve(onUpload(file));
+      
       setFile(null);
       setIsUploadModalOpen(false);
-    } catch {
-      toastError('Upload failed');
-    } finally {
       setIsUploading(false);
+    } catch (error) {
+      console.error('Save operation failed:', error);
+      showError(`Upload failed: ${extractErrorMessage(error)}`);
     }
   };
 
@@ -54,7 +61,7 @@ export default function UploadButton({ onUpload }: UploadButtonProps) {
         className="flex items-center gap-1 px-4 py-2 rounded btn-primary-dark"
         onClick={() => setIsUploadModalOpen(true)}
       >
-        Upload CSV
+        Upload
         <Upload size={16} className="mt-1" />
       </button>
 
@@ -90,7 +97,7 @@ export default function UploadButton({ onUpload }: UploadButtonProps) {
 
             <div className="flex items-center justify-between mt-2 text-sm text-gray-500">
               <div>
-                <p>Supported format: <span className="font-medium text-gray-700">CSV</span></p>
+                <p>Supported format: <span className="font-medium text-gray-700">csv, xlsx</span></p>
               </div>
               <div>
                 <p>Maximum size: <span className="font-medium text-gray-700">25 MB</span></p>

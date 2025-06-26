@@ -9,6 +9,7 @@ import { ExportType } from '@/app/constants/export-type';
 import { Product, ParamSearch } from "@/app/types/product"
 import { search, detail, create, update, remove, upload } from "@/app/libs/services/product";
 import { usePermission } from '@/app/contexts/permission-context';
+import { useSession } from "next-auth/react";
 import { Menu, Action } from '@/app/constants/menu';
 import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { formatDateTime } from "@/app/utils/date";
@@ -20,6 +21,7 @@ import ProductFormModal from "./components/product-form";
 import ProductFilterForm from './components/product-filter';
 
 export default function Page() {
+  const { data: session } = useSession();
   const { hasPermission } = usePermission();
   const { register, getValues, setValue, reset } = useForm();
   const [data, setData] = useState<Product[]>([]);
@@ -74,7 +76,7 @@ export default function Page() {
 
   const handleUpload = async (file: File) => {
     try {
-      await upload(file);
+      await upload(session?.user?.userid ?? '', file);
       showSuccess(`Uploaded: ${file.name}`);
       handleSearch(); 
     } catch (error) {

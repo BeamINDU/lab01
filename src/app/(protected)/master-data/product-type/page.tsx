@@ -9,6 +9,7 @@ import { ExportType } from '@/app/constants/export-type';
 import { ProductType, ParamSearch } from "@/app/types/product-type"
 import { search, detail, create, update, remove, upload } from "@/app/libs/services/product-type";
 import { usePermission } from '@/app/contexts/permission-context';
+import { useSession } from "next-auth/react";
 import { Menu, Action } from '@/app/constants/menu';
 import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { formatDateTime } from "@/app/utils/date";
@@ -21,6 +22,7 @@ import ProductTypeFormModal from "./components/product-type-form";
 
 
 export default function Page() {
+  const { data: session } = useSession();
   const { hasPermission } = usePermission();
   const { register, getValues, setValue, reset } = useForm();
   const [data, setData] = useState<ProductType[]>([]);
@@ -70,7 +72,7 @@ const handleSearch = async () => {
 
   const handleUpload = async (file: File) => {
     try {
-      await upload(file);
+      await upload(session?.user?.userid ?? '', file);
       showSuccess(`Uploaded: ${file.name}`);
     } catch (error) {
       console.error("Upload operation failed:", error);
