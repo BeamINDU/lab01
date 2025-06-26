@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { User } from "@/app/types/user";
 import { useSession } from "next-auth/react";
 import { SelectOption } from "@/app/types/select-option";
-import { search as getRoleOptions, getRoleNameOptions } from '@/app/libs/services/role';
+import { getRoleOptions } from '@/app/libs/services/role';
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 import GoogleStyleSearch from '@/app/components/common/Search';
 
@@ -24,8 +24,7 @@ const UserSchema = z.object({
     z.coerce.date(),
     z.literal("").transform(() => undefined)
   ]).optional(),
-  userRoles: z.array(z.number()).optional()
-  // userRoles: z.array(z.number()).min(1, "Role name is required"),
+  roles: z.array(z.number()).min(1, "At least one role must be selected"),
 });
 
 type UserFormValues = z.infer<typeof UserSchema>;
@@ -57,6 +56,7 @@ export default function UserFormModal({
     lastname: '',
     email: '',
     status: true,
+    roles: [],
   };
 
   const {
@@ -75,14 +75,8 @@ export default function UserFormModal({
   useEffect(() => {
     const loadRoles = async () => {
       try {
-        // const roles = await getRoleOptions();
-
-        // const roleOptions: SelectOption[] = roles?.map((item) => ({
-        //   label: item.label,
-        //   value: item.value
-        // }));
-
-        // setRoleOptions(roleOptions);
+        const roleOptions = await getRoleOptions();
+        setRoleOptions(roleOptions);
       } catch (error) {
         console.error('Failed to load roles:', error);
         setRoleOptions([]);
@@ -95,10 +89,7 @@ export default function UserFormModal({
 
   useEffect(() => {
     if (editingData) {
-      reset({
-        ...editingData,
-        userRoles: editingData.userRoles?.map(r => r.roleId)
-      });
+      reset(editingData);
     } else {
       reset(defaultValues);
     }
@@ -108,7 +99,6 @@ export default function UserFormModal({
   const onSubmit: SubmitHandler<UserFormValues> = async (formData) => {
     const formWithMeta: User = {
       ...formData,
-      userRoles: [],
       createdBy: session?.user?.userid,
       createdDate: formData.createdDate,
       updatedBy: formData.id ? session?.user?.userid : null,
@@ -196,12 +186,32 @@ export default function UserFormModal({
           </div>
 
           {/* Role */}
-          <div className="mb-4">
+          <div className="mb-6">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
               <label className="font-normal w-32">Role Name:</label>
-              
+              <div className="space-y-2">
+                {roleOptions.map((role) => (
+                  <div key={role.value} className="checkbox">
+                    <input
+                      type="checkbox"
+                      value={role.value.toString()}
+                      checked={(watch('roles', []) || []).includes(parseInt(role.value))}
+                      onChange={(e) => {
+                        const selectedValues = watch('roles') || [];
+                        const value = parseInt(e.target.value, 10);
+                        const updatedRoleIds = e.target.checked
+                          ? [...selectedValues, value]
+                          : selectedValues.filter(id => id !== value);
+                        setValue('roles', updatedRoleIds, { shouldValidate: true });
+                      }}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm">{role.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-            {errors.userRoles && <p className="text-red-500 ml-160">{errors.userRoles.message}</p>}
+            {errors.roles && <p className="text-red-500 ml-160">{errors.roles.message}</p>}
           </div>
 
           <div className="mb-4">

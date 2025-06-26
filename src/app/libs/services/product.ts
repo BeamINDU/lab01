@@ -86,22 +86,7 @@ export const upload = async (file: File) => {
 
 export const getProductIdOptions = async (q: string) => {
   try {
-    // return await api.get<SelectOption[]>(`${API_ROUTES.product.suggest_product_id}?q=${q}`);
-
-    // For Test
-    const res = await api.get<any>(`${API_ROUTES.product.get}`);
-
-    const result: SelectOption[] = (res?.products ?? [])
-      .filter((item) =>
-        item.prodstatus &&
-        item.prodid.toLowerCase().includes(q.toLowerCase())
-      )
-      .map((item) => ({
-        value: item.prodid,
-        label: item.prodid,
-      }));
-
-    return result;
+    return await api.get<SelectOption[]>(`${API_ROUTES.product.suggest_product_id}?q=${q}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

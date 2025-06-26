@@ -17,32 +17,48 @@ export interface UpdatePermissionRequest {
   }[];
 }
 
+// ตาม backend: PUT /permissions?roleid={roleId}
 export const search = async (roleId: number) => {
   try {
-    console.log('🔍 Attempting to fetch permissions for roleId:', roleId);
+    console.log('🔍 Fetching permissions for roleId:', roleId);
     
-    // ใช้ PUT request ตาม backend API
-    const res = await api.put<any>(`${API_ROUTES.permission.get}`, { roleid: roleId });
+    // ใช้ PUT request กับ query parameter ตาม backend API structure
+    const res = await api.put<any>(`${API_ROUTES.permission.get}?roleid=${roleId}`);
     
     console.log('📡 Permission API response:', res);
     
-    // Handle different response formats
-    const mapData: UserPermission[] = res?.permissions?.map((item: any) => ({
+    // Handle different response formats based on backend
+    let permissionData: any[] = []; // Explicitly type as any array
+    
+    if (res?.permissions && Array.isArray(res.permissions)) {
+      permissionData = res.permissions;
+    } else if (res?.data && Array.isArray(res.data)) {
+      permissionData = res.data;
+    } else if (Array.isArray(res)) {
+      permissionData = res;
+    } else {
+      console.warn('Unexpected permission response format:', res);
+    }
+    
+    const mapData: UserPermission[] = permissionData.map((item: any) => ({
       menuId: item.menuid || item.menuId,
       parentId: item.parentid || item.parentId || "",
-      menuName: item.menuname || item.menuName,
+      menuName: item.menuname || item.menuName || "",
       icon: item.icon || "",
       seq: item.seq || 0,
       path: item.path || "",
-      actions: item.actions || []
-    })) || res?.data || [];
+      actions: Array.isArray(item.actions) ? item.actions : 
+               typeof item.actions === 'string' ? item.actions.split(',').map(Number) :
+               item.actionid ? (typeof item.actionid === 'string' ? item.actionid.split(',').map(Number) : [item.actionid]) :
+               [1] // Default to View permission
+    }));
 
     console.log('✅ Mapped permission data:', mapData);
-    
     return mapData;
+    
   } catch (error) {
     console.warn('⚠️ Permission API failed for roleId:', roleId, 'Error:', extractErrorMessage(error));
-    // Return empty permissions as fallback instead of throwing error
+    // Return empty permissions as fallback
     return [];
   }
 };
@@ -59,22 +75,23 @@ export const create = async (param: PermissionCreateRequest) => {
   }
 };
 
+// ตาม backend: PUT /update_permission?permissionid=${roleId}
 export const update = async (roleId: number, param: UpdatePermissionRequest) => {
   try {
-    // ใช้ PUT request ตาม backend API - update_permission ต้องการ permissionid ไม่ใช่ roleId
-    // สำหรับตอนนี้ใช้ roleId ก่อน แต่อาจต้องแก้ไขตาม backend schema
+    console.log('🔄 Updating permissions for roleId:', roleId, param);
+    
+    // ใช้ PUT request ตาม backend API structure
     const res = await api.put<any>(`${API_ROUTES.permission.update}?permissionid=${roleId}`, param);
+    
+    console.log('✅ Permission update response:', res);
+    
     return {
       ...param,
       updatedDate: new Date(),
     };
   } catch (error) {
-    console.warn('Permission update API failed:', extractErrorMessage(error));
-    // For now, simulate success until API is ready
-    return {
-      ...param,
-      updatedDate: new Date(),
-    };
+    console.error('❌ Permission update failed:', extractErrorMessage(error));
+    throw new Error(extractErrorMessage(error));
   }
 };
 

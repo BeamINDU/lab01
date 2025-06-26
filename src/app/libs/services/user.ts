@@ -19,8 +19,8 @@ export const search = async (param?: ParamSearch) => {
       email: item.email,
       status: item.userstatus,
       statusName: item.userstatus ? 'Active' : 'Inactive',
-      roleName: '',
-      userRoles: [],
+      roles: item.roles,
+      roleName: item.rolenames,
       createdDate: item.createddate,
       createdBy: item.createdby,
       updatedDate: item.updateddate,
@@ -48,6 +48,7 @@ export const create = async (param: Partial<User>) => {
       ...param,
       id: param.userId,
       statusName: param.status ? 'Active' : 'Inactive',
+      roleName: res.rolenames,
       createdDate: new Date(res.createddate),
     };
   } catch (error) {
@@ -62,6 +63,7 @@ export const update = async (id: string, param: Partial<User>) => {
       ...param,
       id: param.userId,
       statusName: param.status ? 'Active' : 'Inactive',
+      roleName: res.rolenames,
       updatedDate: new Date(res.updateddate),
     };
   } catch (error) {

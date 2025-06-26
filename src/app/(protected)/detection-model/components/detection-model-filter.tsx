@@ -24,7 +24,7 @@ export default function ProductFilterForm({register, setValue, control, onSearch
           fieldName="modelName"
           label="Model Name"
           placeholder="Search plan ID..."
-          //dataLoader={getPlanIdOptions}
+          dataLoader={getModelNameOptions}
           labelField="label"
           valueField="value"
           allowFreeText={true}
@@ -48,7 +48,7 @@ export default function ProductFilterForm({register, setValue, control, onSearch
           fieldName="function"
           label="Function"
           placeholder="Search Function..."
-          //dataLoader={getPlanIdOptions}
+          dataLoader={getFunctionOptions}
           labelField="label"
           valueField="value"
           allowFreeText={true}

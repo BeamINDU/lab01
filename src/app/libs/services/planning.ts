@@ -104,7 +104,7 @@ export const getLotNoOptions = async (q: string) => {
 
 export const getLineNoOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.planning.suggest_lineno}?q=${q}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.planning.suggest_lineid}?q=${q}`);
     
   } catch (error) {
     throw new Error(extractErrorMessage(error));

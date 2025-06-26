@@ -81,6 +81,23 @@ export const upload = async (file: File) => {
   } 
 };
 
+export const getRoleOptions = async (param?: ParamSearch) => { 
+  try {
+    const res =  await api.get<any>(`${API_ROUTES.role.get}?${param}`);
+
+    const mapData: SelectOption[] = (res?.roles ?? [])
+      .filter((item) => item.rolestatus )
+      .map((item) => ({
+        value: item.roleid,
+        label: item.rolename,
+    }));
+
+    return mapData;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+};
+
 export const getRoleNameOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.role.suggest_role_name}?q=${q}`);

@@ -11,7 +11,7 @@ export type User = {
   status: boolean
   statusName?: string
   roleName?: string
-  userRoles?: { roleId: number, roleNmae: string }[]
+  roles?: number[],
   createdDate?: Date
   createdBy?: string
   updatedDate?: Date | null

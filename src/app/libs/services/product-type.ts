@@ -86,22 +86,7 @@ export const upload = async (file: File) => {
 
 export const getProductTypeIdOptions = async (q: string): Promise<SelectOption[]> => {
   try {
-    // return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_id}?q=${q}`);
-
-    // For Test
-    const res = await api.get<any>(`${API_ROUTES.product_type.get}`);
-
-    const result: SelectOption[] = (res?.product_types ?? [])
-      .filter((item) =>
-        item.prodstatus &&
-        item.prodtypeid.toLowerCase().includes(q.toLowerCase())
-      )
-      .map((item) => ({
-        value: item.prodtypeid,
-        label: item.prodtypeid,
-      }));
-
-    return result;
+    return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_id}?q=${q}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }
@@ -109,22 +94,7 @@ export const getProductTypeIdOptions = async (q: string): Promise<SelectOption[]
 
 export const getProductTypeNameOptions = async (q: string): Promise<SelectOption[]> => {
   try {
-    // return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_name}?q=${q}`);
-
-    // For Test
-    const res = await api.get<any>(`${API_ROUTES.product_type.get}`);
-
-    const result: SelectOption[] = (res?.product_types ?? [])
-      .filter((item) =>
-        item.prodstatus &&
-        item.prodtype.toLowerCase().includes(q.toLowerCase())
-      )
-      .map((item) => ({
-        value: item.prodtype,
-        label: item.prodtype,
-      }));
-
-    return result;
+    return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_name}?q=${q}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
