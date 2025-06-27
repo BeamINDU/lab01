@@ -24,7 +24,7 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
           setValue={setValue}
           fieldName="lotNo"
           label="Lot No"
-          placeholder="Search or enter lot number..."
+          placeholder="Search lot number..."
           dataLoader={getLotNoOptions}
           labelField="label"
           valueField="value"

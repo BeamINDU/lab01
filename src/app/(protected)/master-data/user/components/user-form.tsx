@@ -10,15 +10,16 @@ import { useSession } from "next-auth/react";
 import { SelectOption } from "@/app/types/select-option";
 import { getRoleOptions } from '@/app/libs/services/role';
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
-import GoogleStyleSearch from '@/app/components/common/Search';
 
 const UserSchema = z.object({
   id: z.string().optional(),
   userId: z.string().min(1, "User ID is required"),
   username: z.string().min(1, "User name is required"),
+  // password: z.string().min(1, "Password is required").optional(),
+  // confirmPassword: z.string().min(1, "Confirm Password is required").optional(),
   firstname: z.string().min(1, "First name is required"),
   lastname: z.string().min(1, "Last name is required"),
-  email: z.string().min(1, "Email is required"),
+  email: z.string().min(1, "Email is required").email("Invalid email format"),
   status: z.boolean(),
   createdDate: z.union([
     z.coerce.date(),
@@ -38,7 +39,6 @@ interface UserModalProps {
 }
 
 export default function UserFormModal({
-  showModal,
   setShowModal,
   editingData,
   onSave,
@@ -46,7 +46,6 @@ export default function UserFormModal({
 }: UserModalProps) {
   const { data: session } = useSession();
   const [roleOptions, setRoleOptions] = useState<SelectOption[]>([]);
-  const [selectedRole, setSelectedRole] = useState<number[]>([]);
 
   const defaultValues: UserFormValues = {
     id: '',

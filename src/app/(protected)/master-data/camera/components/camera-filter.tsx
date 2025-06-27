@@ -22,7 +22,7 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
           setValue={setValue}
           fieldName="cameraId"
           label="Camera ID"
-          placeholder="Search or enter camera ID..."
+          placeholder="Search camera ID..."
           dataLoader={getCameraIdOptions}
           labelField="label"
           valueField="value"
@@ -35,7 +35,7 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
           setValue={setValue}
           fieldName="cameraName"
           label="Camera Name"
-          placeholder="Search or enter camera name..."
+          placeholder="Search camera name..."
           dataLoader={getCameraNameOptions}
           labelField="label"
           valueField="value"
@@ -50,7 +50,7 @@ export default function CameraFilterForm({ register, setValue, onSearch }: Camer
           setValue={setValue}
           fieldName="location"
           label="Location"
-          placeholder="Search or enter location..."
+          placeholder="Search location..."
           dataLoader={getCameraLocationOptions}
           labelField="label"
           valueField="value"

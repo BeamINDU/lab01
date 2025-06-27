@@ -146,6 +146,10 @@ export default function DetectionModelColumns({
       },
     },
     {
+      accessorKey: "currentStep",
+      header: "Step",
+    },
+    {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (

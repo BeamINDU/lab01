@@ -19,7 +19,7 @@ const PermissionContext = createContext<PermissionContextType | undefined>(undef
 export const PermissionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { data: session, status } = useSession();
   const [userPermissions, setUserPermissions] = useState<UserPermission[]>([]);
-  const [menuTree, setMenuTree] = useState<MenuItem[]>([]); 
+  const [menuTree, setMenuTree] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -53,21 +53,22 @@ export const PermissionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const convertToMenuTree = (permissions: UserPermission[]): MenuItem[] => {
     const map = new Map<string, MenuItem>();
     const root: MenuItem[] = [];
-  
+
     for (const item of permissions) {
-      if (!item.actions.includes(Action.View)) continue;
-  
+      const actions = item.actions.map(Number);
+      if (!actions.includes(Action.View)) continue;
+
       const menuItem: MenuItem = {
         id: item.menuId,
         label: item.menuName,
         icon: item.icon,
         path: item.path || undefined,
-        action: item.actions.length > 0 ? item.actions : undefined,
+        action: item.actions // actions.length > 0 ? actions : undefined,
       };
-  
+
       map.set(item.menuId, menuItem);
-  
-      if (item.parentId === "") {
+
+      if (!item.parentId) {
         root.push(menuItem);
       } else {
         const parent = map.get(item.parentId);
@@ -77,10 +78,8 @@ export const PermissionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         }
       }
     }
-  
     return root;
   };
-  
 
   return (
     <PermissionContext.Provider value={{ userPermissions, hasPermission, menuTree, loading }}>

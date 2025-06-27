@@ -22,11 +22,11 @@ import { usePopupTraining } from '@/app/contexts/popup-training-context';
 import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
 
 type Props = {
-  next: (data: any) => void;
-  prev: () => void;
   modelVersionId: number;
   formData: FormData;
   isEditMode: boolean;
+  next: (data: any) => void;
+  prev: () => void;
 };
 
 // export const step3Schema = z.object({
@@ -522,8 +522,9 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
             </button>
           ) : (
             <button 
-              className="px-4 py-2 btn-primary-dark rounded gap-2 w-32"
+              className="px-4 py-2 btn-primary-dark rounded gap-2 w-32 disabled:bg-gray-400 disabled:cursor-not-allowed"
               onClick={handleNext}
+              disabled={(!isEditMode && (formData.currentStep ?? 0) == 3)}
             >
               Next
             </button>

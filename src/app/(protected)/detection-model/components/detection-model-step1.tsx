@@ -11,10 +11,10 @@ import { SelectOption } from "@/app/types/select-option";
 import { FormData } from "@/app/types/detection-model";
 
 type Props = {
-  next: (data: any) => void;
-  formData: FormData;
   modelVersionId: number;
+  formData: FormData;
   isEditMode: boolean;
+  next: (data: any) => void;
 };
 
 export const step1Schema = z.object({
@@ -169,8 +169,8 @@ export default function DetectionModelStep1({ next, modelVersionId, formData, is
         >
           <button
             type="submit"
-            className="px-4 py-2 btn-primary-dark rounded gap-2 w-32"
-            disabled={isLoading}
+            className="px-4 py-2 btn-primary-dark rounded gap-2 w-32 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            disabled={isLoading || (!isEditMode && (formData.currentStep ?? 0) == 1)}
           >
             Next
           </button>

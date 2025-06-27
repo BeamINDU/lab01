@@ -23,7 +23,7 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
           setValue={setValue}
           fieldName="userId"
           label="User ID"
-          placeholder="Search or enter user ID..."
+          placeholder="Search user ID..."
           dataLoader={getUserIdOptions}
           labelField="label"
           valueField="value"
@@ -36,7 +36,7 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
           setValue={setValue}
           fieldName="userName"
           label="Username"
-          placeholder="Search or enter username..."
+          placeholder="Search username..."
           dataLoader={getUserNameOptions}
           labelField="label"
           valueField="value"

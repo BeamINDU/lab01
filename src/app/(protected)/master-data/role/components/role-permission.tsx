@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { X, Save } from 'lucide-react';
 import { UserPermission } from "@/app/types/user-permissions";
 import { search as searchMenus } from '@/app/libs/services/menu';
-import { search as searchPermissions, update as updatePermissions } from '@/app/libs/services/permission';
+import { searchPermissions, updatePermissions } from '@/app/libs/services/role'; 
 import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 const ACTION_LABELS = {

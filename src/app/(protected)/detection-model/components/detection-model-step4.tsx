@@ -14,12 +14,12 @@ import { usePopupTraining } from '@/app/contexts/popup-training-context';
 import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
 
 type Props = {
-  prev: () => void;
-  next: (data: any) => void;
-  startTraining: () => Promise<boolean>;
-  formData: FormData;
   modelVersionId: number;
+  formData: FormData;
   isEditMode: boolean;
+  next: (data: any) => void;
+  prev: () => void;
+  startTraining?: () => Promise<boolean>;
 };
 
 export const step4Schema = z.object({
@@ -53,7 +53,7 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
           console.info("isTraining", isTraining)
           displayProcessing(`Detection model ${formData.modelName} training...`);
 
-          await startTraining();
+          //await startTraining();
 
           // if(success) {
           //   setIsTraining(false);
@@ -214,9 +214,10 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
         </button>
         {isEditMode && (
           <button 
-            className={`px-4 py-2 rounded gap-2 w-32 ${isTraining ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "btn-primary-dark text-white"}`}
+            // className={`px-4 py-2 rounded gap-2 w-32 ${isTraining ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "btn-primary-dark text-white"}`}
+            className="px-4 py-2 btn-primary-dark rounded gap-2 w-32 disabled:bg-gray-400 disabled:cursor-not-allowed"
             onClick={handleSubmit(onSubmitHandler)}
-            disabled={isTraining}
+            disabled={isTraining || (!isEditMode && (formData.currentStep ?? 0) == 4)}
           >
             Finish
           </button>

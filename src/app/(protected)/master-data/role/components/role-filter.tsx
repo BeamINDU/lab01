@@ -16,26 +16,13 @@ export default function RoleFilterForm({ register, setValue, onSearch }: RoleFil
   return (
     <div className="md:col-span-2 space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Role ID */}
-        {/* <SearchFieldResponsive 
-          register={register}
-          setValue={setValue}
-          fieldName="roleId"
-          label="Role ID"
-          placeholder="Search or enter role ID..."
-          dataLoader={getRoleIdOptions}
-          labelField="label"
-          valueField="value"
-          allowFreeText={true}
-        /> */}
-        
         {/* Role Name  */}
         <SearchFieldResponsive 
           register={register}
           setValue={setValue}
           fieldName="roleName"
           label="Role Name"
-          placeholder="Search or enter role name..."
+          placeholder="Search role name..."
           dataLoader={getRoleNameOptions}
           labelField="label"
           valueField="value"

@@ -23,7 +23,7 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           setValue={setValue}
           fieldName="productId"
           label="Product ID"
-          placeholder="Search or enter product ID..."
+          placeholder="Search product ID..."
           dataLoader={getProductIdOptions}
           labelField="label"
           valueField="value"
@@ -36,7 +36,7 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           setValue={setValue}
           fieldName="productName"
           label="Product Name"
-          placeholder="Search or enter product name..."
+          placeholder="Search product name..."
           dataLoader={getProductNameOptions}
           labelField="label"
           valueField="value"
@@ -64,7 +64,7 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           setValue={setValue}
           fieldName="serialNo"
           label="Serial No"
-          placeholder="Search or enter serial number..."
+          placeholder="Search serial number..."
           dataLoader={getSerialNoOptions}
           labelField="label"
           valueField="value"

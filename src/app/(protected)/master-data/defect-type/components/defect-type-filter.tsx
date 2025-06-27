@@ -22,7 +22,7 @@ export default function DefectTypeFilterForm({ register, setValue, onSearch }: D
           setValue={setValue}
           fieldName="defectTypeId"
           label="Defect Type ID"
-          placeholder="Search or enter defect type ID..."
+          placeholder="Search defect type ID..."
           dataLoader={getDefectTypeIdOptions}
           labelField="label"
           valueField="value"
@@ -35,7 +35,7 @@ export default function DefectTypeFilterForm({ register, setValue, onSearch }: D
           setValue={setValue}
           fieldName="defectTypeName"
           label="Defect Type Name"
-          placeholder="Search or enter defect type name..."
+          placeholder="Search defect type name..."
           dataLoader={getDefectTypeNameOptions}
           labelField="label"
           valueField="value"

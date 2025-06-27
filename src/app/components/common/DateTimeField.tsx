@@ -81,7 +81,7 @@ export default function DateTimeField({
   maxDateTime,
   size = 'small',
   fullWidth = true,
-  fontSize = 'sm',
+  fontSize = 'xs',
   compactMode = false,
   onChange,
   onError,

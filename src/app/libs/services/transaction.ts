@@ -10,9 +10,9 @@ export const search = async (param?: ParamSearch) => {
     
     const mapData: Transaction[] = res?.transaction?.map((item) => ({
       runningNo: item.runningno,
-      startDate: item.startdate,
-      endDate: item.enddate,
-      lotNo: item.lotno,
+      startDate: item.actualstartdatetime,
+      endDate: item.actualenddatetime,
+      lotNo: item.prodlot,
       productId: item.prodid,
       quantity: item.quantity,
       createdDate: item.createddate,
@@ -21,7 +21,7 @@ export const search = async (param?: ParamSearch) => {
       updatedBy: item.updatedby,
     }));
       
-    return res;
+    return mapData;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

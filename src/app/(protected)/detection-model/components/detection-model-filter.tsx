@@ -47,7 +47,7 @@ export default function ProductFilterForm({register, setValue, control, onSearch
           setValue={setValue}
           fieldName="function"
           label="Function"
-          placeholder="Search Function..."
+          placeholder="Search function..."
           dataLoader={getFunctionOptions}
           labelField="label"
           valueField="value"

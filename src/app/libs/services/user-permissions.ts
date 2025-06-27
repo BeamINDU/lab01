@@ -1,7 +1,8 @@
 import { api } from '@/app/utils/api'
+import { API_ROUTES } from '@/app/constants/endpoint';
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 import type { User, UserPermission } from "@/app/types/user-permissions"
 import { Menu, Action } from "@/app/constants/menu"
-import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 // Action
 // View = 1,      // view
@@ -28,6 +29,7 @@ export const mockUserPermission: UserPermission[] =
   { menuId: "RP003", parentId: "RP000", menuName: "Transaction", icon: "", seq: 3, path: "/report/transaction", actions: [1, 6] },
   { menuId: "DM000", parentId: "", menuName: "Detection Model", icon: "detection", seq: 5, path: "/detection-model", actions: [1, 2, 3, 4, 5, 6] },
   { menuId: "PL000", parentId: "", menuName: "Planning", icon: "planning", seq: 6, path: "/planning", actions: [1, 2, 3, 4, 5, 6] },
+  
   { menuId: "L001", parentId: "LI000", menuName: "Zone 1", icon: "", seq: 1, path: "", actions: [1] },
   { menuId: "CAM004", parentId: "L001", menuName: "Camera 4", icon: "", seq: 1, path: "/live/CAM004", actions: [1] },
   { menuId: "L002", parentId: "LI000", menuName: "Zone 2", icon: "", seq: 2, path: "", actions: [1] },
@@ -38,22 +40,35 @@ export const mockUserPermission: UserPermission[] =
 
 export const getPermissions = async (userid: string) => {
   try {
-    return mockUserPermission;
+    const res =  await api.get<any>(`${API_ROUTES.permission.user_permissions}?userid=${userid}`);
+    const mapData: UserPermission[] = res?.map((item) => ({
+      menuId: item.menuid,
+      parentId: item.parentid ?? '',
+      menuName: item.menuname,
+      icon: item.icon,
+      seq: item.seq,
+      path: item.path,
+      actions: item.actions,
+    }));
+    return mapData;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
-}
+};
+
 
 export const validateLogin = async (username: string, password: string) => {
   try {
-    if (username === "admin" && password === "admin") {
-      return {
-        id:"admin",
-        userid: "TH0001",
-        fullname: "Administrator",
-        email: "admin@pi.com",
-      };
-    }
+    // if (username === "admin" && password === "admin") {
+    //   return {
+    //     id:"admin",
+    //     userid: "TH0001",
+    //     fullname: "Administrator",
+    //     email: "admin@pi.com",
+    //   };
+    // }
+    const res =  await api.get<any>(`${API_ROUTES.auth.login}?username=${username}&password=${password}`);
+    return res;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

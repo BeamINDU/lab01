@@ -13,11 +13,11 @@ import { SearchFieldModal } from '@/app/components/common/SearchField';
 import SelectField from '@/app/components/common/SelectField';
 
 type Props = {
+  modelVersionId: number;
+  formData: FormData;
+  isEditMode: boolean;
   next: (data: any) => void;
   prev: () => void;
-  formData: FormData;
-  modelVersionId: number;
-  isEditMode: boolean;
 };
 
 export const step2Schema = z.object({
@@ -268,7 +268,8 @@ export default function DetectionModelStep2Page({ next, prev, modelVersionId, fo
               </button>
               <button 
                 type="submit"
-                className="px-4 py-2 btn-primary-dark rounded gap-2 w-32"
+                className="px-4 py-2 btn-primary-dark rounded gap-2 w-32 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={(!isEditMode && (formData.currentStep ?? 0) == 2)}
               >
                 Next
               </button>

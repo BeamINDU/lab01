@@ -32,7 +32,6 @@ interface FrequentDefectsChartProps {
   error?: string;
 }
 
-// ✅ ปรับปรุง: ใช้ function แทน inline
 const getColorForLine = (lineIndex: number): string => {
   const colors = [
     'rgba(30, 58, 138, 0.8)',
@@ -123,6 +122,9 @@ const FrequentDefectsChart = React.memo<FrequentDefectsChartProps>(({ data, load
           font: { size: 10 },
           padding: 10,
           usePointStyle: true,
+          pointStyle: 'circle',
+          boxWidth: 6,
+          boxHeight: 6,
         }
       },
       tooltip: {

@@ -56,28 +56,19 @@ export const API_ROUTES = {
     suggest_username: "/suggest-username",
   },
   role: {
-    get: "/roles",
-    detail: "",
-    insert: "/add-role", 
-    update: "/update-role",
-    delete: "/delete-role",
-    upload: "/upload-roles",
-    suggest_role_name: "/suggest-role-name",
+    base: "/roles",
+    detail: (id: number) => `/roles/${id}`,
+    upload: "/roles/upload", 
+    suggestions: "/roles/suggestions",
+    permissions: (id: number) => `/roles/${id}/permissions`,
   },
+
   permission: {
-    get: "/permissions",
-    detail: "",
-    insert: "/add_permission", 
-    update: "/update_permission",
-    delete: "/delete_permission", 
+    user_permissions: "/user-permissions",
   },
 
   menu: {
-    get: "/menu",
-    detail: "",
-    insert: "/add_menu", 
-    update: "/update_menu", 
-    delete: "",
+    get: "/menus"
   },
   report_product: {
     get: "/report-product-defect",

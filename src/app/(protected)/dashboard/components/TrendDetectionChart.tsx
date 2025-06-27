@@ -59,7 +59,7 @@ const TrendDetectionChart = React.memo<TrendDetectionChartProps>(({ data, loadin
           label: 'No Data',
           data: [0],
           borderColor: 'rgba(156, 163, 175, 0.8)',
-          backgroundColor: 'rgba(156, 163, 175, 0.1)',
+          backgroundColor: 'rgba(156, 163, 175, 0.8)',
           borderWidth: 2,
           pointRadius: 3,
           tension: 0.4,
@@ -143,11 +143,11 @@ const TrendDetectionChart = React.memo<TrendDetectionChartProps>(({ data, loadin
         position: 'bottom' as const,
         align: 'center' as const,
         labels: {
-          font: { size: 12 },
+          font: { size: 10 },
           padding: 8,
           usePointStyle: true,
-          boxWidth: 8,
-          boxHeight: 8,
+          boxWidth: 6,
+          boxHeight: 6,
         }
       },
       tooltip: {

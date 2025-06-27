@@ -105,7 +105,7 @@ const NGDistributionChart = React.memo<NGDistributionChartProps>(({ data, loadin
       legend: {
         position: 'bottom',
         labels: {
-          font: { size: 12},
+          font: { size: 10},
           padding: 10,
           usePointStyle: true,
           pointStyle: 'circle',
@@ -127,13 +127,7 @@ const NGDistributionChart = React.memo<NGDistributionChartProps>(({ data, loadin
             try {
               const defectType = context.dataset.label;
               const count = context.parsed?.y || 0;
-              const emoji = defectType === 'Crack' ? '🔴' : 
-                           defectType === 'Scratch' ? '🔵' : 
-                           defectType === 'Dent' ? '🟢' : 
-                           defectType === 'Missing' ? '🟡' : 
-                           defectType === 'Broken' ? '🟣' : 
-                           defectType === 'Dirty' ? '🌸' : '⚪';
-              return `${emoji} ${defectType}: ${count}`;
+              return `${defectType}: ${count}`;
             } catch {
               return 'Invalid data';
             }
@@ -194,9 +188,9 @@ const NGDistributionChart = React.memo<NGDistributionChartProps>(({ data, loadin
         },
         grid: { display: false },
         ticks: {
-          font: { size: 11 },
+          font: { size: 10 },
           color: '#6B7280',
-          maxRotation: 0,
+          maxRotation: 45,
         },
       },
       y: {

@@ -10,7 +10,14 @@ interface GoodNGRatioChartProps {
   error?: string;
 }
 
-const COLORS = ['#60a5fa', '#ef4444']; 
+const COLORS = ['#60a5fa', '#ef4444']
+
+const getColorForData = (chartData: any[]) => {
+  if (chartData.length === 1 && chartData[0].name === "No Data") {
+    return ['#9ca3af']; 
+  }
+  return COLORS;
+};
 
 const GoodNGRatioChart = React.memo<GoodNGRatioChartProps>(({ data, loading, error }) => {
   const chartData = useMemo(() => {
@@ -34,6 +41,9 @@ const GoodNGRatioChart = React.memo<GoodNGRatioChartProps>(({ data, loading, err
   }, [data]);
 
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
+  
+  // กำหนดสีตาม chartData
+  const colors = getColorForData(chartData);
 
   const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name, value }: any) => {
     if (value === 0) return null;
@@ -86,63 +96,62 @@ const GoodNGRatioChart = React.memo<GoodNGRatioChartProps>(({ data, loading, err
     </div>
   );
 
-
   console.log('Chart Data:', chartData, 'Total:', total);
 
-return (
-  <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full h-[220px]"> 
-    <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-1"> 
-      Good / NG Ratio
-    </h2>
-    
-    <div className="h-[150px] relative"> 
-      {loading ? (
-        <div className="h-full flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        </div>
-      ) : error ? (
-        <div className="h-full flex items-center justify-center">
-          <p className="text-red-500 text-center text-sm">{error}</p>
-        </div>
-      ) : (
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              labelLine={false} 
-              label={renderCustomizedLabel}
-              outerRadius={40} 
-              innerRadius={20} 
-              fill="#8884d8"
-              dataKey="value"
-              animationDuration={800}
-            >
-              {chartData.map((entry, index) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={COLORS[index % COLORS.length]}
-                  stroke="#ffffff"
-                  strokeWidth={2} 
-                />
-              ))}
-            </Pie>
-            <Tooltip content={<CustomTooltip />} />
-            <Legend
+  return (
+    <div className="p-3 md:p-4 bg-white rounded-xl shadow w-full h-[220px]"> 
+      <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-1"> 
+        Good / NG Ratio
+      </h2>
+      
+      <div className="h-[150px] relative"> 
+        {loading ? (
+          <LoadingState />
+        ) : error ? (
+          <ErrorState />
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false} 
+                label={renderCustomizedLabel}
+                outerRadius={40} 
+                innerRadius={20} 
+                fill="#8884d8"
+                dataKey="value"
+                animationDuration={800}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={colors[index % colors.length]} 
+                    stroke="#ffffff"
+                    strokeWidth={2} 
+                  />
+                ))}
+              </Pie>
+              <Tooltip content={<CustomTooltip />} />
+              <Legend
               verticalAlign="bottom"
               iconType="circle"
               wrapperStyle={{ 
-                bottom: 5, 
-                fontSize: '0.6rem' 
+                bottom: -4, 
+                fontSize: '0.6rem',
+                lineHeight: '1.2'
               }}
+              iconSize={10}        
+              layout="horizontal"  
+              align="center"      
             />
-          </PieChart>
-        </ResponsiveContainer>
-      )}
+            </PieChart>
+          </ResponsiveContainer>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
 });
 
 GoodNGRatioChart.displayName = 'GoodNGRatioChart';

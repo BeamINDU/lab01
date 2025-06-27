@@ -7,7 +7,7 @@ import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { Role, ParamSearch } from "@/app/types/role"
-import { search, detail, create, update, remove, upload } from "@/app/libs/services/role";
+import { search, detail, create, update, remove, upload, saveRolePermissions } from "@/app/libs/services/role"; 
 import { usePermission } from '@/app/contexts/permission-context';
 import { useSession } from "next-auth/react";
 import { Menu, Action } from '@/app/constants/menu';
@@ -20,7 +20,6 @@ import RoleColumns from "./components/role-column";
 import RoleFilterForm from './components/role-filter';
 import RoleFormModal from "./components/role-form";
 import RolePermissionModal from './components/role-permission';
-import { saveRolePermissions } from "@/app/libs/services/role-permission";
 
 export default function Page() {
   const { data: session } = useSession();

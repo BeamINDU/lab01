@@ -34,14 +34,14 @@ interface DefectByCameraChartProps {
 
 const getCameraColor = (cameraIndex: number): string => {
   const colorPalette = [
-    'rgba(59, 130, 246, 0.8)',    // Blue
-    'rgba(34, 197, 94, 0.8)',     // Green  
-    'rgba(239, 68, 68, 0.8)',     // Red
-    'rgba(245, 158, 11, 0.8)',    // Orange
-    'rgba(168, 85, 247, 0.8)',    // Purple
-    'rgba(236, 72, 153, 0.8)',    // Pink
-    'rgba(20, 184, 166, 0.8)',    // Teal
-    'rgba(156, 163, 175, 0.8)',   // Gray
+    'rgba(59, 130, 246, 0.8)',   
+    'rgba(34, 197, 94, 0.8)',     
+    'rgba(239, 68, 68, 0.8)',    
+    'rgba(245, 158, 11, 0.8)',    
+    'rgba(168, 85, 247, 0.8)',  
+    'rgba(236, 72, 153, 0.8)',    
+    'rgba(20, 184, 166, 0.8)',   
+    'rgba(156, 163, 175, 0.8)',  
   ];
   return colorPalette[cameraIndex % colorPalette.length];
 };
@@ -66,7 +66,7 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
       (item.cameraname || item.cameraid) && item.defecttype
     );
 
-    // หา Top 5 cameras ตาม total defects
+
     const cameraTotals = Object.entries(groupBy(validData, item => 
       item.cameraname || item.cameraid || 'Unknown Camera'
     )).map(([cameraName, items]) => ({
@@ -147,6 +147,9 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
           font: { size: 10 },
           padding: 10,
           usePointStyle: true,
+          pointStyle: 'circle',
+          boxWidth: 6,
+          boxHeight: 6,
         }
       },
       tooltip: {

@@ -69,10 +69,6 @@ export default function Sidebar({sidebarOpen, setSidebarOpen, toggleSidebar}: Si
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({})
   
-  // useEffect(() => {
-  //   if (status !== "authenticated") handleLogout();
-  // }, [status]);
-
   const handleLogout = () => {
     signOut({ callbackUrl: "/login" });
   };
@@ -101,7 +97,7 @@ export default function Sidebar({sidebarOpen, setSidebarOpen, toggleSidebar}: Si
   };
 
 
-  const mapIconNameToIcon = (iconName: string): React.ReactNode => {
+  const mapIconNameToIcon = (iconName?: string): React.ReactNode => {
     const iconMap: Record<string, React.ReactNode> = {
       dashboard: <LayoutDashboard className="w-4 h-4 mr-2 text-gray-500" />,
       live: <Camera className="w-4 h-4 mr-2 text-gray-500" />,
@@ -110,7 +106,9 @@ export default function Sidebar({sidebarOpen, setSidebarOpen, toggleSidebar}: Si
       planning: <CalendarCog className="w-4 h-4 mr-2 text-gray-500" />,
       detection: <Boxes className="w-4 h-4 mr-2 text-gray-400" />,
     };
-    return iconMap[iconName.toLowerCase()] || <CircleDot className="w-2 h-2 mr-2 text-gray-400" />;
+
+    const key = iconName?.toLowerCase?.();
+    return iconMap[key || ""] || <CircleDot className="w-2 h-2 mr-2 text-gray-400" />;
   };
 
   const getPaddingByLevel = (level: number) => {
@@ -121,14 +119,14 @@ export default function Sidebar({sidebarOpen, setSidebarOpen, toggleSidebar}: Si
 
   const renderMenu = (items: MenuItem[], level = 0) => (
     <ul className="space-y-1">
-      {items.map((item) => {
+      {items.map((item, index) => {
         const isTopLevel = level === 0;
         const isActive = isMenuActive(item);
         const hasChildren = item.children && item.children.length > 0;
         const padding = getPaddingByLevel(level);
 
         return (
-          <li key={item.label}>
+          <li key={`${index}${item.id}`}>
             <div
               className={`text-md flex items-center justify-between rounded-md cursor-pointer px-2 py-2
                 ${padding}
