@@ -74,6 +74,7 @@ export const API_ROUTES = {
     get: "/report-product-defect",
     detail: "/report-product-defect-detail",
     update: "/update-product-detail",
+    upload: "", 
   },
   report_defect: {
     get: "/report-defect-summary",

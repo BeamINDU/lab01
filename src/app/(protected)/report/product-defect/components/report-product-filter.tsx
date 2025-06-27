@@ -1,13 +1,13 @@
-// src/app/(protected)/report/product-defect/components/report-product-filter.tsx
 'use client';
 
 import { Search } from 'lucide-react'
-import { UseFormRegister, Control, UseFormSetValue } from "react-hook-form";
+import { UseFormRegister, Control, UseFormSetValue, useWatch } from "react-hook-form";
 import SearchFieldResponsive from '@/app/components/common/SearchField';
-import DateTimeField from '@/app/components/common/DateTimeField'; // ✅ ใช้ DateTimeField แทน
+import DateTimeField from '@/app/components/common/DateTimeField';
 import { getProductNameOptions } from "@/app/libs/services/product";
 import { getDefectTypeNameOptions } from "@/app/libs/services/defect-type";
 import { getCameraIdOptions, getCameraNameOptions } from "@/app/libs/services/camera";
+import dayjs from 'dayjs';
 
 interface ReportProductFilterFormProps {
   register: UseFormRegister<any>;
@@ -17,11 +17,15 @@ interface ReportProductFilterFormProps {
 }
 
 export default function ReportProductFilterForm({ register, setValue, control, onSearch }: ReportProductFilterFormProps) {
+
+  const dateFrom = useWatch({ control, name: 'dateFrom' });
+  const dateTo = useWatch({ control, name: 'dateTo' });
+
   return (
     <div className="md:col-span-2 space-y-4">
       {/* Date Range Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {/* ✅ Date From - ใช้ DateTimeField */}
+        {/* Date From - ใช้ DateTimeField */}
         <DateTimeField
           control={control}
           fieldName="dateFrom"
@@ -33,9 +37,10 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           timeSteps={{ minutes: 1 }}
           closeOnSelect={false}
           className="w-full"
+          maxDate={dateTo ? dayjs(dateTo) : undefined}
         />
         
-        {/* ✅ Date To - ใช้ DateTimeField */}
+        {/* Date To - ใช้ DateTimeField */}
         <DateTimeField
           control={control}
           fieldName="dateTo"
@@ -47,6 +52,7 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           timeSteps={{ minutes: 1 }}
           closeOnSelect={false}
           className="w-full"
+          minDate={dateFrom ? dayjs(dateFrom) : undefined}
         />
         
         {/* Camera ID - ใช้ Camera Options */}

@@ -1,11 +1,12 @@
 'use client';
 
 import { Search } from 'lucide-react'
-import { UseFormRegister, Control, UseFormSetValue } from "react-hook-form";
-import SearchFieldResponsive  from '@/app/components/common/SearchField';
+import { UseFormRegister, Control, UseFormSetValue, useWatch } from "react-hook-form";
+import SearchFieldResponsive from '@/app/components/common/SearchField';
 import DateTimeField from '@/app/components/common/DateTimeField';
 import { getPlanIdOptions, getLotNoOptions, getLineNoOptions } from "@/app/libs/services/planning";
 import { getProductIdOptions } from "@/app/libs/services/product";
+import dayjs from 'dayjs';
 
 interface PlanningFilterFormProps {
   register: UseFormRegister<any>;
@@ -15,25 +16,28 @@ interface PlanningFilterFormProps {
 }
 
 export default function PlanningFilterForm({ register, setValue, control, onSearch }: PlanningFilterFormProps) {
+  const dateFrom = useWatch({ control, name: 'dateFrom' });
+  const dateTo = useWatch({ control, name: 'dateTo' });
+
   return (
     <div className="md:col-span-2 space-y-4">
       {/* Date Range Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {/*  Date From */}
+        {/* Date From */}
         <DateTimeField
           control={control}
           fieldName="dateFrom"
           label="Date From"
-          //placeholder="YYYY-MM-DD HH:mm"
           variant="datetime"
           format="YYYY-MM-DD HH:mm"
           ampm={false}
           timeSteps={{ minutes: 1 }}
           closeOnSelect={false}
           className="w-full"
-          
+          maxDate={dateTo ? dayjs(dateTo) : undefined}
         />
-        {/*  Date To  */}
+        
+        {/* Date To */}
         <DateTimeField
           control={control}
           fieldName="dateTo"
@@ -45,7 +49,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           timeSteps={{ minutes: 1 }}
           closeOnSelect={false}
           className="w-full"
-          
+          minDate={dateFrom ? dayjs(dateFrom) : undefined} 
         />
       </div>
       

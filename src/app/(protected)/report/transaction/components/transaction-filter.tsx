@@ -1,11 +1,12 @@
 'use client';
 
 import { Search } from 'lucide-react'
-import { UseFormRegister, Control, UseFormSetValue } from "react-hook-form";
+import { UseFormRegister, Control, UseFormSetValue, useWatch } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
 import DateTimeField from '@/app/components/common/DateTimeField'; 
 import { getProductIdOptions } from "@/app/libs/services/product";
 import { getLotNoOptions } from "@/app/libs/services/transaction";
+import dayjs from 'dayjs';
 
 interface TransactionFilterFormProps {
   register: UseFormRegister<any>;
@@ -15,11 +16,15 @@ interface TransactionFilterFormProps {
 }
 
 export default function TransactionFilterForm({ register, setValue, control, onSearch }: TransactionFilterFormProps) {
+
+  const dateFrom = useWatch({ control, name: 'dateFrom' });
+  const dateTo = useWatch({ control, name: 'dateTo' });
+
   return (
     <div className="md:col-span-2 space-y-4">
       {/* Date Range Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {/*  Date From  */}
+        {/* Date From */}
         <DateTimeField
           control={control}
           fieldName="dateFrom"
@@ -31,9 +36,10 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           timeSteps={{ minutes: 1 }}
           closeOnSelect={false}
           className="w-full"
+          maxDate={dateTo ? dayjs(dateTo) : undefined}
         />
         
-        {/*  Date To  */}
+        {/* Date To */}
         <DateTimeField
           control={control}
           fieldName="dateTo"
@@ -45,6 +51,7 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           timeSteps={{ minutes: 1 }}
           closeOnSelect={false}
           className="w-full"
+          minDate={dateFrom ? dayjs(dateFrom) : undefined}
         />
       </div>
       
