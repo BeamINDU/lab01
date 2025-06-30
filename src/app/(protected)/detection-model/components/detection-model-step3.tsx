@@ -11,8 +11,9 @@ import { Menu, Action } from '@/app/constants/menu';
 import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { SelectOption } from "@/app/types/select-option";
 import { ShapeType } from "@/app/constants/shape-type";
-import { FormData, DetectionModel, ModelPicture, Annotation } from "@/app/types/detection-model";
-import { updateStep3, getPicture, annotateImage } from "@/app/libs/services/detection-model";
+import { FormData, DetectionModel, ModelPicture } from "@/app/types/detection-model";
+import type { Annotation, RectangleAnnotation, CircleAnnotation, PolygonAnnotation, PointAnnotation } from "@/app/types/annotation";
+import { updateStep3, removeImage, getImage, annotateImage } from "@/app/libs/services/detection-model";
 import { useSession } from "next-auth/react";
 import ImageLoading from "@/app/components/loading/ImageLoading";
 import SpinnerLoading from "@/app/components/loading/SpinnerLoading";
@@ -29,12 +30,6 @@ type Props = {
   prev: () => void;
 };
 
-// export const step3Schema = z.object({
-//   modelVersionId: z.number(),
-// });
-
-// type Step3Data = z.infer<typeof step2Schema>;
-
 export default function DetectionModelStep3Page({ next, prev, modelVersionId, formData, isEditMode }: Props) {
   const { data: session } = useSession();
   const { hasPermission } = usePermission();
@@ -48,34 +43,15 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [imageObj, setImageObj] = useState<HTMLImageElement | null>(null);
   const { isTraining } = useTrainingSocketStore();
-
-  // const defaultValues: Step2Data = {
-  //   modelVersionId: modelVersionId,
-  // };
-
-  const {
-    register, 
-    getValues, 
-    setValue, 
-    reset,
-    handleSubmit, 
-    clearErrors,
-    formState: { errors },
-  } = useForm ({
-    // resolver: zodResolver(step2Schema),
-    // defaultValues
-  });
+  // const { register, getValues, setValue, reset, handleSubmit, clearErrors, formState: { errors } } = useForm ();
 
   useEffect(() => {
     const fetchPicture = async () => {
       try {
-        const result = await getPicture();
+        const result = await getImage(modelVersionId);
         setPictureList(result);
         setSelectedPicture(result[0]);
         handlePreview(result[0]);
-        // reset({
-        //   modelVersionId: modelVersionId,
-        // });
       } catch (error) {
         console.error("Failed to load picture:", error);
       }
@@ -87,69 +63,63 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
     stageRef.current?.batchDraw();
   }, [annotations, imageObj]);
 
-  const renderAnnotation = (ann) => {
-    // Calculate label position
-    let labelX = ann.startX;
-    let labelY = ann.startY - 15;
+  const renderAnnotation = (ann: Annotation) => {
+    let labelX = 0;
+    let labelY = 0;
 
-    if (ann.type === 'rectangle') {
-      labelX = ann.startX + ann.width / 2;
-      labelY = ann.startY - 15;
-    } else if (ann.type === 'circle') {
-      labelX = ann.startX;
-      labelY = ann.startY - ann.radius - 15;
+    switch (ann.type) {
+      case 'rectangle':
+        labelX = (ann.bbox[0] + ann.bbox[2]) / 2;
+        labelY = ann.bbox[1] - 15;
+        break;
+      case 'circle':
+        labelX = ann.center[0];
+        labelY = ann.center[1] - ann.radius - 15;
+        break;
+      case 'polygon':
+        [labelX, labelY] = ann.points[0] ?? [0, 0];
+        labelY -= 15;
+        break;
+      case 'point':
+        [labelX, labelY] = ann.position;
+        labelY -= 15;
+        break;
     }
 
     return (
       <Group key={ann.id}>
-        {/* Annotation shape */}
+        {/* Rectangle */}
         {ann.type === 'rectangle' && (
           <Rect
             id={ann.id}
-            x={ann.startX}
-            y={ann.startY}
-            width={ann.width}
-            height={ann.height}
+            x={ann.bbox[0]}
+            y={ann.bbox[1]}
+            width={ann.bbox[2] - ann.bbox[0]}
+            height={ann.bbox[3] - ann.bbox[1]}
             fill={ann.color + '33'}
             stroke={ann.color}
             strokeWidth={2}
-            onDragEnd={(e) => {
-              const node = e.target;
-              const updatedAnn = {
-                ...ann,
-                startX: node.x(),
-                startY: node.y(),
-              };
-              setAnnotations(annotations?.map(a => a.id === ann.id ? updatedAnn : a));
-            }}
           />
         )}
 
+        {/* Circle */}
         {ann.type === 'circle' && (
           <Circle
             id={ann.id}
-            x={ann.startX}
-            y={ann.startY}
+            x={ann.center[0]}
+            y={ann.center[1]}
             radius={ann.radius}
             fill={ann.color + '33'}
             stroke={ann.color}
             strokeWidth={2}
-            onDragEnd={(e) => {
-              const node = e.target;
-              const updatedAnn = {
-                ...ann,
-                startX: node.x(),
-                startY: node.y(),
-              };
-              setAnnotations(annotations?.map(a => a.id === ann.id ? updatedAnn : a));
-            }}
           />
         )}
 
+        {/* Polygon */}
         {ann.type === 'polygon' && ann.points.length > 2 && (
           <Line
             id={ann.id}
-            points={ann.points}
+            points={ann.points.flat()}
             fill={ann.color + '33'}
             stroke={ann.color}
             strokeWidth={2}
@@ -157,18 +127,30 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
           />
         )}
 
-        {/* Label */}
-        {ann.label && (
+        {/* Point */}
+        {ann.type === 'point' && (
+          <Circle
+            id={ann.id}
+            x={ann.position[0]}
+            y={ann.position[1]}
+            radius={5}
+            fill={ann.color}
+            stroke={ann.color}
+          />
+        )}
+
+        {/* Label for all types */}
+        {ann.class && (
           <Text
             x={labelX}
             y={labelY}
-            text={ann.label?.name}
+            text={ann.class.name}
             fontSize={14}
             fontStyle="bold"
             fill={ann.color}
             align="center"
             verticalAlign="top"
-            offsetX={(ann.label?.name.length || 0) * 3.5}
+            offsetX={(ann.class.name.length || 0) * 3.5}
           />
         )}
       </Group>
@@ -210,8 +192,8 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
       newImages.push({ 
         id: null,
         name: file.name, 
-        url: imageUrl,
         file: file,
+        url: imageUrl,
         refId: nanoid(),
       });
     }
@@ -225,10 +207,11 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
     e.target.value = "";
   };
   
-  const handleDelete = async (index: number) => {
+  const handleDelete = async (imageid: number, index: number) => {
     const result = await showConfirm('Are you sure you want to delete this image?');
     if (result.isConfirmed) {
-      // Call API
+      if(imageid !== null)
+        await removeImage(imageid);
 
       setPictureList((prev) => {
         const toDelete = prev[index];
@@ -253,12 +236,12 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
       setImageObj(img);
     };
 
-    if (!image.url) return;
+    if (!image?.url) return;
     img.src = image.url;
     
     setIsImageLoading(false);
 
-    setAnnotations(image.annotations ?? []);
+    setAnnotations(image.annotate ?? []);
     
   };
 
@@ -266,79 +249,22 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
     const updateAnnotations = editData.map((pic) => {
       return {
         ...pic,
-        annotations: [...(pic.annotations ?? [])],
+        annotations: [...(pic.annotate ?? [])],
       };
     });
+
     setPictureList(updateAnnotations);
 
     if (selectedPicture?.refId) {
       const updatedSelected = updateAnnotations.find(c => c.refId === selectedPicture.refId);
+
       if (!updatedSelected) return;
 
       handlePreview(updatedSelected);
     }
 
-    const jsonData = editData?.flatMap((img) =>
-      img.annotations?.map((ann) => {
-        const base = {
-          id: ann.id,
-          type: ann.type,
-          color: ann.color,
-          class: {
-            id: ann.label?.id || "",
-            name: ann.label?.name || "",
-          },
-        };
-
-        const arrayPoints: [number, number][] = Array.isArray(ann.points)
-          ? ann.points.reduce<[number, number][]>((acc, val, i) => {
-              if (i % 2 === 0 && ann.points[i + 1] !== undefined) {
-                acc.push([val, ann.points[i + 1]]);
-              }
-              return acc;
-            }, [])
-          : [];
-
-        switch (ann.type) {
-          case 'rectangle':
-            return {
-              ...base,
-              bbox: [
-                ann.startX,                     // x_min
-                ann.startY,                     // y_min
-                ann.startX + ann.width,         // x_max
-                ann.startY + ann.height         // y_max
-              ],
-              // bbox: [
-              //   ann.startX - ann.height,          // x_min
-              //   ann.startY - ann.width,           // y_min
-              //   ann.startX + ann.width,           // x_max
-              //   ann.startY + ann.height           // y_max
-              // ],
-            };
-          case 'circle':
-            return {
-              ...base,
-              center: [ann.startX, ann.startY],
-              radius: ann.radius,
-            };
-          case 'polygon':
-            return {
-              ...base,
-              points: arrayPoints,
-            };
-          case 'point':
-            return {
-              ...base,
-              position: [ann.startX, ann.startY],
-            };
-          default:
-            return base;
-        }
-      }) || []
-    );
-    exportJson(jsonData);
-
+    console.log("editData", editData);
+    // exportJson(editData);
     setIsOpenAnnotation(false);
   };
 
@@ -448,7 +374,7 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
                               Edit <SquarePen size={14} /> 
                             </button>
                             <button 
-                              onClick={() => handleDelete(index)}
+                              onClick={() => handleDelete(img.id ?? 0, index)}
                               className="bg-red-500 text-xs text-white px-2 py-1 rounded flex items-center gap-1">
                               Delete <Trash2 size={14} /> 
                             </button>
@@ -491,7 +417,7 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
                           fillPatternScaleY={stageHeight / imageObj.height}
                         />
                       )}
-                      {annotations.map(ann => renderAnnotation(ann))}
+                      {annotations?.map(ann => renderAnnotation(ann))}
                     </Layer>
                   </Stage>
                 )}
@@ -538,6 +464,10 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
           canEdit={hasPermission(Menu.Planning, Action.Edit)}
           onClose={() => setIsOpenAnnotation(false)}
           onSave={handleSaveAnnotation}
+          modelVersionId={modelVersionId}
+          productId={formData?.productId}
+          cameraId={formData?.cameraId ?? ''}
+          modelId={formData?.modelId ?? 0}
           data={pictureList}
           editPicture={editPicture ?? pictureList?.[0]}
         />

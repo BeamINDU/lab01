@@ -8,7 +8,7 @@ import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { DetectionModel, ParamSearch } from "@/app/types/detection-model"
-import { search, create, remove } from "@/app/libs/services/detection-model";
+import { search, create, removeModel } from "@/app/libs/services/detection-model";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
 import { extractErrorMessage } from '@/app/utils/errorHandler';
@@ -99,7 +99,7 @@ export default function Page() {
     if (result.isConfirmed) {
       try {
         for (const modelId of selectedIds) {
-          await remove(modelId);
+          await removeModel(modelId);
         }
         setData(prev => prev.filter(item => !selectedIds.includes(item.modelId ?? 0)));
         setSelectedIds([]);

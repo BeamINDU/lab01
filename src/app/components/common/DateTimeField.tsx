@@ -28,7 +28,7 @@ interface DateTimeFieldProps {
   maxDate?: Dayjs | Date | string;
   size?: 'small' | 'medium';
   fullWidth?: boolean;
-  inputFontSize?: string; 
+  inputFontSize?: string;
   onChange?: (value: Dayjs | null) => void;
   onError?: (error: any) => void;
   onClear?: () => void; 
@@ -52,13 +52,13 @@ export default function DateTimeField({
   maxDate,
   size = 'small',
   fullWidth = true,
-  inputFontSize = '12px', 
+  inputFontSize = '14px',
   onChange,
   onError,
   onClear
 }: DateTimeFieldProps) {
   
-  // กำหนด format ตาม variant
+
   const getFormat = () => {
     if (format) return format;
     switch (variant) {
@@ -68,10 +68,8 @@ export default function DateTimeField({
     }
   };
 
-  // กำหนด placeholder
   const getPlaceholder = () => placeholder || getFormat();
 
-  // ฟังก์ชันสำหรับ clear ค่า
   const handleClear = (field: any, e: React.MouseEvent) => {
     e.stopPropagation();
     field.onChange(null);
@@ -104,7 +102,7 @@ export default function DateTimeField({
           inputProps: {
             style: {
               fontSize: inputFontSize,
-              padding: '4px 8px',
+              padding: '8px 12px',
               height: 'auto',
               lineHeight: '1.2'
             }
@@ -112,7 +110,7 @@ export default function DateTimeField({
           InputProps: {
             style: {
               fontSize: inputFontSize,
-              minHeight: '28px',
+              minHeight: '40px',
               height: 'auto'
             },
             ...(allowClear && hasValue && !disabled ? {

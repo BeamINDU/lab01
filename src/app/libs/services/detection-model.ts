@@ -1,8 +1,9 @@
 import { api } from '@/app/utils/api'
 import { API_ROUTES } from "@/app/constants/endpoint";
-import type { DetectionModel, ParamSearch, ModelPicture, FormData } from "@/app/types/detection-model"
+import type { DetectionModel, ParamSearch, FormData, ModelPicture } from "@/app/types/detection-model"
 import { SelectOption, } from "@/app/types/select-option";
 import { extractErrorMessage } from '@/app/utils/errorHandler';
+import { JsonWebTokenError } from 'jsonwebtoken';
 
 // const mockData: DetectionModel[] = Array.from({ length: 5 }, (_, i) => ({
 //   modelId: i+1,
@@ -36,6 +37,8 @@ import { extractErrorMessage } from '@/app/utils/errorHandler';
 //     version: 1,
 //   };
 // };
+
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
 export const search = async (param?: ParamSearch) => { 
   try {
@@ -116,17 +119,25 @@ export const create = async (param: Partial<DetectionModel>) => {
   }  
 };
 
-export const remove = async (modelid: number) => {
+export const removeModel = async (modelid: number) => {
    try {
-    return await api.delete<DetectionModel>(`${API_ROUTES.detection_model.delete}?modelid=${modelid}`);
+    return await api.delete<DetectionModel>(`${API_ROUTES.detection_model.delete_model}?modelid=${modelid}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
 };
 
-export const updateStep1 = async (modelVersioniId: number, param: Partial<FormData>) => {
+export const removeImage = async (imageid: number) => {
+   try {
+    return await api.delete<DetectionModel>(`${API_ROUTES.detection_model.delete_image}?imageid=${imageid}`);
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+};
+
+export const updateStep1 = async (modelversionid: number, param: Partial<FormData>) => {
   try {
-    const res = await api.put<any>(`${API_ROUTES.detection_model.update_step1}?modelversionid=${modelVersioniId}`, {
+    const res = await api.put<any>(`${API_ROUTES.detection_model.update_step1}?modelversionid=${modelversionid}`, {
       modelId: param.modelId,
       functions: param.functions,
       updatedBy: param.updatedBy
@@ -141,9 +152,9 @@ export const updateStep1 = async (modelVersioniId: number, param: Partial<FormDa
   } 
 };
 
-export const updateStep2 = async (modelVersioniId: number, param: Partial<FormData>) => {
+export const updateStep2 = async (modelversionid: number, param: Partial<FormData>) => {
   try {
-    const res = await api.put<any>(`${API_ROUTES.detection_model.update_step2}?modelversionid=${modelVersioniId}`, {
+    const res = await api.put<any>(`${API_ROUTES.detection_model.update_step2}?modelversionid=${modelversionid}`, {
       modelId: param.modelId,
       modelName: param.modelName,
       ProductId: param.productId,
@@ -164,9 +175,9 @@ export const updateStep2 = async (modelVersioniId: number, param: Partial<FormDa
   } 
 };
 
-export const updateStep3 = async (modelVersioniId: number, param: Partial<FormData>) => {
+export const updateStep3 = async (modelversionid: number, param: Partial<FormData>) => {
   try {
-    const res = await api.put<any>(`${API_ROUTES.detection_model.update_step3}?modelversionid=${modelVersioniId}`, {
+    const res = await api.put<any>(`${API_ROUTES.detection_model.update_step3}?modelversionid=${modelversionid}`, {
       modelId: param.modelId,
       updatedBy: param.updatedBy
     });
@@ -179,9 +190,9 @@ export const updateStep3 = async (modelVersioniId: number, param: Partial<FormDa
   } 
 };
 
-export const updateStep4 = async (modelVersioniId: number, param: Partial<FormData>) => {
+export const updateStep4 = async (modelversionid: number, param: Partial<FormData>) => {
   try {
-    const res = await api.put<any>(`${API_ROUTES.detection_model.update_step4}?modelversionid=${modelVersioniId}`, {
+    const res = await api.put<any>(`${API_ROUTES.detection_model.update_step4}?modelversionid=${modelversionid}`, {
       modelId: param.modelId,
       version: param.version,
       updatedBy: param.updatedBy
@@ -195,30 +206,85 @@ export const updateStep4 = async (modelVersioniId: number, param: Partial<FormDa
   } 
 };
 
-export const annotateImage = async (modelVersioniId: number, param: Partial<FormData>) => {
+export const annotateImage = async (
+  param: {
+    imageId?: number;
+    modelVersionId: number;
+    productId: string;
+    cameraId: string;
+    modelId: number;
+    updatedBy: string;
+    annotate: any;
+    file?: File;
+  }
+) => {
   try {
-    const res = await api.put<any>(`${API_ROUTES.detection_model.annotate_image}`, {
-      modelVersioniId: modelVersioniId,
+    const formData = new FormData();
+
+    if (param.imageId !== undefined && param.imageId !== null) {
+      formData.append('imageid', param.imageId.toString());
+    }
+
+    formData.append('modelversionid', param.modelVersionId.toString());
+    formData.append('prodid', param.productId);
+    formData.append('cameraid', param.cameraId);
+    formData.append('modelid', param.modelId.toString());
+    formData.append('updatedby', param.updatedBy);
+    formData.append('annotate', param.annotate);
+
+    if (!param.imageId && !param.file) {
+      throw new Error("File must be provided when inserting new image.");
+    }
+
+    if (param.file) {
+      formData.append('file', param.file);
+    }
+
+    const res = await api.upload<any>(`${API_ROUTES.detection_model.upload_image_file}`, formData);
+    
+    return {
+      ...param,
+      id: res.imageid,
+      name: res.imagename,
+      file: res.file,
+      url: `${baseURL}/${res.imagepath.replace(/\\/g, "/")}`,
+      annotations: param.annotate,
+      refId: res.imageid,
+    };
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }
+};
+
+export const uploadBase64Image = async (modelversionid: number, param: Partial<FormData>) => {
+  try {
+    const res = await api.post<any>(`${API_ROUTES.detection_model.upload_base64_image}`, {
+      modelVersionId: modelversionid,
       productId: param.productId,
       cameraId: param.cameraId,
       modelId: param.modelId,
+      updatedBy: param.updatedBy,
+      annotate: param.annotate,
       filename: param.fileName,
       base64: param.base64,
-      annotate: param.annotate,
-      updatedBy: param.updatedBy
     });
     return {
       ...param,
-      modelVersionId: res.modelversionid,
+      id: res.imageid,
+      name: res.imagename,
+      file: res.file,
+      url:  `${baseURL}/${res.imagepath.replace(/\\/g, "/")}`,
+      annotations: param.annotate,
+      refId: res.imageid
     };
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   } 
 };
 
-export const getModelFunction = async (modelversionId: number) => {
+export const getModelFunction = async (modelversionid: number) => {
   try {
-    const res =  await api.get<any>(`${API_ROUTES.detection_model.model_function}?modelversionid=${modelversionId }`);
+    const res =  await api.get<any>(`${API_ROUTES.detection_model.model_function}?modelversionid=${modelversionid }`);
     const functionIds = res?.map((item) => item.functionid);
     return functionIds;
   } catch (error) {
@@ -226,9 +292,9 @@ export const getModelFunction = async (modelversionId: number) => {
   }  
 };
 
-export const getModelVersion = async (modelversionId: number) => {
+export const getModelVersion = async (modelversionid: number) => {
   try {
-    const res =  await api.get<any>(`${API_ROUTES.detection_model.model_version}?modelversionid=${modelversionId }`);
+    const res =  await api.get<any>(`${API_ROUTES.detection_model.model_version}?modelversionid=${modelversionid }`);
     return {
       modelVersionId: res.modelversionid,
       modelId: res.modelid,
@@ -307,49 +373,22 @@ export const getCamera = async () => {
   } 
 };
 
-export const getPicture = async () => {
+export const getImage = async (modelversionid: number) => {
   try {
-    return [
-      { 
-        id: 1, 
-        refId: `1`,
-        name: "photos-random-1.png", 
-        url: "https://picsum.photos/800/600?random=1",
-        // file:  await urlToFile("https://picsum.photos/800/600?random=1", "photos-random-1.png"),
-        annotations: [
-          {
-            "id": "annotation-1748887785393",
-            "type": "rectangle",
-            "color": "#FF5722",
-            "startX": 116,
-            "startY": 95.125,
-            "width": 122,
-            "height": 93,
-            "radius": 0,
-            "points": [],
-            "label": {
-              "id": "1",
-              "name": "defect"
-            }
-          },
-          {
-            "id": "annotation-1748887794637",
-            "type": "circle",
-            "color": "#00ff58",
-            "startX": 343,
-            "startY": 265.125,
-            "width": 0,
-            "height": 0,
-            "radius": 59.54829972383762,
-            "points": [],
-            "label": {
-              "id": "2",
-              "name": "scratch"
-            }
-          }
-        ]
-      },
-    ] as ModelPicture[];
+    const res = await api.get<any>(`${API_ROUTES.detection_model.model_image}?modelversionid=${modelversionid }`);
+    const mapData: ModelPicture[] = res?.map((item) => {
+      const relativePath = item.imagepath.replace(/\\/g, "/");
+      const imageUrl = `${baseURL}/${relativePath}`;
+      return {
+          id: item.imageid,
+          name: item.imagename,
+          file: item.file,
+          url: imageUrl,
+          annotate: safeParseJSON(item.annotate),
+          refId: item.imageid,
+      };
+    });    
+    return mapData;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   } 
@@ -369,4 +408,15 @@ export const getFunctionOptions = async (q: string) => {
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
+};
+
+const safeParseJSON = (data: string | null): any[] => {
+  try {
+    if (!data || data === 'null') return [];
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    console.warn('Invalid JSON in annotate:', data);
+    return [];
+  }
 };

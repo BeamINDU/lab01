@@ -13,7 +13,7 @@ export interface UpdatePermissionRequest {
 export const search = async (param?: ParamSearch) => { 
   try {
     const queryString = param ? `?${new URLSearchParams(param as any).toString()}` : '';
-    const res = await api.get<any>(`${API_ROUTES.role.base}${queryString}`);
+    const res = await api.get<any>(`${API_ROUTES.role.get}${queryString}`);
     return res?.roles?.map((item: any) => ({
       id: item.roleid,
       roleName: item.rolename,
@@ -32,7 +32,7 @@ export const search = async (param?: ParamSearch) => {
 
 export const detail = async (id: number) => {
   try {
-    return await api.get<Role>(`${API_ROUTES.role.detail(id)}`);
+    return await api.get<Role>(`${API_ROUTES.role.detail}/${id}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -40,7 +40,7 @@ export const detail = async (id: number) => {
 
 export const create = async (param: Partial<Role>) => {
   try {
-    const res = await api.post<any>(`${API_ROUTES.role.base}`, param);
+    const res = await api.post<any>(`${API_ROUTES.role.insert}`, param);
     return {
       ...param,
       id: res.roleid,
@@ -54,7 +54,7 @@ export const create = async (param: Partial<Role>) => {
 
 export const update = async (id: number, param: Partial<Role>) => {
   try {
-    const res = await api.put<any>(`${API_ROUTES.role.detail(id)}`, param);
+    const res = await api.put<any>(`${API_ROUTES.role.update}?roleid=${id}`, param);
     return {
       ...param,
       statusName: param.status ? 'Active' : 'Inactive',
@@ -67,7 +67,7 @@ export const update = async (id: number, param: Partial<Role>) => {
 
 export const remove = async (id: number) => {
   try {
-    return await api.delete<Role>(`${API_ROUTES.role.detail(id)}`);
+    return await api.delete<Role>(`${API_ROUTES.role.delete}?roleid=${id}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -87,7 +87,7 @@ export const upload = async (uploadby: string, file: File) => {
 export const getRoleOptions = async (param?: ParamSearch) => { 
   try {
     const queryString = param ? `?${new URLSearchParams(param as any).toString()}` : '';
-    const res = await api.get<any>(`${API_ROUTES.role.base}${queryString}`);
+    const res = await api.get<any>(`${API_ROUTES.role.get}${queryString}`);
     return (res?.roles ?? [])
       .filter((item: any) => item.rolestatus)
       .map((item: any) => ({ label: item.rolename, value: item.roleid }));
@@ -98,7 +98,7 @@ export const getRoleOptions = async (param?: ParamSearch) => {
 
 export const getRoleNameOptions = async (q: string) => {
   try {
-    return await api.get<SelectOption[]>(`${API_ROUTES.role.suggestions}?q=${q}`);
+    return await api.get<SelectOption[]>(`${API_ROUTES.role.suggest_role_name}?q=${q}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -120,7 +120,7 @@ const mapPermissionData = (data: any[]): UserPermission[] =>
 
 export const searchPermissions = async (roleId: number) => {
   try {
-    const res = await api.get<any>(`${API_ROUTES.role.permissions(roleId)}`);
+    const res = await api.put<any>(`${API_ROUTES.role.permissions_get}?roleid=${roleId}`);
     const permissionData = res?.permissions || res?.data || (Array.isArray(res) ? res : []);
     return mapPermissionData(permissionData);
   } catch (error) {
@@ -131,7 +131,7 @@ export const searchPermissions = async (roleId: number) => {
 
 export const updatePermissions = async (roleId: number, param: UpdatePermissionRequest) => {
   try {
-    await api.put<any>(`${API_ROUTES.role.permissions(roleId)}`, param);
+    await api.put<any>(`${API_ROUTES.role.permissions_update}?roleid=${roleId}`, param);
     return { ...param, updatedDate: new Date() };
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -140,7 +140,7 @@ export const updatePermissions = async (roleId: number, param: UpdatePermissionR
 
 export const getRolePermissions = async (roleId: number): Promise<UserPermission[]> => {
   try {
-    const res = await api.get<any>(`${API_ROUTES.role.permissions(roleId)}`);
+    const res = await api.put<any>(`${API_ROUTES.role.permissions_get}?roleid=${roleId}`);
     const permissionData = res?.permissions || res?.data || (Array.isArray(res) ? res : []);
     return mapPermissionData(permissionData);
   } catch (error) {
@@ -150,7 +150,7 @@ export const getRolePermissions = async (roleId: number): Promise<UserPermission
 
 export const saveRolePermissions = async (roleId: number, permissions: {menuId: string, actions: number[]}[]): Promise<void> => {
   try {
-    await api.put<any>(`${API_ROUTES.role.permissions(roleId)}`, { roleId, permissions });
+    await api.put<any>(`${API_ROUTES.role.permissions_update}?roleid=${roleId}`, { roleId, permissions });
   } catch (error) {
     throw new Error(`Failed to save role permissions: ${extractErrorMessage(error)}`);
   }

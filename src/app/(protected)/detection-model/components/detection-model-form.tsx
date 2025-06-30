@@ -48,8 +48,8 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
   useEffect(() => {
     const fetchModelVersion = async () => {
       try {
-        const result = await getModelVersion(modelVersionId);
-        const currentStep = Math.max(result?.currentStep ?? 0, 1);
+        const modelVersion = await getModelVersion(modelVersionId);
+        const currentStep = Math.max(modelVersion?.currentStep ?? 0, 1);
         const allowedMaxStep = isEditMode ? 4 : currentStep;
 
         setMaxStep(allowedMaxStep);
@@ -59,11 +59,13 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
         setFormData(prev => ({
           ...prev,
           currentStep: currentStep,
-          currentVersion: result?.currentVersion,
+          currentVersion: modelVersion?.currentVersion,
           modelVersionId,
-          modelId: result?.modelId,
-          modelName: result?.modelName,
-          statusId: result?.statusId,
+          modelId: modelVersion?.modelId,
+          modelName: modelVersion?.modelName,
+          statusId: modelVersion?.statusId,
+          productId: modelVersion.productId,
+          cameraId: modelVersion.cameraId ?? '',
         }));
       } catch (error) {
         console.error("Failed to load model:", error);

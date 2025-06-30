@@ -1,5 +1,4 @@
-import { ClassName } from "@/app/types/class-name";
-import { ShapeType } from "@/app/constants/shape-type";
+import { Annotation } from "@/app/types/annotation";
 
 export type DetectionModel = {
   modelId?: number | null,
@@ -41,37 +40,30 @@ export type FormData = {
   cameraId?: string | undefined,
   version?: number,
   updatedBy?: string | null,
+  annotate?: string | null,
   fileName?: string | null,
   base64?: string | null,
-  annotate?: string | null,
+  file?: File| null,
 };
 
 export type ModelPicture = {
   id?: number | null,
   name: string,
   file?: File,
+  annotate?: Annotation[];
   url?: string,
-  annotations?: Annotation[];
   refId?: string
 }
 
-export type Annotation = {
-  id: string
-  type: ShapeType
-  color?: string
-  label: ClassName,
-  startX: number
-  startY: number
-  width: number
-  height: number
-  radius: number
-  points: number[]
-};
-
-  // cameraId?: string,
-  // trainDataset?: number | null,
-  // testDataset?: number | null,
-  // validationDataset?: number | null,
-  // epochs?: number | null,
-  // currentVersion?: number,
-  // currentStep?: number,
+// export type Annotation = {
+//   id: string
+//   type: ShapeType
+//   color?: string
+//   label: ClassName,
+//   startX: number
+//   startY: number
+//   width: number
+//   height: number
+//   radius: number
+//   points: number[]
+// };

@@ -1,20 +1,27 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useSession } from "next-auth/react";
 import Konva from 'konva';
 import { Stage, Layer, Rect, Circle, Line, Text, Group } from 'react-konva';
 import { HuePicker, SliderPicker } from 'react-color'
 import { X, Save, Trash2, CircleChevronLeft, CircleChevronRight, MousePointerClick, Square, CircleIcon, Edit3 } from 'lucide-react';
-import { } from 'lucide-react';
-import { useSession } from "next-auth/react";
-import { FormData, DetectionModel, ModelPicture, Annotation } from "@/app/types/detection-model";
+import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
+import { extractErrorMessage } from '@/app/utils/errorHandler';
 import ImageLoading from "@/app/components/loading/ImageLoading";
+import type { Annotation, RectangleAnnotation, CircleAnnotation, PolygonAnnotation, PointAnnotation } from "@/app/types/annotation";
 import { ShapeType } from "@/app/constants/shape-type";
 import { ClassName } from "@/app/types/class-name";
-import ClassNameModal from "./class-name-modal";
+import { ModelPicture } from "@/app/types/detection-model";
 import { getClassName } from "@/app/libs/services/class-name";
+import { annotateImage, uploadBase64Image } from "@/app/libs/services/detection-model";
+import ClassNameModal from "./class-name-modal";
 
 interface AnnotationModalProps {
+  modelVersionId: number;
+  productId: string,
+  cameraId: string,
+  modelId: number,
   data: ModelPicture[];
   editPicture: ModelPicture,
   onClose: () => void;
@@ -23,6 +30,10 @@ interface AnnotationModalProps {
 }
 
 const AnnotationModal = ({
+  modelVersionId,
+  productId,
+  cameraId,
+  modelId,
   data,
   editPicture,
   onClose,
@@ -73,7 +84,7 @@ const AnnotationModal = ({
     img.src = currentPic.url;
     setIsImageLoading(false);
 
-    setAnnotations(currentPic.annotations ?? []);
+    setAnnotations(currentPic?.annotate ?? []);
 
     return () => {
       img.onload = null;
@@ -98,54 +109,250 @@ const AnnotationModal = ({
     fetchClassName();
   }, []);
 
-  const handleMouseDown = (e) => {
-    if (selectedId !== null) {
-      return;
+  const renderAnnotation = (ann: Annotation) => {
+    const isSelected = ann.id === selectedId;
+
+    let labelX = 0;
+    let labelY = 0;
+
+    if (ann.type === 'rectangle') {
+      const [xMin, yMin, xMax, yMax] = ann.bbox;
+      labelX = (xMin + xMax) / 2;
+      labelY = yMin - 15;
+    } else if (ann.type === 'circle') {
+      const [cx, cy] = ann.center;
+      labelX = cx;
+      labelY = cy - ann.radius - 15;
+    } else if (ann.type === 'polygon' && ann.points.length > 0) {
+      const [x0, y0] = ann.points[0];
+      labelX = x0;
+      labelY = y0 - 15;
+    } else if (ann.type === 'point') {
+      const [px, py] = ann.position;
+      labelX = px;
+      labelY = py - 15;
     }
 
-    setIsDrawing(true);
-    const pos = e.target.getStage().getPointerPosition();
+    return (
+      <Group key={ann.id}>
+        {/* Rectangle */}
+        {ann.type === 'rectangle' && (
+          <Rect
+            id={ann.id}
+            x={ann.bbox[0]}
+            y={ann.bbox[1]}
+            width={ann.bbox[2] - ann.bbox[0]}
+            height={ann.bbox[3] - ann.bbox[1]}
+            fill={ann.color + '33'}
+            stroke={ann.color}
+            strokeWidth={isSelected ? 3 : 2}
+            draggable
+            onClick={() => setSelectedId(ann.id)}
+            onDragEnd={(e) => {
+              const node = e.target;
+              const width = ann.bbox[2] - ann.bbox[0];
+              const height = ann.bbox[3] - ann.bbox[1];
+              const updatedAnn: RectangleAnnotation = {
+                ...ann,
+                bbox: [
+                  node.x(),
+                  node.y(),
+                  node.x() + width,
+                  node.y() + height
+                ]
+              };
+              setAnnotations(annotations.map(a => a.id === ann.id ? updatedAnn : a));
+            }}
+          />
+        )}
 
-    const newAnnot = {
-      id: `annotation-${Date.now()}`,
-      type: tool as ShapeType,
-      color: selectedColor,
-      points: [pos.x, pos.y],
-      startX: pos.x,
-      startY: pos.y,
-      width: 0,
-      height: 0,
-      radius: 0,
-      label: { id: selectedClass?.id ?? '', name: selectedClass?.name ?? '' }, // Will be set when mouse up
-    };
+        {/* Circle */}
+        {ann.type === 'circle' && (
+          <Circle
+            id={ann.id}
+            x={ann.center[0]}
+            y={ann.center[1]}
+            radius={ann.radius}
+            fill={ann.color + '33'}
+            stroke={ann.color}
+            strokeWidth={isSelected ? 3 : 2}
+            draggable
+            onClick={() => setSelectedId(ann.id)}
+            onDragEnd={(e) => {
+              const node = e.target;
+              const updatedAnn: CircleAnnotation = {
+                ...ann,
+                center: [node.x(), node.y()]
+              };
+              setAnnotations(annotations.map(a => a.id === ann.id ? updatedAnn : a));
+            }}
+          />
+        )}
+
+        {/* Polygon */}
+        {ann.type === 'polygon' && ann.points?.length > 2 && (
+          <Line
+            id={ann.id}
+            points={ann.points.flat()}
+            fill={ann.color + '33'}
+            stroke={ann.color}
+            strokeWidth={isSelected ? 3 : 2}
+            closed
+            draggable
+            onClick={() => setSelectedId(ann.id)}
+            onDragEnd={(e) => {
+              const node = e.target;
+              const dx = node.x() - ann.points[0][0];
+              const dy = node.y() - ann.points[0][1];
+              const updatedPoints: [number, number][] = ann.points.map(([x, y]) => [x + dx, y + dy]);
+              setAnnotations(annotations.map(a => 
+                a.id === ann.id ? { ...ann, points: updatedPoints } : a
+              ));
+              node.position({ x: 0, y: 0 });
+            }}
+          />
+        )}
+
+        {/* Point */}
+        {ann.type === 'point' && (
+          <Circle
+            id={ann.id}
+            x={ann.position[0]}
+            y={ann.position[1]}
+            radius={5}
+            fill={ann.color}
+            stroke={ann.color}
+            strokeWidth={isSelected ? 3 : 2}
+            draggable
+            onClick={() => setSelectedId(ann.id)}
+            onDragEnd={(e) => {
+              const node = e.target;
+              const updatedAnn: PointAnnotation = {
+                ...ann,
+                position: [node.x(), node.y()],
+              };
+              setAnnotations(annotations.map(a => a.id === ann.id ? updatedAnn : a));
+            }}
+          />
+        )}
+
+        {/* Label for all types */}
+        {ann.class && (
+          <Text
+            x={labelX}
+            y={labelY}
+            text={ann.class.name}
+            fontSize={14}
+            fontStyle="bold"
+            fill={ann.color}
+            align="center"
+            verticalAlign="top"
+            offsetX={(ann.class.name.length || 0) * 3.5}
+          />
+        )}
+      </Group>
+    );
+  };
+
+  const handleMouseDown = (e) => {
+    if (selectedId !== null) return;
+
+    const pos = e.target.getStage().getPointerPosition();
+    if (!pos) return;
+
+    setIsDrawing(true);
+    const id = `annotation-${Date.now()}`;
+    let newAnnot;
+
+    switch (tool) {
+      case "circle":
+        newAnnot = {
+          id: id,
+          type: "circle",
+          color: selectedColor,
+          class: { id: selectedClass?.id ?? '', name: selectedClass?.name ?? '' },
+          center: [pos.x, pos.y],
+          radius: 0,
+        };
+        break;
+
+      case "rectangle":
+        newAnnot = {
+          id: id,
+          type: "rectangle",
+          color: selectedColor,
+          class: { id: selectedClass?.id ?? '', name: selectedClass?.name ?? '' },
+          bbox: [pos.x, pos.y, pos.x, pos.y], 
+        };
+        break;
+
+      case "polygon":
+        newAnnot = {
+          id: id,
+          type: "polygon",
+          color: selectedColor,
+          class: { id: selectedClass?.id ?? '', name: selectedClass?.name ?? '' },
+          points: [[pos.x, pos.y]],
+        };
+        break;
+
+      case "point":
+        newAnnot = {
+          id: id,
+          type: "point",
+          color: selectedColor,
+          class: { id: selectedClass?.id ?? '', name: selectedClass?.name ?? '' },
+          position: [pos.x, pos.y],
+        };
+        break;
+
+      default:
+        console.warn("Unknown tool type:", tool);
+        return;
+    }
 
     setNewAnnotation(newAnnot);
   };
-
+  
   const handleMouseMove = (e) => {
     if (!isDrawing || !newAnnotation) return;
 
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
+    if (!point) return;
 
-    if (tool === 'rectangle') {
+    if (newAnnotation.type === 'rectangle') {
+      const [x0, y0] = newAnnotation.bbox ?? [point.x, point.y, point.x, point.y];
+      const x1 = point.x;
+      const y1 = point.y;
+
+      const x_min = Math.min(x0, x1);
+      const y_min = Math.min(y0, y1);
+      const x_max = Math.max(x0, x1);
+      const y_max = Math.max(y0, y1);
+
       setNewAnnotation({
         ...newAnnotation,
-        width: point.x - newAnnotation.startX,
-        height: point.y - newAnnotation.startY,
+        bbox: [x_min, y_min, x_max, y_max],
       });
-    } else if (tool === 'circle') {
-      const dx = point.x - newAnnotation.startX;
-      const dy = point.y - newAnnotation.startY;
+    }
+
+    else if (newAnnotation.type === 'circle') {
+      const [cx, cy] = newAnnotation.center ?? [point.x, point.y];
+      const dx = point.x - cx;
+      const dy = point.y - cy;
       const radius = Math.sqrt(dx * dx + dy * dy);
+
       setNewAnnotation({
         ...newAnnotation,
-        radius: radius,
+        radius,
       });
-    } else if (tool === 'polygon') {
+    }
+
+    else if (newAnnotation.type === 'polygon') {
       setNewAnnotation({
         ...newAnnotation,
-        points: [...newAnnotation.points, point.x, point.y],
+        points: [...(newAnnotation.points ?? []), [point.x, point.y]],
       });
     }
   };
@@ -155,27 +362,41 @@ const AnnotationModal = ({
 
     setIsDrawing(false);
 
-    // Don't add empty annotations
-    if (tool === 'rectangle' && (Math.abs(newAnnotation.width) < 5 || Math.abs(newAnnotation.height) < 5)) {
-      setNewAnnotation(null);
-      return;
-    }
-    if (tool === 'circle' && newAnnotation.radius < 5) {
-      setNewAnnotation(null);
-      return;
+    // Validation ตามประเภทของ annotation
+    if (newAnnotation.type === 'rectangle') {
+      const [x_min, y_min, x_max, y_max] = newAnnotation.bbox;
+      const width = Math.abs(x_max - x_min);
+      const height = Math.abs(y_max - y_min);
+
+      if (width < 5 || height < 5) {
+        setNewAnnotation(null);
+        return;
+      }
     }
 
-    // Create annotation with auto-generated label
-    const annotationWithLabel = {
+    if (newAnnotation.type === 'circle') {
+      if (newAnnotation.radius < 5) {
+        setNewAnnotation(null);
+        return;
+      }
+    }
+
+    if (newAnnotation.type === 'polygon') {
+      if (!newAnnotation.points || newAnnotation.points.length < 3) {
+        setNewAnnotation(null);
+        return;
+      }
+    }
+
+    // สร้าง annotation พร้อม class label
+    const annotationWithClass: Annotation = {
       ...newAnnotation,
-      label: selectedClass ?? { id: '', name: '' }
+      class: selectedClass ?? { id: '', name: '' },
     };
 
-    setAnnotations([...annotations, annotationWithLabel]);
+    setAnnotations([...annotations, annotationWithClass]);
     setNewAnnotation(null);
-
-    // Automatically select and start editing the new annotation
-    setSelectedId(annotationWithLabel.id);
+    setSelectedId(annotationWithClass.id);
   };
 
   const handleDelete = (id: string) => {
@@ -187,140 +408,26 @@ const AnnotationModal = ({
 
   const handleBulkUpdateLabels = (updatedClasses: ClassName[]) => {
     setAnnotations(prevAnnotations => {
-      // กรองเฉพาะ annotation ที่มี label.id อยู่ใน updatedClasses
-      const filtered = prevAnnotations.filter(ann =>
-        updatedClasses.some(cls => cls.id === ann.label.id)
-      );
-
-      // แทนที่ label ที่ตรงกัน
-      const updated = filtered.map(ann => {
-        const match = updatedClasses.find(cls => cls.id === ann.label.id);
-        return match ? { ...ann, label: match } : ann;
+      return prevAnnotations.map(ann => {
+        const match = updatedClasses.find(cls => cls.id === ann.class.id);
+        if (match) {
+          return { ...ann, class: match };
+        }
+        return ann; // ไม่เปลี่ยนถ้าไม่ match
       });
-
-      return updated;
     });
 
-    // เคลียร์ selectedId ถ้าไม่อยู่ใน updatedClasses
-    if (!updatedClasses.some(cls => cls.id === selectedId)) {
+    // เคลียร์ selectedId ถ้า class ของ annotation ปัจจุบันไม่อยู่ใน updatedClasses
+    const selectedAnnotation = annotations.find(ann => ann.id === selectedId);
+    if (selectedAnnotation && !updatedClasses.some(cls => cls.id === selectedAnnotation.class.id)) {
       setSelectedId(null);
     }
   };
 
   const handleStageClick = (e) => {
-    // Click on empty space
+    // ถ้าคลิกที่ stage โดยตรง หรือ node ที่มีชื่อว่า 'background'
     if (e.target === e.target.getStage() || e.target.hasName('background')) {
-      setSelectedId(null);
-    }
-  };
-
-  const renderAnnotation = (ann) => {
-    const isSelected = ann.id === selectedId;
-
-    // Calculate label position
-    let labelX = ann.startX;
-    let labelY = ann.startY - 15;
-
-    if (ann.type === 'rectangle') {
-      labelX = ann.startX + ann.width / 2;
-      labelY = ann.startY - 15;
-    } else if (ann.type === 'circle') {
-      labelX = ann.startX;
-      labelY = ann.startY - ann.radius - 15;
-    }
-
-    return (
-      <Group key={ann.id}>
-        {/* Annotation shape */}
-        {ann.type === 'rectangle' && (
-          <Rect
-            id={ann.id}
-            x={ann.startX}
-            y={ann.startY}
-            width={ann.width}
-            height={ann.height}
-            fill={ann.color + '33'}
-            stroke={ann.color}
-            strokeWidth={isSelected ? 3 : 2}
-            draggable
-            onClick={() => setSelectedId(ann.id)}
-            onDragEnd={(e) => {
-              const node = e.target;
-              const updatedAnn = {
-                ...ann,
-                startX: node.x(),
-                startY: node.y(),
-              };
-              setAnnotations(annotations?.map(a => a.id === ann.id ? updatedAnn : a));
-            }}
-          />
-        )}
-
-        {ann.type === 'circle' && (
-          <Circle
-            id={ann.id}
-            x={ann.startX}
-            y={ann.startY}
-            radius={ann.radius}
-            fill={ann.color + '33'}
-            stroke={ann.color}
-            strokeWidth={isSelected ? 3 : 2}
-            draggable
-            onClick={() => setSelectedId(ann.id)}
-            onDragEnd={(e) => {
-              const node = e.target;
-              const updatedAnn = {
-                ...ann,
-                startX: node.x(),
-                startY: node.y(),
-              };
-              setAnnotations(annotations?.map(a => a.id === ann.id ? updatedAnn : a));
-            }}
-          />
-        )}
-
-        {ann.type === 'polygon' && ann.points.length > 2 && (
-          <Line
-            id={ann.id}
-            points={ann.points}
-            fill={ann.color + '33'}
-            stroke={ann.color}
-            strokeWidth={isSelected ? 3 : 2}
-            closed
-            draggable
-            onClick={() => setSelectedId(ann.id)}
-          />
-        )}
-
-        {/* Label */}
-        {ann.label && (
-          <Text
-            x={labelX}
-            y={labelY}
-            text={ann.label?.name}
-            fontSize={14}
-            fontStyle="bold"
-            fill={ann.color}
-            align="center"
-            verticalAlign="top"
-            offsetX={(ann.label?.name.length || 0) * 3.5}
-          />
-        )}
-      </Group>
-    );
-  };
-
-  const handleNext = () => {
-    if (currentIndex < pictureList.length - 1) {
-      updateCurrentAnnotationsToPicture(currentIndex);
-      setCurrentIndex(currentIndex + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentIndex > 0) {
-      updateCurrentAnnotationsToPicture(currentIndex);
-      setCurrentIndex(currentIndex - 1);
+      setSelectedId(null); // ยกเลิกการเลือก annotation
     }
   };
 
@@ -333,55 +440,75 @@ const AnnotationModal = ({
 
     setIsOpen(false);
   };
-
-  const updateCurrentAnnotationsToPicture = (index) => {
-    const updatedPictures = [...pictureList];
-    updatedPictures[index] = {
-      ...updatedPictures[index],
-      annotations: annotations,
+  
+  const updateAllAnnotationsToIamges = () => {
+    const updatedImages = [...pictureList];
+    updatedImages[currentIndex] = {
+      ...updatedImages[currentIndex],
+      annotate: annotations,
     };
-    setPictureList(updatedPictures);
+    setPictureList(updatedImages);
+    return updatedImages;
   };
 
-  const updateAllAnnotationsToPictures = () => {
-    const updatedPictures = [...pictureList];
-    updatedPictures[currentIndex] = {
-      ...updatedPictures[currentIndex],
-      annotations: annotations,
+  const updateCurrentAnnotationsToImages = (index) => {
+    const updatedImages = [...pictureList];
+    updatedImages[index] = {
+      ...updatedImages[index],
+      annotate: annotations,
     };
-    setPictureList(updatedPictures);
-    return updatedPictures;
+    setPictureList(updatedImages);
+    return updatedImages;
+  };
+  
+  const handlePrevious = async () => {
+    if (currentIndex > 0) {
+      const updateImage = updateCurrentAnnotationsToImages(currentIndex);
+      
+      const image = updateImage[currentIndex]; 
+      await updateAnnotateImage(image);
+
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
+  const handleNext = async () => {
+    if (currentIndex < pictureList.length - 1) {
+      const updateImage = updateCurrentAnnotationsToImages(currentIndex);
+
+      const image = updateImage[currentIndex]; 
+      await updateAnnotateImage(image);
+
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const updateAnnotateImage = async (img: ModelPicture) => {
+    try {
+        await annotateImage({
+          imageId: img.id ?? undefined,
+          modelVersionId: modelVersionId,
+          productId: productId,
+          cameraId: cameraId,
+          modelId: modelId,
+          updatedBy: session?.user?.userid ?? "",
+          annotate: JSON.stringify(img.annotate),
+          file: img.file,
+        });
+      } catch (error) {
+        console.error("Upload operation failed:", error);
+        showError(`Upload failed: ${extractErrorMessage(error)}`);
+      }
   };
 
   const onSubmit = async () => {
-    const updatedPictures = updateAllAnnotationsToPictures();
+    const updateImage = updateAllAnnotationsToIamges();
+    // console.log("updateImage", updateImage);
 
-    const updateData = updatedPictures?.map((img) => ({
-      id: img.id,
-      name: img.name,
-      file: img.file,
-      refId: img.refId,
-      url: img.url,
-      annotations: img.annotations?.map((ann) => {
-        const isRect = ann.type === 'rectangle';
-        const isCircle = ann.type === 'circle';
-        const isPoint = ann.type === 'point';
-        return {
-          id: ann.id,
-          type: ann.type,
-          color: ann.color,
-          label: ann.label,
-          startX: isRect || isCircle || isPoint ? ann.startX : 0,
-          startY: isRect || isCircle || isPoint ? ann.startY : 0,
-          width: isRect ? ann.width ?? 0 : 0,
-          height: isRect ? ann.height ?? 0 : 0,
-          radius: isCircle ? ann.radius ?? 0 : 0,
-          points: ann.type === 'polygon' ? ann.points : [],
-        };
-      }),
-    }));
+    const image = updateImage[currentIndex]; 
+    await updateAnnotateImage(image);
 
-    onSave(updateData);
+    onSave(updateImage);
   };
 
   const stageWidth = 760;
@@ -627,7 +754,7 @@ function AnnotationList({ annotations, selectedId, setSelectedId, onDelete }: An
                           marginRight: '2px',
                         }}
                       ></span>
-                      <p className="text-sm font-medium">{ann.label.name}</p>
+                      <p className="text-sm font-medium">{ann?.class?.name}</p>
                     </div>
                   </div>
                   {/* Delete button */}
