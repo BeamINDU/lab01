@@ -1,22 +1,16 @@
 version: '3.8'
-
 services:
   nextjs-app:
-    image: inspection
     container_name: inspection
     build:
       context: .  
       dockerfile: src/Dockerfile  
     ports:
-      - "3032:3000"
-    volumes:
-      - ./:/app 
-      - /app/node_modules  
-    environment:
-      - NODE_ENV=production 
+      - "3000:3000"
+    restart: unless-stopped
     networks:
-      - inspection-network
-
+      - env_product-inspection_inspection-network  
 
 networks:
-  inspection-network:
+  env_product-inspection_inspection-network:
+    external: true  
