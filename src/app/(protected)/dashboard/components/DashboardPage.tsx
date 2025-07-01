@@ -15,205 +15,144 @@ import NGDistributionChart from './NGDistributionChart';
 import DefectByCameraChart from './DefectByCameraChart';
 
 export default function DashboardPage() {
-  // Filter states
-  const [selectedProduct, setSelectedProduct] = useState<string>('');
-  const [selectedCamera, setSelectedCamera] = useState<string>('');
-  const [selectedLine, setSelectedLine] = useState<string>('');
-  const [selectedMonth, setSelectedMonth] = useState<string>('');
-  const [selectedYear, setSelectedYear] = useState<string>('');
-  const [dateFrom, setDateFrom] = useState<string>('');
-  const [dateTo, setDateTo] = useState<string>('');
-  
-  // Dashboard data state
+  // States
+  const [filters, setFilters] = useState({
+    product: '',
+    camera: '',
+    line: '',
+    month: '',
+    year: '',
+    dateFrom: '',
+    dateTo: ''
+  });
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>();
+  const [isAutoRefresh, setIsAutoRefresh] = useState(true);
   
-  // Auto-refresh states
-  const [isAutoRefresh, setIsAutoRefresh] = useState<boolean>(true);
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const currentFiltersRef = useRef<DashboardFilters>({});
 
-  // Initialize default date range
+  // Initialize dates
   useEffect(() => {
     const today = dayjs();
-    const startOfDay = today.startOf('day').format('YYYY-MM-DD HH:mm'); 
-    const endOfDay = today.endOf('day').format('YYYY-MM-DD HH:mm');     
-    
-    setDateFrom(startOfDay);
-    setDateTo(endOfDay);
+    setFilters(prev => ({
+      ...prev,
+      dateFrom: today.startOf('day').format('YYYY-MM-DD HH:mm'),
+      dateTo: today.endOf('day').format('YYYY-MM-DD HH:mm')
+    }));
   }, []);
 
-  const refreshDashboardData = useCallback(async (filters: DashboardFilters, isAutoRefresh = false) => {
+  // Build current filters
+  const buildFilters = useCallback((): DashboardFilters => ({
+    productId: filters.product || undefined,
+    cameraId: filters.camera || undefined,
+    lineId: filters.line || undefined,
+    startDate: filters.dateFrom ? new Date(filters.dateFrom) : undefined,
+    endDate: filters.dateTo ? new Date(filters.dateTo) : undefined,
+    month: filters.month || undefined,
+    year: filters.year || undefined,
+  }), [filters]);
+
+  // Data fetching
+  const fetchData = useCallback(async (filterData: DashboardFilters, isAuto = false) => {
     try {
-      if (!isAutoRefresh) {
+      if (!isAuto) {
         setLoading(true);
         setError(undefined);
       }
-
-      const data = await getDashboardData(filters);
+      const data = await getDashboardData(filterData);
       setDashboardData(data);
-      setLastUpdated(new Date());
-      
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`Dashboard ${isAutoRefresh ? 'auto-' : ''}refreshed at:`, new Date().toLocaleTimeString());
-      }
-      
-    } catch (error) {
-      console.error('Failed to load dashboard data:', error);
-      setError('Failed to load dashboard data. Please try again.');
-      if (!isAutoRefresh) {
-        showError('Failed to load dashboard data');
-      }
+    } catch (err) {
+      console.error('Dashboard error:', err);
+      setError('Failed to load dashboard data');
+      if (!isAuto) showError('Failed to load dashboard data');
     } finally {
-      if (!isAutoRefresh) {
-        setLoading(false);
-      }
+      if (!isAuto) setLoading(false);
     }
   }, []);
 
-  // Debounced refresh for non-date filters
-  const debouncedRefreshDashboardData = useCallback(
-    debounce((filters: DashboardFilters) => refreshDashboardData(filters, false), 500),
-    [refreshDashboardData]
+  const debouncedFetch = useCallback(
+    debounce((filterData: DashboardFilters) => fetchData(filterData), 500),
+    [fetchData]
   );
 
-  // Auto-refresh setup สำหรับ non-date filters
+  // Update filters ref and fetch data
   useEffect(() => {
-    if (!dateFrom || !dateTo) return;
+    if (!filters.dateFrom || !filters.dateTo) return;
+    
+    const filterData = buildFilters();
+    currentFiltersRef.current = filterData;
+    debouncedFetch(filterData);
+  }, [filters, buildFilters, debouncedFetch]);
 
-    const filters: DashboardFilters = {
-      productId: selectedProduct || undefined,
-      cameraId: selectedCamera || undefined,
-      lineId: selectedLine || undefined,
-      startDate: new Date(dateFrom),
-      endDate: new Date(dateTo),
-      month: selectedMonth || undefined,
-      year: selectedYear || undefined,
-    };
-
-    // เฉพาะ non-date filters ที่จะ auto-refresh
-    debouncedRefreshDashboardData(filters);
-
-    // Setup auto-refresh interval (1 minute = 60,000ms)
-    if (isAutoRefresh) {
-      intervalRef.current = setInterval(() => {
-        refreshDashboardData(filters, true);
-      }, 60000); // 1 minute
-
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Auto-refresh enabled: Every 1 minute');
+  // Auto-refresh
+  useEffect(() => {
+    if (!isAutoRefresh) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
+      return;
     }
 
-    // Cleanup interval
+    intervalRef.current = setInterval(() => {
+      const currentFilters = currentFiltersRef.current;
+      if (currentFilters && Object.keys(currentFilters).length > 0) {
+        fetchData(currentFilters, true);
+      }
+    }, 60000);
+
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
-      debouncedRefreshDashboardData.cancel();
     };
-    // ไม่รวม dateFrom, dateTo ใน dependency เพื่อไม่ให้ auto-refresh เมื่อเปลี่ยนวันที่
-  }, [selectedProduct, selectedCamera, selectedLine, selectedMonth, selectedYear, isAutoRefresh, debouncedRefreshDashboardData, refreshDashboardData]);
+  }, [isAutoRefresh, fetchData]);
 
-  // แยก useEffect สำหรับ initial load และเมื่อ dateFrom/dateTo เปลี่ยน
+  // Cleanup
   useEffect(() => {
-    if (!dateFrom || !dateTo) return;
-
-    const filters: DashboardFilters = {
-      productId: selectedProduct || undefined,
-      cameraId: selectedCamera || undefined,
-      lineId: selectedLine || undefined,
-      startDate: new Date(dateFrom),
-      endDate: new Date(dateTo),
-      month: selectedMonth || undefined,
-      year: selectedYear || undefined,
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      debouncedFetch.cancel();
     };
+  }, [debouncedFetch]);
 
-    // Refresh เมื่อ date range เปลี่ยน (จากการกด OK ใน DateTimePicker)
-    refreshDashboardData(filters, false);
-  }, [dateFrom, dateTo, refreshDashboardData]); // เฉพาะ date range
+  // Filter handlers
+  const updateFilter = useCallback((key: string, value: string | null) => {
+    setFilters(prev => ({ ...prev, [key]: value || '' }));
+  }, []);
 
-  // Toggle auto-refresh
-  const toggleAutoRefresh = () => {
-    setIsAutoRefresh(prev => !prev);
-    if (!isAutoRefresh) {
-      setLastUpdated(new Date());
-    }
-  };
-
-  // Manual refresh
-  const handleManualRefresh = () => {
-    if (dateFrom && dateTo) {
-      const filters: DashboardFilters = {
-        productId: selectedProduct || undefined,
-        cameraId: selectedCamera || undefined,
-        lineId: selectedLine || undefined,
-        startDate: new Date(dateFrom),
-        endDate: new Date(dateTo),
-        month: selectedMonth || undefined,
-        year: selectedYear || undefined,
-      };
-      refreshDashboardData(filters, false);
-    }
-  };
-
-  // Event handlers
-  const handleProductChange = (productId: string) => setSelectedProduct(productId);
-  const handleCameraChange = (cameraId: string) => setSelectedCamera(cameraId);
-  const handleLineChange = (lineId: string) => setSelectedLine(lineId);
-  const handleMonthChange = (month: string) => setSelectedMonth(month);
-  const handleYearChange = (year: string) => setSelectedYear(year);
-
-  // Date handlers - จะถูกเรียกเมื่อกด OK ใน DateTimePicker
-  const handleDateFromChange = (date: string | null) => {
-    if (date) {
-      setDateFrom(date);
-      
-      // Auto-adjust To date if From date is after To date
-      if (dateTo && dayjs(date).isAfter(dayjs(dateTo))) {
-        const newToDate = dayjs(date).endOf('day').format('YYYY-MM-DD HH:mm');
-        setDateTo(newToDate);
-      }
+  const handleDateFromChange = useCallback((date: string | null) => {
+    if (date && filters.dateTo && dayjs(date).isAfter(dayjs(filters.dateTo))) {
+      const newToDate = dayjs(date).endOf('day').format('YYYY-MM-DD HH:mm');
+      setFilters(prev => ({ ...prev, dateFrom: date, dateTo: newToDate }));
     } else {
-      setDateFrom('');
+      updateFilter('dateFrom', date);
     }
-  };
+  }, [filters.dateTo, updateFilter]);
 
-  const handleDateToChange = (date: string | null) => {
-    if (date) {
-      if (dateFrom && dayjs(date).isBefore(dayjs(dateFrom))) {
-        showError('To Date cannot be earlier than From Date');
-        return; 
-      }
-      setDateTo(date);
-    } else {
-      setDateTo('');
+  const handleDateToChange = useCallback((date: string | null) => {
+    if (date && filters.dateFrom && dayjs(date).isBefore(dayjs(filters.dateFrom))) {
+      return;
     }
-  };
+    updateFilter('dateTo', date);
+  }, [filters.dateFrom, updateFilter]);
 
   // Loading state
   if (loading && !dashboardData) {
     return (
       <main className="p-2">
-        <HeaderFilters 
-          selectedProduct={selectedProduct}
-          selectedCamera={selectedCamera}
-          selectedLine={selectedLine}
-          selectedMonth={selectedMonth}
-          selectedYear={selectedYear}
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          onProductChange={handleProductChange}
-          onCameraChange={handleCameraChange}
-          onLineChange={handleLineChange}
-          onMonthChange={handleMonthChange}
-          onYearChange={handleYearChange}
+        <HeaderFilters {...filters} 
+          onProductChange={(v) => updateFilter('product', v)}
+          onCameraChange={(v) => updateFilter('camera', v)}
+          onLineChange={(v) => updateFilter('line', v)}
+          onMonthChange={(v) => updateFilter('month', v)}
+          onYearChange={(v) => updateFilter('year', v)}
           onDateFromChange={handleDateFromChange}
           onDateToChange={handleDateToChange}
         />
-        
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
@@ -228,23 +167,15 @@ export default function DashboardPage() {
   if (error && !dashboardData) {
     return (
       <main className="p-2">
-        <HeaderFilters 
-          selectedProduct={selectedProduct}
-          selectedCamera={selectedCamera}
-          selectedLine={selectedLine}
-          selectedMonth={selectedMonth}
-          selectedYear={selectedYear}
-          dateFrom={dateFrom}
-          dateTo={dateTo}
-          onProductChange={handleProductChange}
-          onCameraChange={handleCameraChange}
-          onLineChange={handleLineChange}
-          onMonthChange={handleMonthChange}
-          onYearChange={handleYearChange}
+        <HeaderFilters {...filters}
+          onProductChange={(v) => updateFilter('product', v)}
+          onCameraChange={(v) => updateFilter('camera', v)}
+          onLineChange={(v) => updateFilter('line', v)}
+          onMonthChange={(v) => updateFilter('month', v)}
+          onYearChange={(v) => updateFilter('year', v)}
           onDateFromChange={handleDateFromChange}
           onDateToChange={handleDateToChange}
         />
-        
         <div className="flex items-center justify-center h-64">
           <div className="text-center text-red-500">
             <p>{error}</p>
@@ -256,25 +187,23 @@ export default function DashboardPage() {
 
   return (
     <main className="p-2">
-      {/* Header */}
-      <HeaderFilters 
-        selectedProduct={selectedProduct}
-        selectedCamera={selectedCamera}
-        selectedLine={selectedLine}
-        selectedMonth={selectedMonth}
-        selectedYear={selectedYear}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        onProductChange={handleProductChange}
-        onCameraChange={handleCameraChange}
-        onLineChange={handleLineChange}
-        onMonthChange={handleMonthChange}
-        onYearChange={handleYearChange}
+      <HeaderFilters
+        selectedProduct={filters.product}
+        selectedCamera={filters.camera}
+        selectedLine={filters.line}
+        selectedMonth={filters.month}
+        selectedYear={filters.year}
+        dateFrom={filters.dateFrom}
+        dateTo={filters.dateTo}
+        onProductChange={(v) => updateFilter('product', v)}
+        onCameraChange={(v) => updateFilter('camera', v)}
+        onLineChange={(v) => updateFilter('line', v)}
+        onMonthChange={(v) => updateFilter('month', v)}
+        onYearChange={(v) => updateFilter('year', v)}
         onDateFromChange={handleDateFromChange}
         onDateToChange={handleDateToChange}
       />
 
-      {/* Loading overlay during refresh */}
       {loading && dashboardData && (
         <div className="fixed inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
           <div className="bg-white p-4 rounded-lg shadow-lg">
@@ -284,52 +213,22 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Dashboard Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
-        {/* Left column: Total products and Good/NG Ratio stacked */}
         <div className="lg:col-span-1 space-y-6">
-          <TotalProductsCard 
-            data={dashboardData?.totalProducts || null} 
-            loading={loading && !dashboardData}
-            error={error}
-          />
-          <GoodNGRatioChart 
-            data={dashboardData?.goodNgRatio || null}
-            loading={loading && !dashboardData}
-            error={error}
-          />
+          <TotalProductsCard data={dashboardData?.totalProducts || null} loading={loading && !dashboardData} error={error} />
+          <GoodNGRatioChart data={dashboardData?.goodNgRatio || null} loading={loading && !dashboardData} error={error} />
         </div>
-
-        {/* Middle: Trend and Top Defects */}
         <div className="lg:col-span-2">
-          <FrequentDefectsChart 
-            data={dashboardData?.defectsByType || null}
-            loading={loading && !dashboardData}
-            error={error}
-          />
+          <FrequentDefectsChart data={dashboardData?.defectsByType || null} loading={loading && !dashboardData} error={error} />
         </div>
         <div className="lg:col-span-3">
-          <DefectByCameraChart 
-            data={dashboardData?.defectsByCamera || null}
-            loading={loading && !dashboardData}
-            error={error}
-          />
-        </div>
-
-        {/* Bottom row: NG Distribution and Camera Defects */}
-        <div className="lg:col-span-3">
-          <NGDistributionChart 
-            data={dashboardData?.ngDistribution || null}
-            loading={loading && !dashboardData}
-            error={error}
-          />
+          <DefectByCameraChart data={dashboardData?.defectsByCamera || null} loading={loading && !dashboardData} error={error} />
         </div>
         <div className="lg:col-span-3">
-          <TrendDetectionChart 
-            data={dashboardData?.trendData || null}
-            loading={loading && !dashboardData}
-            error={error}
-          />
+          <NGDistributionChart data={dashboardData?.ngDistribution || null} loading={loading && !dashboardData} error={error} />
+        </div>
+        <div className="lg:col-span-3">
+          <TrendDetectionChart data={dashboardData?.trendData || null} loading={loading && !dashboardData} error={error} />
         </div>
       </div>
     </main>

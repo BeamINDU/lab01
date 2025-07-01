@@ -58,6 +58,7 @@ export const getPermissions = async (userid: string) => {
 export const validateLogin = async (username: string, password: string) => {
   try {
     const res =  await api.get<any>(`${API_ROUTES.auth.login}?username=${username}&password=${password}`);
+    
     return res;
   } catch (error) {
     throw new Error(extractErrorMessage(error));

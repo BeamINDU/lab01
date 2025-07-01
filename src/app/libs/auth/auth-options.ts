@@ -16,6 +16,7 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.username || !credentials?.password) return null;
 
         const user = await validateLogin(credentials.username, credentials.password) as User;
+        console.log("user", user);
 
         if (!user) return null;
 
@@ -29,9 +30,7 @@ export const authOptions: NextAuthOptions = {
         token.userid = (user as any).userid;
         token.fullname = (user as any).fullname;
         token.email = (user as any).email;
-
-        // const permissions = await getPermissions((user as any).userid);
-        // token.permissions = permissions;
+        console.log("token", token);
       }
       return token;
     },
@@ -40,8 +39,7 @@ export const authOptions: NextAuthOptions = {
         session.user.userid = token.userid as string;
         session.user.fullname = token.fullname as string;
         session.user.email = token.email as string;
-
-        // session.user.permissions = token.permissions;
+        console.log("session", session);
       }
       return session;
     },

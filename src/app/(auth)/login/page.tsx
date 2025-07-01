@@ -24,6 +24,8 @@ export default function LoginPage() {
       redirect: false,
     });
 
+    console.log("res", res);
+    console.log("error", res?.error);
     if (res?.error) {
       setError("Invalid username or password");
     } else {
