@@ -127,6 +127,10 @@ export default function DetectionModelStep1({ next, modelVersionId, formData, is
     }
   };
 
+  const handleBack = () => {
+    router.push("/detection-model");
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmitHandler)}>
       <div className="bg-gray-100">
@@ -164,13 +168,19 @@ export default function DetectionModelStep1({ next, modelVersionId, formData, is
         </div>
 
         <div
-          className="fixed bottom-0 right-0 p-7 flex justify-end"
+          className="fixed bottom-0 right-0 p-7 flex justify-between"
           style={{ zIndex: 1000, left: "250px" }}
         >
           <button
-            type="submit"
+            className="ml-1 px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-600 transition w-32"
+            onClick={handleBack}
+          >
+            Back
+          </button>
+          <button
             className="px-4 py-2 btn-primary-dark rounded gap-2 w-32 disabled:bg-gray-400 disabled:cursor-not-allowed"
             disabled={isLoading || (!isEditMode && (formData.currentStep ?? 0) == 1)}
+             onClick={handleSubmit(onSubmitHandler)}
           >
             Next
           </button>

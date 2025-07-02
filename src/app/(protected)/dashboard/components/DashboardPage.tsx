@@ -124,6 +124,80 @@ export default function DashboardPage() {
     setFilters(prev => ({ ...prev, [key]: value || '' }));
   }, []);
 
+  // Helper function to set date range
+  const setDateRange = useCallback((start: dayjs.Dayjs, end: dayjs.Dayjs, logMessage?: string) => {
+    setFilters(prev => ({
+      ...prev,
+      dateFrom: start.format('YYYY-MM-DD HH:mm'),
+      dateTo: end.format('YYYY-MM-DD HH:mm')
+    }));
+    
+    if (process.env.NODE_ENV === 'development' && logMessage) {
+      console.log(logMessage, { from: start.format('YYYY-MM-DD'), to: end.format('YYYY-MM-DD') });
+    }
+  }, []);
+
+  // Month handler
+  const handleMonthChange = useCallback((month: string) => {
+    const year = filters.year || dayjs().year().toString();
+    
+    if (month) {
+      // Specific month
+      const start = dayjs(`${year}-${month}-01`).startOf('month');
+      const end = dayjs(`${year}-${month}-01`).endOf('month');
+      setFilters(prev => ({ ...prev, month }));
+      setDateRange(start, end, `Month: ${month}/${year}`);
+    } else {
+      // All months
+      setFilters(prev => ({ ...prev, month: '' }));
+      if (filters.year) {
+        // Full year
+        const start = dayjs(`${filters.year}-01-01`).startOf('year');
+        const end = dayjs(`${filters.year}-12-31`).endOf('year');
+        setDateRange(start, end, `Full year: ${filters.year}`);
+      } else {
+        // Current day
+        const start = dayjs().startOf('day');
+        const end = dayjs().endOf('day');
+        setDateRange(start, end, 'Current day');
+      }
+    }
+  }, [filters.year, setDateRange]);
+
+  // Year handler
+  const handleYearChange = useCallback((year: string) => {
+    if (year) {
+      // Specific year
+      setFilters(prev => ({ ...prev, year }));
+      if (filters.month) {
+        // Specific month in new year
+        const start = dayjs(`${year}-${filters.month}-01`).startOf('month');
+        const end = dayjs(`${year}-${filters.month}-01`).endOf('month');
+        setDateRange(start, end, `Month: ${filters.month}/${year}`);
+      } else {
+        // Full year
+        const start = dayjs(`${year}-01-01`).startOf('year');
+        const end = dayjs(`${year}-12-31`).endOf('year');
+        setDateRange(start, end, `Full year: ${year}`);
+      }
+    } else {
+      // All years
+      setFilters(prev => ({ ...prev, year: '' }));
+      if (filters.month) {
+        // Current year, specific month
+        const currentYear = dayjs().year().toString();
+        const start = dayjs(`${currentYear}-${filters.month}-01`).startOf('month');
+        const end = dayjs(`${currentYear}-${filters.month}-01`).endOf('month');
+        setDateRange(start, end, `Month: ${filters.month}/${currentYear}`);
+      } else {
+        // Current day
+        const start = dayjs().startOf('day');
+        const end = dayjs().endOf('day');
+        setDateRange(start, end, 'Current day');
+      }
+    }
+  }, [filters.month, setDateRange]);
+
   const handleDateFromChange = useCallback((date: string | null) => {
     if (date && filters.dateTo && dayjs(date).isAfter(dayjs(filters.dateTo))) {
       const newToDate = dayjs(date).endOf('day').format('YYYY-MM-DD HH:mm');
@@ -198,8 +272,8 @@ export default function DashboardPage() {
         onProductChange={(v) => updateFilter('product', v)}
         onCameraChange={(v) => updateFilter('camera', v)}
         onLineChange={(v) => updateFilter('line', v)}
-        onMonthChange={(v) => updateFilter('month', v)}
-        onYearChange={(v) => updateFilter('year', v)}
+        onMonthChange={handleMonthChange}
+        onYearChange={handleYearChange}
         onDateFromChange={handleDateFromChange}
         onDateToChange={handleDateToChange}
       />

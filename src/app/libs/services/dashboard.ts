@@ -19,18 +19,26 @@ const formatDateTime = (date: Date): string => {
   return date.toISOString().slice(0, 19);
 };
 
+// แก้ไข buildParams เพื่อรองรับ month และ year
 const buildParams = (filters: DashboardFilters) => ({
   start: formatDateTime(filters.startDate!),
   end: formatDateTime(filters.endDate!),
   ...(filters.productId && { productname: filters.productId }),
   ...(filters.lineId && { prodline: filters.lineId }),
   ...(filters.cameraId && { cameraid: filters.cameraId }),
+  ...(filters.month && { month: filters.month }),
+  ...(filters.year && { year: filters.year }),
 });
 
 // Generic fetch function with error handling
 const fetchDashboardData = async <T>(endpoint: string, filters: DashboardFilters): Promise<T[]> => {
   try {
     const params = buildParams(filters);
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Fetching ${endpoint} with params:`, params);
+    }
+    
     const response = await api.get<T[]>(endpoint, params);
     return Array.isArray(response) ? response : [];
   } catch (error) {
@@ -73,38 +81,23 @@ export const getTopDefects = async (filters: DashboardFilters): Promise<DefectTy
 };
 
 export const getTopTrends = async (filters: DashboardFilters): Promise<TrendData[]> => {
-  try {
-    const params = {
-      start: formatDateTime(filters.startDate!),
-      end: formatDateTime(filters.endDate!),
-    };
-
-    // ✅ ใช้ API_ROUTES แทน hardcode
-    const response = await api.get<any[]>(API_ROUTES.dashboard.top5_trends, params);
-    
-    if (Array.isArray(response)) {
-      return response.map((item: any) => ({
-        defecttype: item.defecttype || '',
-        line: item.line || '',
-        hour_slot: item.hour_slot || '',
-        quantity: Number(item.quantity) || 0
-      }));
-    }
-    return [];
-  } catch (error) {
-    console.error('Failed to fetch top trends:', error);
-    return [];
-  }
+  const data = await fetchDashboardData<any>(API_ROUTES.dashboard.top5_trends, filters);
+  return data.map(item => ({
+    defecttype: item.defecttype || '',
+    line: item.line || '',
+    hour_slot: item.hour_slot || '',
+    quantity: Number(item.quantity) || 0
+  }));
 };
 
 export const getDefectsByCamera = async (filters: DashboardFilters): Promise<DefectCameraData[]> => {
-  const data = await fetchDashboardData<any>(API_ROUTES.dashboard.defects_camera, filters);
+  const data = await fetchDashboardData<any>(API_ROUTES.dashboard.defects_camera, filters); // ✅ ใช้ defects_camera
   return data.map(item => ({
     prodid: item.prodid || '',
     defectid: item.defectid || '',
     defecttype: item.defecttype || '',
     cameraid: item.cameraid || '',
-    line: item.line || '',
+    line: item.line || item.LINE || '',
     cameraname: item.cameraname || '',
     totalng: Number(item.totalng) || 0,
     defecttime: item.defecttime || ''
@@ -122,7 +115,7 @@ export const getNGDistribution = async (filters: DashboardFilters): Promise<NgDi
   }));
 };
 
-
+// Dropdown data services
 export const getProducts = async (): Promise<ProductOption[]> => {
   try {
     const response = await api.get<any>(API_ROUTES.dashboard.products_list);
@@ -152,7 +145,6 @@ export const getLines = async (): Promise<LineOption[]> => {
     return [];
   }
 };
-
 
 export const getDashboardData = async (filters: DashboardFilters): Promise<DashboardData> => {
   if (!filters.startDate || !filters.endDate) {

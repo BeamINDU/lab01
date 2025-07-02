@@ -19,10 +19,9 @@ import ClassNameModal from "./class-name-modal";
 
 interface AnnotationModalProps {
   modelVersionId: number;
-  productId: string,
-  cameraId: string,
   modelId: number,
   data: ModelPicture[];
+  setData: React.Dispatch<React.SetStateAction<ModelPicture[]>>;
   editPicture: ModelPicture,
   onClose: () => void;
   onSave: (editDate: ModelPicture[]) => void;
@@ -31,17 +30,16 @@ interface AnnotationModalProps {
 
 const AnnotationModal = ({
   modelVersionId,
-  productId,
-  cameraId,
   modelId,
   data,
+  setData,
   editPicture,
   onClose,
   onSave,
   canEdit,
 }: AnnotationModalProps) => {
   const { data: session } = useSession();
-  const [pictureList, setPictureList] = useState<ModelPicture[]>([]);
+  // const [pictureList, setPictureList] = useState<ModelPicture[]>([]);
   const [tool, setTool] = useState<ShapeType>('rectangle');
   const [classNames, setClassNames] = useState<ClassName[]>([]);
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
@@ -58,7 +56,7 @@ const AnnotationModal = ({
 
   useEffect(() => {
     if (data.length === 0) return;
-    setPictureList(data);
+    // setPictureList(data);
 
     const index = data.findIndex(p => p.url === editPicture.url);
     if (index !== -1) {
@@ -68,9 +66,11 @@ const AnnotationModal = ({
 
 
   useEffect(() => {
-    if (pictureList.length === 0) return;
-
-    const currentPic = pictureList[currentIndex];
+    if (data.length === 0) return;
+    // if (pictureList.length === 0) return;
+    
+    const currentPic = data[currentIndex];
+    // const currentPic = pictureList[currentIndex];
     if (!currentPic) return;
 
     setIsImageLoading(true);
@@ -89,7 +89,7 @@ const AnnotationModal = ({
     return () => {
       img.onload = null;
     };
-  }, [currentIndex, pictureList]);
+  }, [currentIndex, data]);
 
 
   useEffect(() => {
@@ -161,7 +161,7 @@ const AnnotationModal = ({
                   node.y() + height
                 ]
               };
-              setAnnotations(annotations.map(a => a.id === ann.id ? updatedAnn : a));
+              setAnnotations(annotations?.map(a => a.id === ann.id ? updatedAnn : a));
             }}
           />
         )}
@@ -184,7 +184,7 @@ const AnnotationModal = ({
                 ...ann,
                 center: [node.x(), node.y()]
               };
-              setAnnotations(annotations.map(a => a.id === ann.id ? updatedAnn : a));
+              setAnnotations(annotations?.map(a => a.id === ann.id ? updatedAnn : a));
             }}
           />
         )}
@@ -205,7 +205,7 @@ const AnnotationModal = ({
               const dx = node.x() - ann.points[0][0];
               const dy = node.y() - ann.points[0][1];
               const updatedPoints: [number, number][] = ann.points.map(([x, y]) => [x + dx, y + dy]);
-              setAnnotations(annotations.map(a => 
+              setAnnotations(annotations?.map(a => 
                 a.id === ann.id ? { ...ann, points: updatedPoints } : a
               ));
               node.position({ x: 0, y: 0 });
@@ -231,7 +231,7 @@ const AnnotationModal = ({
                 ...ann,
                 position: [node.x(), node.y()],
               };
-              setAnnotations(annotations.map(a => a.id === ann.id ? updatedAnn : a));
+              setAnnotations(annotations?.map(a => a.id === ann.id ? updatedAnn : a));
             }}
           />
         )}
@@ -408,7 +408,7 @@ const AnnotationModal = ({
 
   const handleBulkUpdateLabels = (updatedClasses: ClassName[]) => {
     setAnnotations(prevAnnotations => {
-      return prevAnnotations.map(ann => {
+      return prevAnnotations?.map(ann => {
         const match = updatedClasses.find(cls => cls.id === ann.class.id);
         if (match) {
           return { ...ann, class: match };
@@ -441,74 +441,68 @@ const AnnotationModal = ({
     setIsOpen(false);
   };
   
-  const updateAllAnnotationsToIamges = () => {
-    const updatedImages = [...pictureList];
-    updatedImages[currentIndex] = {
-      ...updatedImages[currentIndex],
-      annotate: annotations,
-    };
-    setPictureList(updatedImages);
-    return updatedImages;
+  const updateCurrentAnnotationsToImages = (index: number) => {
+    const updated = [...data];
+    // const updated = [...pictureList];
+    updated[index] = { ...updated[index], annotate: annotations };
+    setData(updated);
+    // setPictureList(updated);
+    return updated;
   };
 
-  const updateCurrentAnnotationsToImages = (index) => {
-    const updatedImages = [...pictureList];
-    updatedImages[index] = {
-      ...updatedImages[index],
-      annotate: annotations,
-    };
-    setPictureList(updatedImages);
-    return updatedImages;
+  const updateAnnotateImage = async () => {
+    try {
+      const updated = updateCurrentAnnotationsToImages(currentIndex);
+      const img = updated[currentIndex];
+
+      const res = await annotateImage({
+        imageId: img.id ?? undefined,
+        file: img.file,
+        modelVersionId,
+        modelId,
+        updatedBy: session?.user?.userid ?? "",
+        annotate: JSON.stringify(annotations),
+      });
+
+      updated[currentIndex] = {
+        ...updated[currentIndex],
+        id: res.id,
+        name: res.name,
+        file: res.file,
+        url: res.url,
+        annotate: res.annotate,
+      };
+
+      setData(updated);
+      // setPictureList(updated);
+
+      return updated;
+    } catch (error) {
+      console.error("Upload operation failed:", error);
+      showError(`Upload failed: ${extractErrorMessage(error)}`);
+    }
   };
-  
+
   const handlePrevious = async () => {
     if (currentIndex > 0) {
-      const updateImage = updateCurrentAnnotationsToImages(currentIndex);
-      
-      const image = updateImage[currentIndex]; 
-      await updateAnnotateImage(image);
-
-      setCurrentIndex(currentIndex - 1);
+      const updated = await updateAnnotateImage();
+      if (updated) setCurrentIndex(currentIndex - 1);
     }
   };
 
   const handleNext = async () => {
-    if (currentIndex < pictureList.length - 1) {
-      const updateImage = updateCurrentAnnotationsToImages(currentIndex);
-
-      const image = updateImage[currentIndex]; 
-      await updateAnnotateImage(image);
-
-      setCurrentIndex(currentIndex + 1);
+    if (currentIndex < data.length - 1) {
+      const updated = await updateAnnotateImage();
+      if (updated) setCurrentIndex(currentIndex + 1);
     }
   };
 
-  const updateAnnotateImage = async (img: ModelPicture) => {
-    try {
-        await annotateImage({
-          imageId: img.id ?? undefined,
-          modelVersionId: modelVersionId,
-          productId: productId,
-          cameraId: cameraId,
-          modelId: modelId,
-          updatedBy: session?.user?.userid ?? "",
-          annotate: JSON.stringify(img.annotate),
-          file: img.file,
-        });
-      } catch (error) {
-        console.error("Upload operation failed:", error);
-        showError(`Upload failed: ${extractErrorMessage(error)}`);
-      }
-  };
-
   const onSubmit = async () => {
-    const updateImage = updateAllAnnotationsToIamges();
-    // console.log("updateImage", updateImage);
-
-    const image = updateImage[currentIndex]; 
-    await updateAnnotateImage(image);
-
-    onSave(updateImage);
+    const updated = await updateAnnotateImage();
+    if (updated) {
+      onSave(updated);
+      // onSave(pictureList);
+    }
   };
 
   const stageWidth = 760;
@@ -561,7 +555,7 @@ const AnnotationModal = ({
                         fillPatternScaleY={stageHeight / imageObj.height}
                       />
                     )}
-                    {annotations.map(ann => renderAnnotation(ann))}
+                    {annotations?.map(ann => renderAnnotation(ann))}
                     {newAnnotation && renderAnnotation(newAnnotation)}
                   </Layer>
                 </Stage>
@@ -570,7 +564,7 @@ const AnnotationModal = ({
               {/* Image Navigation */}
               <ImageNavigator
                 currentIndex={currentIndex}
-                total={pictureList.length}
+                total={data?.length}
                 onPrevious={handlePrevious}
                 onNext={handleNext}
               />
@@ -731,7 +725,7 @@ function AnnotationList({ annotations, selectedId, setSelectedId, onDelete }: An
         {annotations.length === 0 ? (
           <p className="text-gray-500 text-center py-4 text-sm">No annotations yet</p>
         ) : (
-          annotations.map((ann, index) => {
+          annotations?.map((ann, index) => {
             return (
               <div
                 key={ann.id}

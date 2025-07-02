@@ -15,7 +15,7 @@ interface DetectionModelColumnProps {
 
 export default function DetectionModelColumns({
   showCheckbox,
-  onAction, 
+  onAction,
   selectedIds,
   setSelectedIds,
   data,
@@ -29,54 +29,54 @@ export default function DetectionModelColumns({
         : [...prev, modelVersionId]
     );
   };
-  
+
   const toggleSelectAll = () => {
     setSelectedIds((prev) =>
       prev.length === data.length
         ? []
         : data
-            .map((item) => item.modelVersionId)
-            .filter((id): id is number => typeof id === "number")
+          .map((item) => item.modelVersionId)
+          .filter((id): id is number => typeof id === "number")
     );
   };
-  
+
 
   return [
     ...(showCheckbox
       ? [
-          {
-            id: "select",
-            header: () => (
-              <div className="flex justify-center items-center">
-                <input
-                  type="checkbox"
-                  checked={
-                    data.length > 0 &&
-                    selectedIds.length === data.length &&
-                    data.every((item) => typeof item.modelVersionId === "number" && selectedIds.includes(item.modelVersionId))
-                  }
-                  onChange={toggleSelectAll}
-                  className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
-                />
-              </div>
-            ),
-            cell: ({ row }) => (
-              <div className="flex items-center justify-center">
-                <input
-                  type="checkbox"
-                  checked={selectedIds.includes(row.original.modelVersionId)}
-                  onChange={() => toggleSelect(row.original.modelVersionId)} 
-                  className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
-                />
-              </div>
-            ),
-            meta: {
-              style: {
-                width: '30px',
-              },
+        {
+          id: "select",
+          header: () => (
+            <div className="flex justify-center items-center">
+              <input
+                type="checkbox"
+                checked={
+                  data.length > 0 &&
+                  selectedIds.length === data.length &&
+                  data.every((item) => typeof item.modelVersionId === "number" && selectedIds.includes(item.modelVersionId))
+                }
+                onChange={toggleSelectAll}
+                className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
+              />
+            </div>
+          ),
+          cell: ({ row }) => (
+            <div className="flex items-center justify-center">
+              <input
+                type="checkbox"
+                checked={selectedIds.includes(row.original.modelVersionId)}
+                onChange={() => toggleSelect(row.original.modelVersionId)}
+                className="h-5 w-5 text-blue-600 border-gray-300 rounded-sm focus:ring-blue-500 focus:ring-2"
+              />
+            </div>
+          ),
+          meta: {
+            style: {
+              width: '30px',
             },
-          }
-        ]
+          },
+        }
+      ]
       : []),
     {
       accessorKey: "no",
@@ -101,15 +101,15 @@ export default function DetectionModelColumns({
       cell: ({ getValue }) => {
         const rawValue = getValue();
         const value = typeof rawValue === "string" ? rawValue : String(rawValue);
-    
+
         const statusMap: Record<string, { label: string; className: string }> = {
           Using: { label: "Using", className: "bg-green-100 text-green-800" },
           Processing: { label: "Processing", className: "bg-yellow-100 text-yellow-800" },
           Ready: { label: "Ready", className: "bg-blue-100 text-blue-800" },
         };
-    
+
         const status = statusMap[value] || { label: "Unknown", className: "bg-gray-100 text-gray-800" };
-    
+
         return (
           <span
             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium ${status.className}`}
@@ -118,7 +118,7 @@ export default function DetectionModelColumns({
           </span>
         );
       },
-    },    
+    },
     {
       accessorKey: "createdBy",
       header: "Created By",
@@ -152,36 +152,43 @@ export default function DetectionModelColumns({
     {
       id: "actions",
       header: "Actions",
-      cell: ({ row }) => (
-        <div className="flex items-center justify-center gap-2">
-          {canEdit && (
-            <button 
-              className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary"
-              onClick={() => {
-                const id = row.original.modelVersionId;
-                if (typeof id === "number") {
-                  onAction(id, 'edit');
-                }
-              }}
-            >
-              Edit
-              <SquarePen size={16} />
-            </button>
-          )}
-          <button 
-            className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary-dark"
-            onClick={() => {
-              const id = row.original.modelVersionId;
-              if (typeof id === "number") {
-                onAction(id, 'view');
-              }
-            }}
-          >
-            View
-            <Eye size={16} />
-          </button>
-        </div>
-      ),
-    },
+      cell: ({ row }) => {
+        const id = row.original.modelVersionId;
+        const statusId = row.original.statusId;
+        console.log(ModelStatus.Using)
+        return (
+          <div className="flex items-center justify-center gap-2">
+            {typeof id === "number" && canEdit && (
+              statusId === ModelStatus.Using ? (
+                <button
+                  className="w-20 flex items-center justify-center text-center gap-1 text-xs px-3 py-1 rounded bg-purple-600 text-white hover:bg-purple-700"
+                  onClick={() => onAction(id, 'duplicate')}
+                >
+                  Duplicate
+                </button>
+              ) : (
+                <button
+                  className="w-20 flex items-center justify-center text-center gap-1 text-xs px-3 py-1 rounded btn-primary"
+                  onClick={() => onAction(id, 'edit')}
+                >
+                  Edit
+                  <SquarePen size={16} />
+                </button>
+              )
+            )}
+
+            {typeof id === "number" && (
+              <button
+                className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary-dark"
+                onClick={() => onAction(id, 'view')}
+              >
+                View
+                <Eye size={16} />
+              </button>
+            )}
+          </div>
+        );
+      },
+    }
   ];
 }

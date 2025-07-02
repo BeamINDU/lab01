@@ -245,26 +245,23 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
     
   };
 
-  const handleSaveAnnotation = (editData: ModelPicture[]) => {
-    const updateAnnotations = editData.map((pic) => {
-      return {
-        ...pic,
-        annotations: [...(pic.annotate ?? [])],
-      };
-    });
-
-    setPictureList(updateAnnotations);
+  const handleSaveAnnotation = (images: ModelPicture[]) => {
+    // console.log("images", images);
+    setPictureList(images);
 
     if (selectedPicture?.refId) {
-      const updatedSelected = updateAnnotations.find(c => c.refId === selectedPicture.refId);
-
-      if (!updatedSelected) return;
-
-      handlePreview(updatedSelected);
+      const updatedSelected = images.find(c => c.refId === selectedPicture.refId);
+        if (updatedSelected) {
+          const newSelected = {
+            ...updatedSelected,
+            refId: updatedSelected.id != null ? String(updatedSelected.id) : undefined,
+          };
+          handlePreview(newSelected);
+        }
     }
 
-    console.log("editData", editData);
     // exportJson(editData);
+
     setIsOpenAnnotation(false);
   };
 
@@ -281,6 +278,15 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
     URL.revokeObjectURL(url);
   }
   
+  const handleNext = async () => {
+    const updatedFormData: FormData = {
+      ...formData,
+      currentStep: 3,
+      updatedBy: session?.user?.userid,
+    };
+    next(updatedFormData);
+  }
+
   const handleStartTraining = async () => {
     try {
       const updatedFormData: FormData = {
@@ -299,15 +305,6 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
       console.error('Save step3 failed:', error);
       showError(`Save failed: ${extractErrorMessage(error)}`);
     }
-  }
-
-  const handleNext = async () => {
-    const updatedFormData: FormData = {
-      ...formData,
-      currentStep: 3,
-      updatedBy: session?.user?.userid,
-    };
-    next(updatedFormData);
   }
   
   const stageWidth = 760;
@@ -465,10 +462,11 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
           onClose={() => setIsOpenAnnotation(false)}
           onSave={handleSaveAnnotation}
           modelVersionId={modelVersionId}
-          productId={formData?.productId}
-          cameraId={formData?.cameraId ?? ''}
+          // productId={formData?.productId}
+          // cameraId={formData?.cameraId ?? ''}
           modelId={formData?.modelId ?? 0}
           data={pictureList}
+          setData={setPictureList}
           editPicture={editPicture ?? pictureList?.[0]}
         />
       )}

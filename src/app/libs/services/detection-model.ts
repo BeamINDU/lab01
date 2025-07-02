@@ -210,8 +210,6 @@ export const annotateImage = async (
   param: {
     imageId?: number;
     modelVersionId: number;
-    productId: string;
-    cameraId: string;
     modelId: number;
     updatedBy: string;
     annotate: any;
@@ -221,22 +219,16 @@ export const annotateImage = async (
   try {
     const formData = new FormData();
 
-    if (param.imageId !== undefined && param.imageId !== null) {
+    if (param.imageId) {
       formData.append('imageid', param.imageId.toString());
     }
 
     formData.append('modelversionid', param.modelVersionId.toString());
-    formData.append('prodid', param.productId);
-    formData.append('cameraid', param.cameraId);
     formData.append('modelid', param.modelId.toString());
     formData.append('updatedby', param.updatedBy);
     formData.append('annotate', param.annotate);
 
-    if (!param.imageId && !param.file) {
-      throw new Error("File must be provided when inserting new image.");
-    }
-
-    if (param.file) {
+    if (param.imageId === undefined && param.file) {
       formData.append('file', param.file);
     }
 
@@ -248,7 +240,7 @@ export const annotateImage = async (
       name: res.imagename,
       file: res.file,
       url: `${baseURL}/${res.imagepath.replace(/\\/g, "/")}`,
-      annotations: param.annotate,
+      annotate: JSON.parse(param.annotate),
       refId: res.imageid,
     };
   } catch (error) {
@@ -384,7 +376,7 @@ export const getImage = async (modelversionid: number) => {
           name: item.imagename,
           file: item.file,
           url: imageUrl,
-          annotate: safeParseJSON(item.annotate),
+          annotate: item.annotate,
           refId: item.imageid,
       };
     });    

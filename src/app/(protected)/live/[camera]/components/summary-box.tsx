@@ -8,7 +8,7 @@ type SummaryBoxProps = {
 
 export default function SummaryBox({ label, value, loading }: SummaryBoxProps) {
   return (
-    <div className="bg-gray-200 p-5 text-center rounded">
+    <div className="bg-gray-200 p-6 text-center rounded">
       <div className="text-5xl font-bold">
         {loading ? (
           <span className="inline-block w-24 h-7 bg-gray-300 animate-pulse rounded text-transparent"></span>

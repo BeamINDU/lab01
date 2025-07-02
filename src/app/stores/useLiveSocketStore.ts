@@ -15,10 +15,10 @@ export const useLiveSocketStore = create<LiveSocketState>((set, get) => ({
     if (get().socket) return;
 
     // For MockLiveWebSocket
-    // const socket = new MockLiveWebSocket(cameraId) as unknown as WebSocket;
+    const socket = new MockLiveWebSocket(cameraId) as unknown as WebSocket;
 
-    const socketUrl = `${process.env.NEXT_PUBLIC_LIVE_SOCKET_URL}/${cameraId}` || `ws://localhost:8010/live-defect/${cameraId}`;
-    const socket = new WebSocket(socketUrl);
+    // const socketUrl = `${process.env.NEXT_PUBLIC_LIVE_SOCKET_URL}/${cameraId}` || `ws://localhost:8010/live-defect/${cameraId}`;
+    // const socket = new WebSocket(socketUrl);
 
     socket.onopen = () => {
       console.log("Live WebSocket connected");
@@ -35,9 +35,9 @@ export const useLiveSocketStore = create<LiveSocketState>((set, get) => ({
     };
 
     // For MockLiveWebSocket
-    // if ('connect' in socket && typeof (socket as any).connect === 'function') {
-    //   (socket as any).connect();
-    // }
+    if ('connect' in socket && typeof (socket as any).connect === 'function') {
+      (socket as any).connect();
+    }
   },
 
   disconnect: () => {

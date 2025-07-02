@@ -51,8 +51,10 @@ export const showLoading = (text = 'Loading...') =>
     text,
     allowOutsideClick: false,
     didOpen: () => {
+      // @ts-ignore
       Swal.showLoading();
     },
+    showConfirmButton: false,
   });
 
 export const closeAlert = () => Swal.close();

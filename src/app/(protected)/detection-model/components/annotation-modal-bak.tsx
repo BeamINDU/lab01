@@ -371,7 +371,7 @@ export default function AnnotationModal({
   };
 
   const handleStartEdit = (id: string) => {
-    const annotation = annotations.find(ann => ann.id === id) as Annotation;
+    const annotation = annotations?.find(ann => ann.id === id) as Annotation;
     if (annotation) {
       setEditingId(id);
       setEditingLabel(annotation.label);
@@ -381,7 +381,7 @@ export default function AnnotationModal({
 
   const handleUpdateLabel = () => {
     if (editingId && editingLabel) {
-      setAnnotations(annotations.map(ann =>
+      setAnnotations(annotations?.map(ann =>
         ann.id === editingId ? { ...ann, label: editingLabel } : ann
       ));
     }
@@ -537,7 +537,7 @@ export default function AnnotationModal({
   const onSubmit = async () => {
     const exportData = {
       image: pictureList[currentImageIndex],
-      annotations: annotations.map(ann => ({
+      annotations: annotations?.map(ann => ({
         id: ann.id,
         type: ann.type,
         defectType: ann.defectType,
@@ -634,7 +634,7 @@ export default function AnnotationModal({
                       )}
 
                       {/* Render existing annotations */}
-                      {annotations.map(ann => renderAnnotation(ann))}
+                      {annotations?.map(ann => renderAnnotation(ann))}
 
                       {/* Render annotation being drawn */}
                       {newAnnotation && renderAnnotation(newAnnotation)}
@@ -752,7 +752,7 @@ export default function AnnotationModal({
                   {annotations.length === 0 ? (
                     <p className="text-gray-500 text-center py-4">No annotations yet</p>
                   ) : (
-                    annotations.map((ann, index) => {
+                    annotations?.map((ann, index) => {
                       const category = defectCategories.find(c => c.id === ann.defectType);
                       const isEditing = editingId === ann.id;
 

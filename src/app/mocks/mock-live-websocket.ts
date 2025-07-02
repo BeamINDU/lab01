@@ -1,4 +1,4 @@
-import { LiveInspectionView } from "@/app/types/live";
+import { LiveInspection } from "@/app/types/live";
 
 export class MockLiveWebSocket {
   readyState: number = WebSocket.CONNECTING;
@@ -59,12 +59,12 @@ export class MockLiveWebSocket {
         statusObjectCounting === "OK" && 
         statusBarcodeReading === "OK") ? "OK" : "NG";
 
-      const data: LiveInspectionView = {
-        liveStream: "", //this.generateMockBase64Image();
+      const data: LiveInspection = {
+        liveStream: "",
         cameraId: this.currentCamera ?? "",
         cameraName: `Mock Camera ${this.currentCamera}`,
         location: `Zone ${this.currentCamera}`,
-        status: status, //["OK", "NG"][Math.floor(Math.random() * 2)],
+        status: status,
         lotNo: `Lot-${Math.floor(Math.random() * 10)}`,
         totalNG: Math.floor(Math.random() * 10).toString(),
         totalProduct: Math.floor(Math.random() * 10000).toString(),
@@ -75,36 +75,43 @@ export class MockLiveWebSocket {
           serialNo: `SN-${Date.now()}`,
           productDateTime: new Date().toISOString(),
         },
-        colorDetection: {
-          predictedResult:"Back Detected",
-          expected: "Back",
-          confident: Math.floor(Math.random() * 100),
-          status: statusColorDetection,
-        },
-        typeClassification: {
-          predictedResult:"Circle Detected",
-          expected: "Circle",
-          confident: Math.floor(Math.random() * 100),
-          status: statusTypeClassification,
-        },
-        componentDetection: {
-          predictedResult:"All Detected",
-          expected: "All",
-          confident: Math.floor(Math.random() * 100),
-          status: statusComponentDetection,
-        },
-        objectCounting: {
-          predictedResult:"Circle Detected",
-          expected: "Circle",
-          confident: Math.floor(Math.random() * 100),
-          status: statusObjectCounting,
-        },
-        barcodeReading: {
-          predictedResult:"Readable",
-          expected: "Back",
-          confident: Math.floor(Math.random() * 100),
-          status: statusBarcodeReading,
-        },
+        detectionInfo: [
+          {
+            function: "Color Detection",
+            predicted: "Back Detected",
+            expected: "Back",
+            confident: Math.floor(Math.random() * 100),
+            status: statusColorDetection,
+          },
+          {
+            function: "Type Classification",
+            predicted: "Circle Detected",
+            expected: "Circle",
+            confident: Math.floor(Math.random() * 100),
+            status: statusTypeClassification,
+          },
+          {
+            function: "Component Detection",
+            predicted: "All Detected",
+            expected: "All",
+            confident: Math.floor(Math.random() * 100),
+            status: statusComponentDetection,
+          },
+          {
+            function: "Object Counting",
+            predicted: "Circle Detected",
+            expected: "Circle",
+            // confident: Math.floor(Math.random() * 100),
+            status: statusObjectCounting,
+          },
+          {
+            function: "Barcode Reading",
+            predicted: "Readable",
+            expected: "Back",
+            // confident: Math.floor(Math.random() * 100),
+            status: statusBarcodeReading,
+          },
+        ]
       };
 
       if (this.onmessage) {

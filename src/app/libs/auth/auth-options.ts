@@ -16,7 +16,6 @@ export const authOptions: NextAuthOptions = {
         if (!credentials?.username || !credentials?.password) return null;
 
         const user = await validateLogin(credentials.username, credentials.password) as User;
-        console.log("user", user);
 
         if (!user) return null;
 
@@ -30,7 +29,7 @@ export const authOptions: NextAuthOptions = {
         token.userid = (user as any).userid;
         token.fullname = (user as any).fullname;
         token.email = (user as any).email;
-        console.log("token", token);
+        // console.log("token", token);
       }
       return token;
     },
@@ -39,7 +38,7 @@ export const authOptions: NextAuthOptions = {
         session.user.userid = token.userid as string;
         session.user.fullname = token.fullname as string;
         session.user.email = token.email as string;
-        console.log("session", session);
+        // console.log("session", session);
       }
       return session;
     },

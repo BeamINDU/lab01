@@ -1,25 +1,17 @@
 "use client";
 
-import { LiveInspectionView } from "@/app/types/live";
-
-interface detectionInfo {
-  title: string;
-  value: string;
-  expected: string;
-  confident: number;
-  status: "OK" | "NG" | string;
-}
+import { DetectionInfo } from "@/app/types/live";
 
 interface Props {
-  items: detectionInfo[];
+  items: DetectionInfo[];
   loading?: boolean;
 }
 
 export default function CameraBox({ items, loading = false }: Props) {
 
   return (
-    <div className="grid md:grid-cols-2 gap-3 text-sm font-medium">
-      {items.map((item, idx) => {
+    <div className="grid md:grid-cols-2 gap-4 text-sm font-medium">
+      {items?.map((item, idx) => {
         const isLast = idx === items.length - 1;
         const isOdd = items.length % 2 !== 0;
         const isFullWidth = isLast && isOdd;
@@ -27,7 +19,7 @@ export default function CameraBox({ items, loading = false }: Props) {
         return (
           <div
             key={idx}
-            className={`bg-white border-l-8 p-2 rounded shadow transition
+            className={`bg-white border-l-8 p-1 rounded shadow transition
           ${loading
                 ? "border-gray-300"
                 : item.status === "OK"
@@ -36,19 +28,17 @@ export default function CameraBox({ items, loading = false }: Props) {
           ${isFullWidth ? "md:col-span-2" : ""}
         `}
           >
-            <div className="text-md text-gray-600 font-semibold px-1 py-2">{item.title}</div>
+            <div className="text-md text-gray-600 font-semibold px-1 py-2">{item.function}</div>
 
             <div
               className={`text-3xl font-bold px-1 py-2 h-[42px] ${loading ? "animate-pulse bg-gray-300 text-transparent rounded " : ""
                 }`}
             >
-              {!loading && item.value}
+              {!loading && item.predicted}
             </div>
 
             <div className="text-gray-800 text-xl px-1 py-1">
-              <span className="text-gray-600">
-                Expected:{" "}
-              </span>
+              <span className="text-gray-600">Expected:{" "}</span>
               <span
                 className={`${loading
                     ? "animate-pulse bg-gray-300 text-transparent inline-block w-20 h-8 rounded"
@@ -57,17 +47,21 @@ export default function CameraBox({ items, loading = false }: Props) {
               >
                 {!loading && item.expected}
               </span>
-              <span className="text-gray-600">
-                 {" "} | Confident:{" "}
-              </span>
-              <span
-                className={`${loading
-                    ? "animate-pulse bg-gray-300 text-transparent inline-block w-12 h-5 rounded"
-                    : ""
-                  }`}
-              >
-                {!loading && item.confident}%
-              </span>
+
+              {/* แสดงเฉพาะเมื่อ confident มีค่าและมากกว่า 0 */}
+              {item.confident != null && item.confident !== 0 && (
+                <>
+                  <span className="text-gray-600">{" "} | Confident:{" "}</span>
+                  <span
+                    className={`${loading
+                        ? "animate-pulse bg-gray-300 text-transparent inline-block w-12 h-5 rounded"
+                        : ""
+                      }`}
+                  >
+                    {!loading && item.confident}%
+                  </span>
+                </>
+              )}
             </div>
           </div>
         );
