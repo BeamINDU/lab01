@@ -8,7 +8,7 @@ import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { DetectionModel, ParamSearch } from "@/app/types/detection-model"
-import { search, create, removeModel } from "@/app/libs/services/detection-model";
+import { search, create, removeModel, duplicateModel } from "@/app/libs/services/detection-model";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
 import { extractErrorMessage } from '@/app/utils/errorHandler';
@@ -18,9 +18,11 @@ import DetectionModelColumns from "./components/detection-model-column";
 import DetectionModelFilterForm from './components/detection-model-filter';
 import AddModelFormModal from "./components/add-model-form";
 import NextTopLoader from 'nextjs-toploader';
+import { useSession } from "next-auth/react";
 
 export default function Page() {
   const router = useRouter();
+  const { data: session } = useSession();
   const { hasPermission } = usePermission();
   const { register, getValues, setValue, reset, control } = useForm();
   const [data, setData] = useState<DetectionModel[]>([]);
@@ -40,7 +42,7 @@ export default function Page() {
         modelName: formValues.modelName || '',
         version: formValues.version || '',
         function: formValues.function || '',
-        statusId: formValues.statusId || '',
+        statusId: formValues.status || '',
       };
       const result = await search(param);
       setData(Array.isArray(result) ? result : []);
@@ -81,16 +83,40 @@ export default function Page() {
     }
   };
 
-  const handleModelAction = async (modelVersionId: number, mode: string) => {
+  const handleModelAction = async (modelVersionId: number, mode: string, modelName?: string) => {
     try {
       loaderRef.current?.start();
-      const path = mode === 'edit' 
-        ? `/detection-model/edit/${modelVersionId}` 
-        : `/detection-model/view/${modelVersionId}`;
-      router.push(path);
+      
+      switch (mode) {
+        case 'view':
+          router.push(`/detection-model/view/${modelVersionId}`);
+          break;
+        case 'edit':
+          router.push(`/detection-model/edit/${modelVersionId}`);
+          break;
+        case 'duplicate':
+          handleDuplicate(modelVersionId, modelName)
+          break;
+        default:
+          break;
+      }
     } catch (error) {
       console.error('Failed to open modal:', error);
       showError('Failed to load  details');
+    }
+  };
+
+  const handleDuplicate = async (modelVersionId: number, modelName?: string) => {
+    const result = await showConfirm(`Are you sure you want to duplicate ${modelName}?`)
+    if (result.isConfirmed) {
+      try {
+        const newModelVersionId = await duplicateModel(modelVersionId, session?.user?.userid ?? "");
+        await showSuccess(`Duplicate successfully`)
+        router.push(`/detection-model/edit/${newModelVersionId}`);
+      } catch (error) {
+        console.error('Duplicate operation failed:', error);
+        showError('Duplicate failed')
+      }
     }
   };
 
@@ -115,7 +141,8 @@ export default function Page() {
     try {
       const newData = await create(formData) as DetectionModel;
       setData(prev => [...prev, newData]);
-      showSuccess(`Saved successfully`)
+      await showSuccess(`Saved successfully`)
+      router.push(`/detection-model/edit/${newData.modelVersionId}`);
     } catch (error) {
       console.error('Save operation failed:', error);
       showError('Save failed')

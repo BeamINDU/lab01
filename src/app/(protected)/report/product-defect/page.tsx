@@ -36,9 +36,9 @@ export default function Page() {
       const param: ParamSearch = {
         dateFrom: formValues.dateFrom || '',
         dateTo: formValues.dateTo || '',
-        productName: formValues.productName || '',
-        defectTypeName: formValues.defectType || '',
-        cameraName: formValues.cameraName || '',
+        productId: formValues.productId || '',
+        defectTypeId: formValues.defectTypeId || '',
+        cameraId: formValues.cameraId || '',
       };
       const products = await search(param);
       setData(Array.isArray(products) ? products : []);
@@ -51,8 +51,8 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     try {
-      const headers = ["Datetime", "Product Name", "Status", "Defect Type Name", "Camera Name"];
-      const keys: (keyof ReportProduct)[] = ["datetime", "productName", "status", "defectTypeName", "cameraName"];
+      const headers = ["Datetime", "Product ID", "Defect Type ID", "Camera ID", "Status"];
+      const keys: (keyof ReportProduct)[] = ["datetime", "productId", "defectTypeId", "cameraId", "status"];
       const fileName = `ReportProductDefect_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
     
       switch (type) {

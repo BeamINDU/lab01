@@ -1,12 +1,12 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { SquarePen, Eye } from "lucide-react";
+import { SquarePen, Eye, Copy } from "lucide-react";
 import { DetectionModel } from "@/app/types/detection-model"
 import { formatDateTime } from "@/app/utils/date";
 import { ModelStatus } from '@/app/constants/status';
 
 interface DetectionModelColumnProps {
   showCheckbox?: boolean;
-  onAction: (modelVersionId: number, mode: string) => void;
+  onAction: (modelVersionId: number, mode: string, modelName?: string) => void;
   selectedIds: number[];
   setSelectedIds: (updater: (prevState: number[]) => number[]) => void;
   data: DetectionModel[];
@@ -155,16 +155,18 @@ export default function DetectionModelColumns({
       cell: ({ row }) => {
         const id = row.original.modelVersionId;
         const statusId = row.original.statusId;
-        console.log(ModelStatus.Using)
+        const modelName = row.original.modelName;
+
         return (
           <div className="flex items-center justify-center gap-2">
             {typeof id === "number" && canEdit && (
               statusId === ModelStatus.Using ? (
                 <button
                   className="w-20 flex items-center justify-center text-center gap-1 text-xs px-3 py-1 rounded bg-purple-600 text-white hover:bg-purple-700"
-                  onClick={() => onAction(id, 'duplicate')}
+                  onClick={() => onAction(id, 'duplicate', modelName)}
                 >
                   Duplicate
+                  {/* <Copy size={16} /> */}
                 </button>
               ) : (
                 <button

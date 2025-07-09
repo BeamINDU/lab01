@@ -97,6 +97,14 @@ export default function productColumns({
       header: "Serial No",
     },
     {
+      accessorKey: "barcode",
+      header: "Barcode",
+    },
+    {
+      accessorKey: "packSize",
+      header: "Pack Size",
+    },
+    {
       accessorKey: "status",
       header: "Status",
       cell: ({ getValue }) => {

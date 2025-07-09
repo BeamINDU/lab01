@@ -13,35 +13,6 @@ import CurrentInspectionBox from "./current-Inspection-box"
 import PlanningConfirmationModal from "./plans-confirm-model"
 import { LiveInspection, CurrentInspection, DetectionInfo } from "@/app/types/live";
 
-// interface detectionInfo {
-//   function: string;
-//   predicted: string;
-//   expected: string;
-//   confident: number;
-//   status: "OK" | "NG" | string;
-// }
-
-// interface currentInspection {
-//   productId: string
-//   productName: string
-//   serialNo: string
-//   productDateTime: Date | string
-// }
-
-// interface LiveInspection {
-//   liveStream: string
-//   location: string
-//   cameraId: string
-//   cameraName: string
-//   status: string
-//   lotNo: string
-//   totalNG: number | string
-//   totalProduct: number | string
-//   actualProduct: number | string
-//   currentInspection: currentInspection,
-//   detectionInfo: detectionInfo[]
-// }
-
 const emptyData: LiveInspection = {
   liveStream: '',
   location: 'Loading...',
@@ -61,21 +32,45 @@ const emptyData: LiveInspection = {
   detectionInfo: [],
 };
 
-
-const detectionTitles = [
-  "Color Detection",
-  "Type Classification",
-  "Component Detection",
-  "Object Counting",
-  "Barcode Reading",
-];
-
 export default function LiveInspectionViewPage({ cameraId }: { cameraId: string }) {
   const { socket, connect } = useLiveSocketStore();
   const [data, setData] = useState<LiveInspection>(emptyData);
   const [plans, setPlans] = useState<Planning[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+
+  // const [test, setTest] = useState<any>(null);
+  // const fetchTestAPI = async () => {
+  //   try {
+  //     const res = await fetch("http://127.0.0.1:8022/getTestAPI", {
+  //       method: "GET",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+
+  //     if (!res.ok) {
+  //       throw new Error(`HTTP error! status: ${res.status}`);
+  //     }
+
+  //     const data = await res.json();
+  //     return data;
+  //   } catch (error) {
+  //     console.error("Fetch failed:", error);
+  //     throw error;
+  //   }
+  // };
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const result = await fetchTestAPI();
+  //       setTest(result);
+  //     } catch (err: any) {
+  //       console.error(err.message || "Unknown error");
+  //     }
+  //   };
+  //   fetchData();
+  // }, []);
 
   useEffect(() => {
     if (!socket) {
@@ -164,6 +159,11 @@ export default function LiveInspectionViewPage({ cameraId }: { cameraId: string 
 
   return (
     <div className="px-2 py-1">
+      {/* <div>
+        <h1>API Data:</h1>
+        <pre>{JSON.stringify(data, null, 2)}</pre>
+      </div> */}
+
       {/* SummaryBox */}
       <div className="grid grid-cols-4 gap-4 text-center text-2xl font-semibold p-4 rounded-t">
         <SummaryBox label="Lot No." value={data?.lotNo} loading={loading} />
@@ -202,8 +202,8 @@ export default function LiveInspectionViewPage({ cameraId }: { cameraId: string 
           <DetectionBox
             items={
               loading
-                ? Array.from({ length: data?.detectionInfo?.length || detectionTitles.length }, (_, i) => ({
-                  function: detectionTitles[i],
+                ? Array.from({ length: data?.detectionInfo?.length }, (_, i) => ({
+                  function: "",
                   predicted: "",
                   expected: "",
                   confident: 0,

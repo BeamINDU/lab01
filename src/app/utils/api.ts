@@ -157,19 +157,18 @@ const uploadFile = async <T>(url: string, formData: FormData, config?: AxiosRequ
 
 // API
 export const api = {
-  // get: <T>(url: string, params?: Record<string, any>, config?: AxiosRequestConfig) => {
-  //   const queryString = buildQueryString(params);
-  //   const fullUrl = queryString ? `${url}?${queryString}` : url;
-  //   return request<T>('get', fullUrl, undefined, config);
-  // },
-
   get: <T>(url: string, params?: Record<string, any>, config?: AxiosRequestConfig) => {
+    const cleanParams = Object.fromEntries(
+      Object.entries(params || {}).filter(([_, value]) =>
+        value !== undefined && value !== ''
+      )
+    );
+
     return request<T>('get', url, undefined, {
       ...config,
-      params,
+      params: cleanParams,
     });
   },
-
   post: <T>(url: string, data?: any, config?: AxiosRequestConfig) =>
     request<T>('post', url, data, config),
 

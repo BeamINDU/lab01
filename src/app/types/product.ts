@@ -5,6 +5,8 @@ export type Product = {
   productTypeId: string
   productTypeName?: string
   serialNo: string
+  barcode: string
+  packSize: number
   status: boolean
   statusName?: string
   createdDate?: Date
@@ -16,7 +18,7 @@ export type Product = {
 export type ParamSearch = {
   productId?: string
   productName?: string
-  productTypeName?: string
+  productTypeId?: string
   serialNo?: string | undefined
   status?: boolean,
 }

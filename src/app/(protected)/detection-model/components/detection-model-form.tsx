@@ -64,8 +64,6 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
           modelId: modelVersion?.modelId,
           modelName: modelVersion?.modelName,
           statusId: modelVersion?.statusId,
-          productId: modelVersion.productId,
-          cameraId: modelVersion.cameraId ?? '',
         }));
       } catch (error) {
         console.error("Failed to load model:", error);
@@ -186,7 +184,7 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
         <span className="font-bold">version</span>{" "}
         <span className="font-light">{formData.currentVersion}</span>{" "}
         {renderStatusBadge(formData.statusId)} 
-        <span className="font-light text-xs">current Step: {formData.currentStep}</span>{" "}
+        {/* <span className="font-light text-xs">current Step: {formData.currentStep}</span>{" "} */}
       </h2>
 
       <div className="p-3 mx-auto">

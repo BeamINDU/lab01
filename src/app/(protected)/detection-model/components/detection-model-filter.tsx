@@ -4,7 +4,7 @@ import { Search } from 'lucide-react'
 import { UseFormRegister, Control, UseFormSetValue } from "react-hook-form";
 import { getModelNameOptions, getFunctionOptions } from "@/app/libs/services/detection-model";
 import SearchFieldResponsive  from '@/app/components/common/SearchField';
-import { ActiveStatus } from '@/app/constants/status'; 
+import { ModelStatusOption } from '@/app/constants/status'; 
 
 interface ProductFilterFormProps {
   register: UseFormRegister<any>;
@@ -63,7 +63,7 @@ export default function ProductFilterForm({register, setValue, control, onSearch
           placeholder="Select status..."
           options={[
             { label: "All", value: "" },
-            ...ActiveStatus.map(status => ({
+            ...ModelStatusOption.map(status => ({
               label: status.label,
               value: String(status.value),
             }))

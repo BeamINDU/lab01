@@ -9,11 +9,13 @@ export const extractErrorMessage = (error: unknown): string => {
       response?: {
         data?: {
           detail?: string | { error?: string };
+          error?: string;
         };
       };
     };
 
     const detail = axiosError.response?.data?.detail;
+    const flatError = axiosError.response?.data?.error;
 
     if (typeof detail === 'string') {
       return detail;
@@ -21,6 +23,10 @@ export const extractErrorMessage = (error: unknown): string => {
 
     if (typeof detail === 'object' && detail?.error) {
       return detail.error;
+    }
+
+    if (typeof flatError === 'string') {
+      return flatError;
     }
 
     return 'Unexpected error occurred';

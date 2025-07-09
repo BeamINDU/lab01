@@ -88,6 +88,10 @@ export default function CameraColumns({
       header: "Location",
     },
     {
+      accessorKey: "cameraIp",
+      header: "IP Address",
+    },
+    {
       accessorKey: "status",
       header: "Status",
       cell: ({ getValue }) => {

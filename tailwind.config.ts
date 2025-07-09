@@ -8,19 +8,11 @@ const config: Config = {
   ],
   theme: {
     extend: {
-      // colors: {
-      //   background: "var(--background)",
-      //   foreground: "var(--foreground)",
-      // },
-      // fontFamily: {
-      //   nunito: ['Nunito', 'sans-serif'], 
-      // },
-      // borderWidth: {
-      //   '10': '10px',
-      // },
       spacing: {
         '110': '110px',
         '120': '120px',
+        '160': '160px',
+        '260': '260px',
       },
     },
   },

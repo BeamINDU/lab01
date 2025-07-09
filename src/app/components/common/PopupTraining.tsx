@@ -3,14 +3,13 @@
 import { X } from 'lucide-react';
 import { showConfirm, showError, showSuccess } from '@/app/utils/swal';
 import { usePopupTraining } from '@/app/contexts/popup-training-context';
-
 import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
 // import { useWebSocket } from '@/app/contexts/websocket-context';
 
 export const PopupTraining = () => {
   const { displayProcessing, displayError, hidePopup, popup } = usePopupTraining();
   const { cancelConnection } = useTrainingSocketStore();
-  // const { cancelConnection } = useWebSocket();
+  // const { cancelConnection } = useWebSocket(); 
 
   if (!popup.isVisible) return null;
 
@@ -75,7 +74,7 @@ export const PopupTraining = () => {
           {popup.message}
         </span> */}
       </div>
-
+      
       {/* {popup.status === 'processing' && (
         <button
           onClick={handleCancel}

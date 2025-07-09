@@ -39,9 +39,9 @@ export type History = {
 export type ParamSearch = {
   dateFrom?: Date
   dateTo?: Date
-  productName?: string
-  defectTypeName?: string
-  cameraName?: string
+  productId?: string
+  defectTypeId?: string
+  cameraId?: string
   status?: string
 }
 

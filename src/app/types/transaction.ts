@@ -4,6 +4,7 @@ export type Transaction = {
   endDate: Date
   lotNo: string
   productId: string
+  productName: string
   quantity: number
   createdDate?: Date
   createdBy?: string

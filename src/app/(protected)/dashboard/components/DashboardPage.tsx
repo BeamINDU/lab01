@@ -33,13 +33,17 @@ export default function DashboardPage() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentFiltersRef = useRef<DashboardFilters>({});
 
-  // Initialize dates
+  // Initialize dates with current year only (All Months)
   useEffect(() => {
     const today = dayjs();
+    const currentYear = today.year().toString(); // 2025
+    
     setFilters(prev => ({
       ...prev,
-      dateFrom: today.startOf('day').format('YYYY-MM-DD HH:mm'),
-      dateTo: today.endOf('day').format('YYYY-MM-DD HH:mm')
+      month: '', // เริ่มต้นเป็น All Months
+      year: currentYear,
+      dateFrom: today.startOf('year').format('YYYY-MM-DD HH:mm'), // Start of current year
+      dateTo: today.endOf('year').format('YYYY-MM-DD HH:mm')       // End of current year
     }));
   }, []);
 
@@ -124,79 +128,87 @@ export default function DashboardPage() {
     setFilters(prev => ({ ...prev, [key]: value || '' }));
   }, []);
 
-  // Helper function to set date range
-  const setDateRange = useCallback((start: dayjs.Dayjs, end: dayjs.Dayjs, logMessage?: string) => {
-    setFilters(prev => ({
-      ...prev,
-      dateFrom: start.format('YYYY-MM-DD HH:mm'),
-      dateTo: end.format('YYYY-MM-DD HH:mm')
-    }));
-    
-    if (process.env.NODE_ENV === 'development' && logMessage) {
-      console.log(logMessage, { from: start.format('YYYY-MM-DD'), to: end.format('YYYY-MM-DD') });
-    }
-  }, []);
-
-  // Month handler
+  // Special handlers for Month/Year - auto-adjust date range and sync UI
   const handleMonthChange = useCallback((month: string) => {
-    const year = filters.year || dayjs().year().toString();
+    const currentYear = filters.year || dayjs().year().toString();
     
     if (month) {
-      // Specific month
-      const start = dayjs(`${year}-${month}-01`).startOf('month');
-      const end = dayjs(`${year}-${month}-01`).endOf('month');
-      setFilters(prev => ({ ...prev, month }));
-      setDateRange(start, end, `Month: ${month}/${year}`);
+      // เลือกเดือนเฉพาะ → แสดงเดือนนั้น
+      const startOfMonth = dayjs(`${currentYear}-${month}-01`).startOf('month');
+      const endOfMonth = dayjs(`${currentYear}-${month}-01`).endOf('month');
+      
+      setFilters(prev => ({
+        ...prev,
+        month,
+        dateFrom: startOfMonth.format('YYYY-MM-DD HH:mm'),
+        dateTo: endOfMonth.format('YYYY-MM-DD HH:mm')
+      }));
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Month changed to ${month}, showing month:`, {
+          from: startOfMonth.format('YYYY-MM-DD'),
+          to: endOfMonth.format('YYYY-MM-DD')
+        });
+      }
     } else {
-      // All months
-      setFilters(prev => ({ ...prev, month: '' }));
-      if (filters.year) {
-        // Full year
-        const start = dayjs(`${filters.year}-01-01`).startOf('year');
-        const end = dayjs(`${filters.year}-12-31`).endOf('year');
-        setDateRange(start, end, `Full year: ${filters.year}`);
-      } else {
-        // Current day
-        const start = dayjs().startOf('day');
-        const end = dayjs().endOf('day');
-        setDateRange(start, end, 'Current day');
+      // เลือก "All Months" → แสดงทั้งปี
+      const startOfYear = dayjs(`${currentYear}-01-01`).startOf('year');
+      const endOfYear = dayjs(`${currentYear}-12-31`).endOf('year');
+      
+      setFilters(prev => ({
+        ...prev,
+        month: '',
+        dateFrom: startOfYear.format('YYYY-MM-DD HH:mm'),
+        dateTo: endOfYear.format('YYYY-MM-DD HH:mm')
+      }));
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`Month changed to "All Months", showing year ${currentYear}:`, {
+          from: startOfYear.format('YYYY-MM-DD'),
+          to: endOfYear.format('YYYY-MM-DD')
+        });
       }
     }
-  }, [filters.year, setDateRange]);
+  }, [filters.year]);
 
-  // Year handler
   const handleYearChange = useCallback((year: string) => {
     if (year) {
-      // Specific year
-      setFilters(prev => ({ ...prev, year }));
       if (filters.month) {
-        // Specific month in new year
-        const start = dayjs(`${year}-${filters.month}-01`).startOf('month');
-        const end = dayjs(`${year}-${filters.month}-01`).endOf('month');
-        setDateRange(start, end, `Month: ${filters.month}/${year}`);
+        // มีเดือนอยู่แล้ว → แสดงเดือนนั้นในปีใหม่
+        const startOfMonth = dayjs(`${year}-${filters.month}-01`).startOf('month');
+        const endOfMonth = dayjs(`${year}-${filters.month}-01`).endOf('month');
+        
+        setFilters(prev => ({
+          ...prev,
+          year,
+          dateFrom: startOfMonth.format('YYYY-MM-DD HH:mm'),
+          dateTo: endOfMonth.format('YYYY-MM-DD HH:mm')
+        }));
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Year changed to ${year}, keeping month ${filters.month}`);
+        }
       } else {
-        // Full year
-        const start = dayjs(`${year}-01-01`).startOf('year');
-        const end = dayjs(`${year}-12-31`).endOf('year');
-        setDateRange(start, end, `Full year: ${year}`);
-      }
-    } else {
-      // All years
-      setFilters(prev => ({ ...prev, year: '' }));
-      if (filters.month) {
-        // Current year, specific month
-        const currentYear = dayjs().year().toString();
-        const start = dayjs(`${currentYear}-${filters.month}-01`).startOf('month');
-        const end = dayjs(`${currentYear}-${filters.month}-01`).endOf('month');
-        setDateRange(start, end, `Month: ${filters.month}/${currentYear}`);
-      } else {
-        // Current day
-        const start = dayjs().startOf('day');
-        const end = dayjs().endOf('day');
-        setDateRange(start, end, 'Current day');
+        // ไม่มีเดือน (All Months) → แสดงทั้งปีใหม่
+        const startOfYear = dayjs(`${year}-01-01`).startOf('year');
+        const endOfYear = dayjs(`${year}-12-31`).endOf('year');
+        
+        setFilters(prev => ({
+          ...prev,
+          year,
+          dateFrom: startOfYear.format('YYYY-MM-DD HH:mm'),
+          dateTo: endOfYear.format('YYYY-MM-DD HH:mm')
+        }));
+        
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Year changed to ${year}, showing all months:`, {
+            from: startOfYear.format('YYYY-MM-DD'),
+            to: endOfYear.format('YYYY-MM-DD')
+          });
+        }
       }
     }
-  }, [filters.month, setDateRange]);
+  }, [filters.month]);
 
   const handleDateFromChange = useCallback((date: string | null) => {
     if (date && filters.dateTo && dayjs(date).isAfter(dayjs(filters.dateTo))) {

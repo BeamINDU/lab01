@@ -6,13 +6,14 @@ import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 export const search = async (param?: ParamSearch) => { 
   try {
-    const res =  await api.get<any>(`${API_ROUTES.camera.get}?${param}`);
+    const res = await api.get<any>(API_ROUTES.camera.get, param);
 
     const mapData: Camera[] = res?.cameras?.map((item) => ({
         id: item.cameraid,
         cameraId: item.cameraid,
         cameraName: item.cameraname,
         location: item.cameralocation,
+        cameraIp: item.cameraip,
         status: item.camerastatus,
         statusName: item.camerastatus ? 'Active' : 'Inactive',
         createdDate: item.createddate,

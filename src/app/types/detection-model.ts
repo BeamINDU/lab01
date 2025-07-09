@@ -31,7 +31,6 @@ export type FormData = {
   currentStep?: number,
   functions?: number[] | undefined;
   modelName: string | undefined,
-  productId: string,
   description: string | undefined,
   trainDataset: number | undefined,
   testDataset: number | undefined,
@@ -49,6 +48,9 @@ export type FormData = {
 export type ModelPicture = {
   id?: number | null,
   name: string,
+  size: number,
+  width: number,
+  height: number,
   file?: File,
   annotate?: Annotation[];
   url?: string,

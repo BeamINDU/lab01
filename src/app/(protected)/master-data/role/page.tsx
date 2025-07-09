@@ -51,7 +51,7 @@ export default function Page() {
       const formValues = getValues();
       const param: ParamSearch = {
         roleName: formValues.roleName || '',
-        status: formValues.status || undefined,
+        status: formValues.status,
       };
       const roles = await search(param);
       setData(Array.isArray(roles) ? roles : []);

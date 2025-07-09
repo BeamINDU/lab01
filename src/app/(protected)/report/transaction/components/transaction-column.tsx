@@ -46,8 +46,12 @@ export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
       header: "Product ID",
     },
     {
+      accessorKey: "productName",
+      header: "Product Name",
+    },
+    {
       accessorKey: "quantity",
-      header: "Quantity",
+      header: "Actual Total Quantity",
       cell: ({ getValue }) => {
         const value = getValue<number>();
         return (
@@ -60,5 +64,20 @@ export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
         style: { width: "12%" },
       },
     },
+    // {
+    //   accessorKey: "totalNg",
+    //   header: "Total NG",
+    //   cell: ({ getValue }) => {
+    //     const value = getValue<number>();
+    //     return (
+    //       <div className="text-right">
+    //         {formatNumber(value)}
+    //       </div>
+    //     );
+    //   },
+    //   meta: {
+    //     style: { width: "12%" },
+    //   },
+    // },
   ];
 }

@@ -43,6 +43,7 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [imageObj, setImageObj] = useState<HTMLImageElement | null>(null);
   const { isTraining } = useTrainingSocketStore();
+  const [data, setData] = useState<FormData>({} as FormData);
   // const { register, getValues, setValue, reset, handleSubmit, clearErrors, formState: { errors } } = useForm ();
 
   useEffect(() => {
@@ -163,47 +164,67 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
     
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
-  
+
     if (files.length === 0) {
       showError("No files selected.");
       return;
     }
-  
+
     const allowedExtensions = ["png", "jpg", "jpeg"];
     const maxSizeMB = 10;
-  
+
     const newImages: ModelPicture[] = [];
-  
+
+    const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          resolve({ width: img.width, height: img.height });
+        };
+        img.onerror = () => reject(new Error("Failed to load image"));
+        img.src = URL.createObjectURL(file);
+      });
+    };
+
     for (const file of files) {
       const fileExtension = file.name.split(".").pop()?.toLowerCase() || "";
       const fileSizeInMB = (file.size / 1024 / 1024).toFixed(2);
-  
+
       if (!allowedExtensions.includes(fileExtension)) {
         showError(`Invalid file type for ${file.name}. Only PNG, JPG, and JPEG are allowed.`);
         continue;
       }
-  
+
       if (parseFloat(fileSizeInMB) > maxSizeMB) {
         showError(`File ${file.name} is too large. Max size is ${maxSizeMB} MB.`);
         continue;
       }
-  
-      const imageUrl = URL.createObjectURL(file);
-      newImages.push({ 
-        id: null,
-        name: file.name, 
-        file: file,
-        url: imageUrl,
-        refId: nanoid(),
-      });
+
+      try {
+        const { width, height } = await getImageDimensions(file);
+        const imageUrl = URL.createObjectURL(file);
+        newImages.push({
+          id: null,
+          file,
+          name: file.name,
+          size: file.size,
+          width,
+          height,
+          url: imageUrl,
+          refId: nanoid(),
+        });
+      } catch (error) {
+        showError(`Could not load image ${file.name}`);
+      }
     }
-  
+
     setPictureList((prev) => [...prev, ...newImages]);
-  
+
+    // Optional success message
     // if (newImages.length > 0) {
     //   showSuccess(`${newImages.length} image(s) added successfully.`);
     // }
-  
+
     e.target.value = "";
   };
   
@@ -289,6 +310,31 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
 
   const handleStartTraining = async () => {
     try {
+      if (pictureList.length === 0) {
+        showError('Please add at least one image before starting training.');
+        return;
+      }
+
+      const notAnnotatedImages = pictureList.filter(
+        (item) => !item.annotate || item.annotate.length === 0
+      );
+
+      if (notAnnotatedImages.length > 0) {
+        showError(`There are ${notAnnotatedImages.length} image(s) without annotations`);
+        return;
+      }
+
+      // if (notAnnotatedImages.length > 0) {
+      //   const confirm = await showConfirm(
+      //     `There are ${notAnnotatedImages.length} image(s) without annotations. Do you want to proceed?`
+      //   );
+      //   if (!confirm.isConfirmed) {
+      //     const firstMissing = notAnnotatedImages[0];
+      //     handlePreview(firstMissing);
+      //     return;
+      //   }
+      // }
+
       const updatedFormData: FormData = {
         ...formData,
         currentStep: 3,
@@ -296,10 +342,10 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
       };
 
       if (isEditMode) {
-        // console.log("Submit data3:", updatedFormData);
         await updateStep3(modelVersionId, updatedFormData);
-        await showSuccess(`Saved successfully`)
+        // await showSuccess(`Saved successfully`)
       }
+
       next(updatedFormData);
     } catch (error) {
       console.error('Save step3 failed:', error);
@@ -340,49 +386,51 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
             </div>
           
             {/* Table for Image List */}
-            <table className="min-w-full table-auto">
-              <tbody>
-                {pictureList.map((img, index) => (
-                  <tr
-                    key={index}
-                    className={`border-b transition-colors duration-150 cursor-pointer ${
-                      img.refId === selectedPicture?.refId ? "bg-blue-50 font-semibold" : "hover:bg-gray-50"
-                    }`}
-                  >
-                    <td className="px-4 py-2 text-sm w-6">{index + 1}</td>
-                    <td className="px-4 py-2 text-sm">{img.name}</td>
-                    <td className="px-4 py-2 text-sm w-1/5">
-                      <div className="flex gap-2 justify-start">
-                        <button
-                          onClick={() => handlePreview(img)}
-                          className="bg-blue-600 text-xs text-white px-2 py-1 rounded flex items-center gap-1"
-                        >
-                          Preview <Eye size={16} /> 
-                        </button>
-                        {isEditMode && (
-                          <>
-                            <button 
-                              onClick={() => {
-                                setEditPicture(img);
-                                setIsOpenAnnotation(true);
-                              }}
-                              className="bg-cyan-500 text-xs text-white px-2 py-1 rounded flex items-center gap-1"
-                            >
-                              Edit <SquarePen size={14} /> 
-                            </button>
-                            <button 
-                              onClick={() => handleDelete(img.id ?? 0, index)}
-                              className="bg-red-500 text-xs text-white px-2 py-1 rounded flex items-center gap-1">
-                              Delete <Trash2 size={14} /> 
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="max-h-[63vh] overflow-y-auto">
+              <table className="min-w-full table-auto">
+                <tbody>
+                  {pictureList.map((img, index) => (
+                    <tr
+                      key={index}
+                      className={`border-b transition-colors duration-150 cursor-pointer ${
+                        img.refId === selectedPicture?.refId ? "bg-blue-50 font-semibold" : "hover:bg-gray-50"
+                      }`}
+                    >
+                      <td className="px-4 py-2 text-sm w-6">{index + 1}</td>
+                      <td className="px-4 py-2 text-sm">{img.name}</td>
+                      <td className="px-4 py-2 text-sm w-1/5">
+                        <div className="flex gap-2 justify-start">
+                          <button
+                            onClick={() => handlePreview(img)}
+                            className="bg-blue-600 text-xs text-white px-2 py-1 rounded flex items-center gap-1"
+                          >
+                            Preview <Eye size={16} /> 
+                          </button>
+                          {isEditMode && (
+                            <>
+                              <button 
+                                onClick={() => {
+                                  setEditPicture(img);
+                                  setIsOpenAnnotation(true);
+                                }}
+                                className="bg-cyan-500 text-xs text-white px-2 py-1 rounded flex items-center gap-1"
+                              >
+                                Edit <SquarePen size={14} /> 
+                              </button>
+                              <button 
+                                onClick={() => handleDelete(img.id ?? 0, index)}
+                                className="bg-red-500 text-xs text-white px-2 py-1 rounded flex items-center gap-1">
+                                Delete <Trash2 size={14} /> 
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Preview Panel */}
@@ -454,7 +502,7 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
           )}
         </div>
       </div>
-
+      
       {/* Annotation Modal */}
       {isOpenAnnotation && (
         <AnnotationModal
@@ -462,8 +510,6 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
           onClose={() => setIsOpenAnnotation(false)}
           onSave={handleSaveAnnotation}
           modelVersionId={modelVersionId}
-          // productId={formData?.productId}
-          // cameraId={formData?.cameraId ?? ''}
           modelId={formData?.modelId ?? 0}
           data={pictureList}
           setData={setPictureList}

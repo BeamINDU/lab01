@@ -46,8 +46,8 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     try {
-      const headers = ["Lot ID", "Product Name", "Quantity"];
-      const keys: (keyof Transaction)[] = ["lotNo","productId", "quantity"];
+      const headers = ["Start Date", "End Date", "Lot ID", "Product Id", "Actual Total Quantity"];
+      const keys: (keyof Transaction)[] = ["startDate", "endDate", "lotNo", "productId", "quantity"];
       const fileName = `Transaction_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
     
       switch (type) {

@@ -40,7 +40,7 @@ export default function Page() {
       const param: ParamSearch = {
         productId: formValues.productId || '',
         productName: formValues.productName || '',
-        productTypeName: formValues.productTypeName || '', 
+        productTypeId: formValues.productTypeId || '', 
         serialNo: formValues.serialNo || '',
         status: formValues.status,
       };

@@ -12,8 +12,7 @@ export interface UpdatePermissionRequest {
 
 export const search = async (param?: ParamSearch) => { 
   try {
-    const queryString = param ? `?${new URLSearchParams(param as any).toString()}` : '';
-    const res = await api.get<any>(`${API_ROUTES.role.get}${queryString}`);
+    const res = await api.get<any>(API_ROUTES.role.get, param);
     return res?.roles?.map((item: any) => ({
       id: item.roleid,
       roleName: item.rolename,

@@ -30,6 +30,7 @@ export default function DetectionModelStep1({ next, modelVersionId, formData, is
   const [functions, setFunctions] = useState<SelectOption[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<FormData>({} as FormData);
 
   const defaultValues: Step1Data = {
     modelVersionId: modelVersionId,
@@ -70,6 +71,7 @@ export default function DetectionModelStep1({ next, modelVersionId, formData, is
     const fetchModelFunctions = async () => {
       try {
         const modelFunctions: number[] = await getModelFunction(modelVersionId);
+        setData(prev => ({ ...prev, functions: modelFunctions }));
         setSelected(modelFunctions);
         reset({
           modelVersionId,
@@ -98,41 +100,57 @@ export default function DetectionModelStep1({ next, modelVersionId, formData, is
     clearErrors("functions");
   };
 
-  const onSubmitHandler = async (data: Step1Data) => {
+  const onSubmitHandler = async (step1Data: Step1Data) => {
     try {
       const updatedFormData: FormData = {
         ...formData,
         currentStep: 1,
-        functions: data.functions,
+        functions: step1Data.functions,
         updatedBy: session?.user?.userid,
       };
 
-      if (isEditMode) {
-        // console.log("Submit data1:", updatedFormData);
-        const res = await updateStep1(modelVersionId, updatedFormData);
-        const isNewModelVersionId = modelVersionId != res.modelVersionId;
+      const arraysAreEqual = (arr1: number[], arr2: number[]) => {
+        if (arr1.length !== arr2.length) return false;
+        const set1 = new Set(arr1);
+        const set2 = new Set(arr2);
+        for (const item of set1) {
+          if (!set2.has(item)) return false;
+        }
+        return true;
+      };
 
-        await showSuccess(`Saved successfully`)
+      const hasChanged = !arraysAreEqual(step1Data.functions, data.functions ?? []);
+
+      if (isEditMode && hasChanged) {
+        const res = await updateStep1(modelVersionId, updatedFormData);
+        const isNewModelVersionId = modelVersionId !== res.modelVersionId;
+
+        await showSuccess(`Saved successfully`);
         if (isNewModelVersionId) {
           const path = isEditMode
-            ? `/detection-model/edit/${res.modelVersionId}` 
+            ? `/detection-model/edit/${res.modelVersionId}`
             : `/detection-model/view/${res.modelVersionId}`;
           router.push(path);
         }
+      } else if (isEditMode && !hasChanged) {
+        // Optional: show a message
+        // await showWarning("No changes detected.");
       }
+
       next(updatedFormData);
     } catch (error) {
-      console.error('Save step1 failed:', error);
+      console.error("Save step1 failed:", error);
       showError(`Save failed: ${extractErrorMessage(error)}`);
     }
   };
+
 
   const handleBack = () => {
     router.push("/detection-model");
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmitHandler)}>
+    // <form onSubmit={handleSubmit(onSubmitHandler)}>
       <div className="bg-gray-100">
         <div className="bg-white rounded-md shadow-md h-[63vh]">
           <div className="bg-[#cce0ff] px-6 py-3 rounded-t-md">
@@ -150,11 +168,12 @@ export default function DetectionModelStep1({ next, modelVersionId, formData, is
                 <button
                   type="button"
                   key={func.value}
-                  className={`h-20 w-full px-8 py-6 rounded-md text-sm font-medium text-center break-words shadow-sm ${selected.includes(parseInt(func.value))
+                  className={`h-20 w-full px-8 py-6 rounded-md text-sm font-medium text-center break-words shadow-sm disabled:cursor-not-allowed ${selected.includes(parseInt(func.value))
                       ? "bg-violet-600 text-white"
                       : "bg-gray-300 text-black"
                     }`}
                   onClick={() => toggleSelection(parseInt(func.value))}
+                  disabled={!isEditMode}
                 >
                   {func.label}
                 </button>
@@ -186,6 +205,6 @@ export default function DetectionModelStep1({ next, modelVersionId, formData, is
           </button>
         </div>
       </div>
-    </form>
+    // </form>
   );
 }

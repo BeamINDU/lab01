@@ -6,7 +6,7 @@ import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 export const search = async (param?: ParamSearch) => { 
   try {
-    const res =  await api.get<any>(`${API_ROUTES.report_product.get}?${param}`);
+    const res = await api.get<any>(API_ROUTES.report_product.get, param);
 
     const mapData: ReportProduct[] = res?.product_defect_results?.map((item) => ({
       runningNo: item.resultid,
@@ -17,6 +17,7 @@ export const search = async (param?: ParamSearch) => {
       defectTypeId: item.defectid,
       defectTypeName: item.defecttype,
       cameraId: item.cameraid,
+      cameraName: item.cameraname,
       status: item.prodstatus,
       imageUrl: item.imagepath,
     }));

@@ -3,6 +3,7 @@ export type Camera = {
   cameraId: string
   cameraName: string
   location: string
+  cameraIp: string
   status: boolean
   statusName?: string
   createdDate?: Date

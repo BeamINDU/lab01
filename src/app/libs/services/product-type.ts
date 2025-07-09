@@ -84,7 +84,6 @@ export const upload = async (uploadby: string, file: File) => {
   } 
 };
 
-
 export const getProductTypeIdOptions = async (q: string): Promise<SelectOption[]> => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.product_type.suggest_producttype_id}?q=${q}`);

@@ -6,11 +6,16 @@ services:
       context: .  
       dockerfile: src/Dockerfile  
     ports:
-      - "3000:3000"
+      - "3032:3000"
     restart: unless-stopped
+    env_file:
+      - .env.production
     networks:
-      - env_product-inspection_inspection-network  
-
+      - env_product-inspection_inspection-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - NODE_ENV=production
 networks:
   env_product-inspection_inspection-network:
-    external: true  
+    external: true

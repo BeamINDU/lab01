@@ -6,7 +6,7 @@ import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 export const search = async (param?: ParamSearch) => { 
   try {
-    const res =  await api.get<any>(`${API_ROUTES.user.get}?${param}`);
+    const res = await api.get<any>(API_ROUTES.user.get, param);
 
     const mapData: User[] = res?.users?.map((item) => ({
       id: item.userid,

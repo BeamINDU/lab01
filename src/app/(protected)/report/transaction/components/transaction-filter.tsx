@@ -64,7 +64,7 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           setValue={setValue}
           fieldName="lotNo"
           label="Lot No"
-          placeholder="Search lot number..."
+          placeholder="Search Lot No..."
           dataLoader={getLotNoOptions}
           labelField="label"
           valueField="value"
@@ -78,7 +78,7 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           setValue={setValue}
           fieldName="productId"
           label="Product ID"
-          placeholder="Search product ID..."
+          placeholder="Search Product ID..."
           dataLoader={getProductIdOptions}
           labelField="label"
           valueField="value"

@@ -66,11 +66,9 @@ export const API_ROUTES = {
     permissions_get: "/role-permissions",
     permissions_update: "/update-role-permissions",
   },
-
   permission: {
     user_permissions: "/user-permissions",
   },
-
   menu: {
     get: "/menus"
   },
@@ -102,12 +100,13 @@ export const API_ROUTES = {
   },
   detection_model: {
     get: "/detection-model",
-    detail: "/model-detail", 
+    // detail: "/model-detail", 
     insert: "/add-model", 
+    duplicate: "/duplicate-model", 
     delete_model: "/delete-model",
     delete_image: "/delete-image",
     upload_image_file: '/upload-image-file',
-    upload_base64_image: '/upload-base64-image',
+    // upload_base64_image: '/upload-base64-image',
     update_step1: "/update-model-step1",
     update_step2: "/update-model-step2",
     update_step3: "/update-model-step3",
@@ -119,8 +118,16 @@ export const API_ROUTES = {
     version: "/versions",
     function: "/functions",
     label_class: "/label-class",
-    suggest_model: "/suggest-modelname",
+    add_label_class: "/add-label-class",
+    update_label_class: "/update-label-class",
+    delete_label_class: "/delete-label-class",
     suggest_function: "/suggest-function",
+    suggest_model: "/suggest-modelname"
+  },
+  model_assignment: {
+    get: "/model-assignments",
+    detail: "",
+    update: "/update-model-assignment",
   },
   dashboard: {
     total_products: "/dashboard-totalproduct",

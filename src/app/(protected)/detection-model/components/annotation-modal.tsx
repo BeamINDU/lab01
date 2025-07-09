@@ -13,8 +13,7 @@ import type { Annotation, RectangleAnnotation, CircleAnnotation, PolygonAnnotati
 import { ShapeType } from "@/app/constants/shape-type";
 import { ClassName } from "@/app/types/class-name";
 import { ModelPicture } from "@/app/types/detection-model";
-import { getClassName } from "@/app/libs/services/class-name";
-import { annotateImage, uploadBase64Image } from "@/app/libs/services/detection-model";
+import { annotateImage, getLabelClass, updateLabelClass, deleteLabelClass } from "@/app/libs/services/detection-model";
 import ClassNameModal from "./class-name-modal";
 
 interface AnnotationModalProps {
@@ -56,7 +55,6 @@ const AnnotationModal = ({
 
   useEffect(() => {
     if (data.length === 0) return;
-    // setPictureList(data);
 
     const index = data.findIndex(p => p.url === editPicture.url);
     if (index !== -1) {
@@ -95,7 +93,7 @@ const AnnotationModal = ({
   useEffect(() => {
     const fetchClassName = async () => {
       try {
-        const data = await getClassName();
+        const data = await getLabelClass(modelVersionId);
         setClassNames(data);
 
         if (data.length > 0 && data.length > 0) {
@@ -108,6 +106,7 @@ const AnnotationModal = ({
 
     fetchClassName();
   }, []);
+
 
   const renderAnnotation = (ann: Annotation) => {
     const isSelected = ann.id === selectedId;
@@ -247,7 +246,7 @@ const AnnotationModal = ({
             fill={ann.color}
             align="center"
             verticalAlign="top"
-            offsetX={(ann.class.name.length || 0) * 3.5}
+            offsetX={(ann.class.name?.length || 0) * 3.5}
           />
         )}
       </Group>
@@ -255,6 +254,8 @@ const AnnotationModal = ({
   };
 
   const handleMouseDown = (e) => {
+    if (classNames.length === 0) { setIsOpen(true); return; }
+
     if (selectedId !== null) return;
 
     const pos = e.target.getStage().getPointerPosition();
@@ -391,7 +392,7 @@ const AnnotationModal = ({
     // สร้าง annotation พร้อม class label
     const annotationWithClass: Annotation = {
       ...newAnnotation,
-      class: selectedClass ?? { id: '', name: '' },
+      class: selectedClass ?? { id: 0, name: '' },
     };
 
     setAnnotations([...annotations, annotationWithClass]);
@@ -406,23 +407,45 @@ const AnnotationModal = ({
     }
   };
 
+  // const handleBulkUpdateLabels = (updatedClasses: ClassName[]) => {
+  //   setAnnotations(prevAnnotations => {
+  //     return prevAnnotations?.map(ann => {
+  //       const match = updatedClasses.find(cls => cls.id === ann.class.id);
+  //       if (match) {
+  //         return { ...ann, class: match };
+  //       }
+  //       return ann; // ไม่เปลี่ยนถ้าไม่ match
+  //     });
+  //   });
+
+  //   // เคลียร์ selectedId ถ้า class ของ annotation ปัจจุบันไม่อยู่ใน updatedClasses
+  //   const selectedAnnotation = annotations.find(ann => ann.id === selectedId);
+  //   if (selectedAnnotation && !updatedClasses.some(cls => cls.id === selectedAnnotation.class.id)) {
+  //     setSelectedId(null);
+  //   }
+  // };
+
   const handleBulkUpdateLabels = (updatedClasses: ClassName[]) => {
+    // 1. ลบ annotations ที่ class.id ไม่อยู่ใน updatedClasses
     setAnnotations(prevAnnotations => {
-      return prevAnnotations?.map(ann => {
-        const match = updatedClasses.find(cls => cls.id === ann.class.id);
-        if (match) {
-          return { ...ann, class: match };
-        }
-        return ann; // ไม่เปลี่ยนถ้าไม่ match
-      });
+      return prevAnnotations
+        .filter(ann => updatedClasses.some(cls => cls.id === ann.class.id))
+        .map(ann => {
+          const match = updatedClasses.find(cls => cls.id === ann.class.id);
+          return match ? { ...ann, class: match } : ann;
+        });
     });
 
-    // เคลียร์ selectedId ถ้า class ของ annotation ปัจจุบันไม่อยู่ใน updatedClasses
+    // 2. ถ้า selected annotation ใช้ class ที่ถูกลบ → ล้าง selectedId
     const selectedAnnotation = annotations.find(ann => ann.id === selectedId);
-    if (selectedAnnotation && !updatedClasses.some(cls => cls.id === selectedAnnotation.class.id)) {
+    const isSelectedAnnotationValid = selectedAnnotation &&
+      updatedClasses.some(cls => cls.id === selectedAnnotation.class.id);
+
+    if (!isSelectedAnnotationValid) {
       setSelectedId(null);
     }
   };
+
 
   const handleStageClick = (e) => {
     // ถ้าคลิกที่ stage โดยตรง หรือ node ที่มีชื่อว่า 'background'
@@ -431,15 +454,25 @@ const AnnotationModal = ({
     }
   };
 
-  const handleSaveClassName = (classname: ClassName[]) => {
-    setClassNames(classname);
-    handleBulkUpdateLabels(classname);
+  const handleSaveClassName = async (classname: ClassName[]) => {
+    const results = await updateLabelClass(modelVersionId, classname);
+    setClassNames(results);
 
-    const selected = classname.find(c => c.id == selectedClass?.id);
-    setSelectedClass(selected || null);
+    handleBulkUpdateLabels(results);
+
+    const selected = results.find(c => c.id == selectedClass?.id);
+    setSelectedClass(selected ?? results[0] ?? null);
+
+
 
     setIsOpen(false);
   };
+
+  const handleDeleteClassName = async (classid: number) => {
+    await deleteLabelClass(classid);
+    // const newLabels = classNames.filter(item => item.id !== classid);
+    // handleBulkUpdateLabels(newLabels);
+  }
   
   const updateCurrentAnnotationsToImages = (index: number) => {
     const updated = [...data];
@@ -458,6 +491,9 @@ const AnnotationModal = ({
       const res = await annotateImage({
         imageId: img.id ?? undefined,
         file: img.file,
+        size: img.size,
+        width: img.width,
+        height: img.height,
         modelVersionId,
         modelId,
         updatedBy: session?.user?.userid ?? "",
@@ -501,7 +537,6 @@ const AnnotationModal = ({
     const updated = await updateAnnotateImage();
     if (updated) {
       onSave(updated);
-      // onSave(pictureList);
     }
   };
 
@@ -633,7 +668,9 @@ const AnnotationModal = ({
         <ClassNameModal
           onClose={() => setIsOpen(false)}
           onSave={handleSaveClassName}
+          onDelete={handleDeleteClassName}
           data={classNames}
+          // setData={setClassNames}
         />
       )}
     </>
@@ -692,7 +729,7 @@ function ClassSelector({ classNames, selectedClass, setSelectedClass, setIsOpen 
       </div>
       {/* Class radio list */}
       <div className="space-y-3 text-sm">
-        {classNames.map((item, index) => (
+        {classNames?.map((item, index) => (
           <label key={index} className="flex items-center space-x-2">
             <input
               type="radio"

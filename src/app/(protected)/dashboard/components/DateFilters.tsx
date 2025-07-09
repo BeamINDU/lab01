@@ -111,6 +111,7 @@ export default function DateFilters({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // ✅ เพิ่ม "All Months" กลับมา แต่เอา "All Years" ออก
   const renderDropdown = (
     ref: React.RefObject<HTMLDivElement>,
     show: boolean,
@@ -119,8 +120,9 @@ export default function DateFilters({
     selected: string | undefined,
     onChange: ((value: string) => void) | undefined,
     placeholder: string,
-    allLabel: string,
-    width: string
+    width: string,
+    showAllOption: boolean = false,
+    allLabel?: string
   ) => (
     <div className="relative" ref={ref}>
       <button
@@ -129,22 +131,31 @@ export default function DateFilters({
       >
         <CalendarIcon size={12} />
         <span className={`text-left ${width}`}>
-          {selected ? options.find(o => o.value === selected)?.label || selected : placeholder}
+          {selected ? 
+            options.find(o => o.value === selected)?.label || selected : 
+            (showAllOption && allLabel ? allLabel : placeholder)
+          }
         </span>
         <ChevronDown size={12} />
       </button>
       {show && (
         <div className="absolute top-full left-0 z-50 mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-40 overflow-y-auto">
-          <button
-            className="w-full px-3 py-1 text-left hover:bg-gray-100 text-xs whitespace-nowrap"
-            onClick={() => { onChange?.(''); setShow(false); }}
-          >
-            {allLabel}
-          </button>
+          {showAllOption && allLabel && (
+            <button
+              className={`w-full px-3 py-1 text-left hover:bg-gray-100 text-xs whitespace-nowrap ${
+                !selected || selected === '' ? 'bg-blue-50 text-blue-600 font-medium' : ''
+              }`}
+              onClick={() => { onChange?.(''); setShow(false); }}
+            >
+              {allLabel}
+            </button>
+          )}
           {options.map((option) => (
             <button
               key={option.value}
-              className="w-full px-3 py-1 text-left hover:bg-gray-100 text-xs whitespace-nowrap"
+              className={`w-full px-3 py-1 text-left hover:bg-gray-100 text-xs whitespace-nowrap ${
+                selected === option.value ? 'bg-blue-50 text-blue-600 font-medium' : ''
+              }`}
               onClick={() => { onChange?.(option.value); setShow(false); }}
             >
               {option.label}
@@ -187,12 +198,14 @@ export default function DateFilters({
 
       {renderDropdown(
         monthDropdownRef, showMonthDropdown, setShowMonthDropdown,
-        months, selectedMonth, onMonthChange, 'Month', 'All Months', 'min-w-[50px]'
+        months, selectedMonth, onMonthChange, 'Month', 'min-w-[50px]',
+        true, 'All Months'
       )}
 
       {renderDropdown(
         yearDropdownRef, showYearDropdown, setShowYearDropdown,
-        years, selectedYear, onYearChange, 'Year', 'All Years', 'min-w-[40px]'
+        years, selectedYear, onYearChange, 'Year', 'min-w-[40px]',
+        false
       )}
     </div>
   );

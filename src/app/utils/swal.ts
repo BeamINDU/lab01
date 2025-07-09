@@ -1,4 +1,6 @@
 import Swal, { SweetAlertIcon, SweetAlertOptions } from 'sweetalert2'
+import type SwalNamespace from 'sweetalert2'
+
 
 const DEFAULT_CONFIRM_COLOR = '#004798';
 const DEFAULT_CANCEL_COLOR = '#747b87';
@@ -8,6 +10,10 @@ const baseAlert = (options: SweetAlertOptions) => {
     title: '',
     confirmButtonColor: DEFAULT_CONFIRM_COLOR,
     ...options,
+    customClass: {
+      container: 'z-[3000]',
+      popup: 'z-[3000]',
+    },
   });
 };
 
@@ -51,10 +57,10 @@ export const showLoading = (text = 'Loading...') =>
     text,
     allowOutsideClick: false,
     didOpen: () => {
-      // @ts-ignore
-      Swal.showLoading();
+      (Swal as typeof SwalNamespace).showLoading();
     },
     showConfirmButton: false,
   });
+  
 
 export const closeAlert = () => Swal.close();

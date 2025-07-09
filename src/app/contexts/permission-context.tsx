@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { getPermissions } from "@/app/libs/services/user-permissions"
 import { UserPermission } from "@/app/types/user-permissions"
 import { MenuItem } from "@/app/types/menu";
@@ -23,13 +23,21 @@ export const PermissionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (status !== "authenticated") return;
+    if (status === "loading") return;
+
+    if (status === "unauthenticated") {
+      setLoading(false);
+      handleLogout();
+      return;
+    }
 
     const fetchPermissions = async () => {
       try {
         const userid = session?.user?.userid;
-        console.log("Fetched userid: ", userid);
-        if (!userid) return;
+        if (!userid) {
+          setLoading(false);
+          return;
+        }
 
         const result = await getPermissions(userid);
         setUserPermissions(result);
@@ -44,6 +52,10 @@ export const PermissionProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     fetchPermissions();
   }, [session, status]);
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/login" });
+  };
 
   const hasPermission = (menuId: string, action: number) => {
     const menu = userPermissions.find((p) => p.menuId === menuId);

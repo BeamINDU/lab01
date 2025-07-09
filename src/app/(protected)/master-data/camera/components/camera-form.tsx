@@ -8,11 +8,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Camera } from "@/app/types/camera";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
+
+const ipRegex = /^(25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4][0-9]|1\d{2}|[1-9]?\d)){3}$/;
+
 const CameraSchema = z.object({
   id: z.string().optional(),
   cameraId: z.string().min(1, "Camera Id is required"),
   cameraName: z.string().min(1, "Camera Name is required"),
   location: z.string().min(1, "Location is required"),
+  cameraIp: z
+    .string({ required_error: "IP Address is required" })
+    .min(1, "IP Address is required")
+    .regex(ipRegex, "Invalid IP address format")
+    .transform(val => val ?? "") ,
   status: z.boolean(),
   createdDate: z.union([
     z.coerce.date(),
@@ -44,6 +52,7 @@ export default function CameraFormModal({
     cameraId: '',
     cameraName: '',
     location: '',
+    cameraIp: '',
     status: true,
   };
 
@@ -134,6 +143,17 @@ export default function CameraFormModal({
               />
             </div>
             {errors.location && <p className="text-red-500 ml-160">{errors.location.message}</p>}
+          </div>
+
+          <div className="mb-4">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">IP Address:</label>
+              <input 
+                {...register("cameraIp")} 
+                className="border p-2 w-full mb-1"
+              />
+            </div>
+            {errors.cameraIp && <p className="text-red-500 ml-160">{errors.cameraIp.message}</p>}
           </div>
           
           <div className="mb-4">

@@ -6,7 +6,7 @@ import { extractErrorMessage } from '@/app/utils/errorHandler';
 
 export const search = async (param?: ParamSearch) => { 
   try {
-    const res =  await api.get<any>(`${API_ROUTES.product.get}?${param}`);
+    const res = await api.get<any>(API_ROUTES.product.get, param);
 
     const mapData: Product[] = res?.products?.map((item) => ({
       id: item.prodid,
@@ -14,6 +14,8 @@ export const search = async (param?: ParamSearch) => {
       productName: item.prodname,
       productTypeId: item.prodtypeid,
       serialNo: item.prodserial,
+      barcode: item.barcode,
+      packSize: item.packsize,
       status: item.prodstatus,
       statusName: item.prodstatus ? 'Active' : 'Inactive',
       createdDate: item.createddate,

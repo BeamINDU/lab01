@@ -4,8 +4,8 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive from '@/app/components/common/SearchField';
-import { getProductTypeNameOptions } from "@/app/libs/services/product-type";
-import { getDefectTypeNameOptions } from "@/app/libs/services/defect-type";
+import { getProductTypeIdOptions, getProductTypeNameOptions } from "@/app/libs/services/product-type";
+import { getDefectTypeIdOptions, getDefectTypeNameOptions } from "@/app/libs/services/defect-type";
 import { getLotNoOptions } from "@/app/libs/services/report-defect-summary";
 
 interface ReportDefectFilterFormProps {
@@ -31,14 +31,14 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
           allowFreeText={true}
         />
         
-        {/* Product Type Name - ใช้ Product Type Options */}
+        {/* Product ID - ใช้ Product Options */}
         <SearchFieldResponsive
           register={register}
           setValue={setValue}
-          fieldName="productTypeName"
-          label="Product Type Name"
-          placeholder="Search product type..."
-          dataLoader={getProductTypeNameOptions}
+          fieldName="productId"
+          label="Product ID"
+          placeholder="Search Product ID..."
+          dataLoader={getProductTypeIdOptions}
           labelField="label"
           valueField="value"
           allowFreeText={true}
@@ -46,14 +46,14 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Defect Type - ใช้ Defect Type Options */}
+        {/* Defect Type ID- ใช้ Defect Type Options */}
         <SearchFieldResponsive
           register={register}
           setValue={setValue}
-          fieldName="defectTypeName"
-          label="Defect Type Name"
-          placeholder="Search defect type..."
-          dataLoader={getDefectTypeNameOptions}
+          fieldName="defectTypeId"
+          label="Defect Type ID"
+          placeholder="Search Defect Type ID..."
+          dataLoader={getDefectTypeIdOptions}
           labelField="label"
           valueField="value"
           allowFreeText={true}

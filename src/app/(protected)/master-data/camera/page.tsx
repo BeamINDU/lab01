@@ -40,7 +40,7 @@ export default function Page() {
         cameraId: formValues.cameraId || '',
         cameraName: formValues.cameraName || '',
         location: formValues.location || '',
-        status: formValues.status === '' ? undefined : formValues.status === 'true',
+        status: formValues.status,
       };
       const cameras = await search(param);
       setData(Array.isArray(cameras) ? cameras : []);

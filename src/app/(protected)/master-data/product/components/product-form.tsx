@@ -18,6 +18,18 @@ const ProductSchema = z.object({
   productName: z.string().min(1, "Product Name is required"),
   productTypeId: z.string().min(1, "Product Type is required"),
   serialNo: z.string().min(1, "Serial No is required"),
+  barcode: z.string().min(1, "Barcode is required"),
+  packSize: z.preprocess(
+    (val) => {
+      if (val === "" || val === null || val === undefined) return undefined;
+      if (!isNaN(Number(val))) return Number(val);
+      return val; // let zod catch invalid input like non-numeric strings
+    },
+    z.number({
+      required_error: "Pack Size is required",
+      invalid_type_error: "Pack Size must be a number",
+    }).min(0, "Pack Size must be at least 1")
+  ),
   status: z.boolean(),
   createdDate: z.union([
     z.coerce.date(),
@@ -50,6 +62,8 @@ export default function ProductFormModal({
     productName: '',
     productTypeId: '',
     serialNo: '',
+    barcode: '',
+    packSize: 0,
     status: true,
   };
 
@@ -77,7 +91,7 @@ export default function ProductFormModal({
 
   const onSubmit: SubmitHandler<ProductFormValues> = async (formData) => {
     try {
-      console.log('Form submitted with data:', formData);
+      // console.log('Form submitted with data:', formData);
 
       const formWithMeta: Product = {
         ...formData,
@@ -163,10 +177,42 @@ export default function ProductFormModal({
               <input
                 {...register("serialNo")}
                 className="border p-2 w-full mb-1"
-                autoComplete="new-password"
+                disabled={!canEdit}
               />
             </div>
             {errors.serialNo && <p className="text-red-500 ml-160">{errors.serialNo.message}</p>}
+          </div>
+
+          <div className="mb-4">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Barcode:</label>
+              <input
+                {...register("barcode")}
+                className="border p-2 w-full mb-1"
+                disabled={!canEdit}
+              />
+            </div>
+            {errors.barcode && <p className="text-red-500 ml-160">{errors.barcode.message}</p>}
+          </div>
+
+          <div className="mb-4">
+            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+              <label className="font-normal w-32">Pack Size:</label>
+              <input
+                {...register("packSize")}
+                type="number"
+                step="1"
+                inputMode="numeric"
+                onKeyDown={(e) => {
+                  if (e.key === "." || e.key === "," || e.key === "e") {
+                    e.preventDefault();
+                  }
+                }}
+                className="border p-2 w-full mb-1"
+                disabled={!canEdit}
+              />
+            </div>
+            {errors.packSize && <p className="text-red-500 ml-160">{errors.packSize.message}</p>}
           </div>
 
           <div className="mb-4">

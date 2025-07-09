@@ -36,16 +36,12 @@ export default function Page() {
   const handleSearch = async () => {
     try {
       const formValues = getValues();
-      
       const param: ParamSearch = {
         userId: formValues.userId || '',
         userName: formValues.userName || '',
-        firstname: formValues.firstname || '',
-        lastname: formValues.lastname || '',
         roleName: formValues.roleName || '', 
-        status: formValues.status || undefined,
+        status: formValues.status,
       };
-      
       const users = await search(param);
       setData(Array.isArray(users) ? users : []);
     } catch (error) {

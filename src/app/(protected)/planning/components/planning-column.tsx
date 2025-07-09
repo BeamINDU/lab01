@@ -93,17 +93,17 @@ export default function PlanningColumns({
       header: "Line ID",
     },
     {
-        accessorKey: "quantity",
-        header: "Quantity",
-        cell: ({ getValue }) => {
-          const value = getValue<number>();
-          return (
-            <div className="text-right">
-              {formatNumber(value)}
-            </div>
-          );
-        },
+      accessorKey: "quantity",
+      header: "Quantity",
+      cell: ({ getValue }) => {
+        const value = getValue<number>();
+        return (
+          <div className="text-right">
+            {formatNumber(value)}
+          </div>
+        );
       },
+    },
     {
       accessorKey: "startDate",
       header: "Start Date",

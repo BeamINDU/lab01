@@ -11,8 +11,6 @@ const ACTION_LABELS = {
   1: 'View', 2: 'Add', 3: 'Edit', 4: 'Delete', 5: 'Upload', 6: 'Export'
 } as const;
 
-const ACTIONS = [1, 2, 3, 4, 5, 6]; // All possible actions (kept for compatibility)
-
 type MenuGroup = {
   id: string;
   name: string;

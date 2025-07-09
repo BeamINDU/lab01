@@ -8,6 +8,7 @@ export enum Menu {
   Camera = 'MD004',
   User = 'MD005', 
   Role = 'MD006',
+  ModelAssignment = 'MD007',
   Report = 'RP000',
   ReportProductDefect = 'RP001',
   ReportDefectSummary = 'RP002',

@@ -1,9 +1,9 @@
 import { api } from '@/app/utils/api'
 import { API_ROUTES } from "@/app/constants/endpoint";
 import type { DetectionModel, ParamSearch, FormData, ModelPicture } from "@/app/types/detection-model"
+import { ClassName } from "@/app/types/class-name"
 import { SelectOption, } from "@/app/types/select-option";
 import { extractErrorMessage } from '@/app/utils/errorHandler';
-import { JsonWebTokenError } from 'jsonwebtoken';
 
 // const mockData: DetectionModel[] = Array.from({ length: 5 }, (_, i) => ({
 //   modelId: i+1,
@@ -42,9 +42,9 @@ const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
 export const search = async (param?: ParamSearch) => { 
   try {
-    const res =  await api.get<any>(`${API_ROUTES.detection_model.get}?${param}`);
+    const res = await api.get<any>(API_ROUTES.detection_model.get, param);
 
-    const mapData: DetectionModel[] = res?.data?.map((item) => ({
+    const mapData: DetectionModel[] = res?.map((item) => ({
       modelVersionId: item.modelversionid,
       modelId: item.modelid,
       productId: item.prodid,
@@ -61,29 +61,6 @@ export const search = async (param?: ParamSearch) => {
     }));
     
     return mapData;
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }  
-};
-
-export const detail = async (modelversionid: number, modelid: number) => {
-  try {
-    const res =  await api.get<any>(`${API_ROUTES.detection_model.detail}?modelversionid=${modelversionid}&modelid=${modelid}`);
-    return {
-      modelVersionId: res.modelversionid,
-      modelId: res.modelid,
-      statusId: res.modelstatus,
-      currentVersion: res.versionno,
-      currentStep: res.currentstep,
-      productId: res.prodid,
-      modelName: res.modelname,
-      description: res.modeldescription,
-      functions: res.functionids,
-      trainDataset: res.trainpercent,
-      testDataset: res.testpercent,
-      validationDataset: res.valpercent,
-      epochs: res.epochs
-    };
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -135,6 +112,18 @@ export const removeImage = async (imageid: number) => {
   }  
 };
 
+export const duplicateModel = async (modelversionid: number, createdBy: string) => {
+  try {
+    const res = await api.post<any>(`${API_ROUTES.detection_model.duplicate}`,{
+      modelVersionId: modelversionid,
+      createdBy: createdBy
+    });
+    return res.modelversionid;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
+};
+
 export const updateStep1 = async (modelversionid: number, param: Partial<FormData>) => {
   try {
     const res = await api.put<any>(`${API_ROUTES.detection_model.update_step1}?modelversionid=${modelversionid}`, {
@@ -157,7 +146,6 @@ export const updateStep2 = async (modelversionid: number, param: Partial<FormDat
     const res = await api.put<any>(`${API_ROUTES.detection_model.update_step2}?modelversionid=${modelversionid}`, {
       modelId: param.modelId,
       modelName: param.modelName,
-      ProductId: param.productId,
       cameraId: param.cameraId,
       description: param.description,
       trainDataset : param.trainDataset,
@@ -214,6 +202,9 @@ export const annotateImage = async (
     updatedBy: string;
     annotate: any;
     file?: File;
+    size: number;
+    width: number;
+    height: number;
   }
 ) => {
   try {
@@ -223,14 +214,17 @@ export const annotateImage = async (
       formData.append('imageid', param.imageId.toString());
     }
 
+    if (param.imageId === undefined && param.file) {
+      formData.append('file', param.file);
+    }
+
     formData.append('modelversionid', param.modelVersionId.toString());
     formData.append('modelid', param.modelId.toString());
     formData.append('updatedby', param.updatedBy);
     formData.append('annotate', param.annotate);
-
-    if (param.imageId === undefined && param.file) {
-      formData.append('file', param.file);
-    }
+    formData.append('size', param.size.toString());
+    formData.append('width', param.width.toString());
+    formData.append('height', param.height.toString());
 
     const res = await api.upload<any>(`${API_ROUTES.detection_model.upload_image_file}`, formData);
     
@@ -241,37 +235,11 @@ export const annotateImage = async (
       file: res.file,
       url: `${baseURL}/${res.imagepath.replace(/\\/g, "/")}`,
       annotate: JSON.parse(param.annotate),
-      refId: res.imageid,
+      refId: res.imageid.toString(),
     };
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }
-};
-
-export const uploadBase64Image = async (modelversionid: number, param: Partial<FormData>) => {
-  try {
-    const res = await api.post<any>(`${API_ROUTES.detection_model.upload_base64_image}`, {
-      modelVersionId: modelversionid,
-      productId: param.productId,
-      cameraId: param.cameraId,
-      modelId: param.modelId,
-      updatedBy: param.updatedBy,
-      annotate: param.annotate,
-      filename: param.fileName,
-      base64: param.base64,
-    });
-    return {
-      ...param,
-      id: res.imageid,
-      name: res.imagename,
-      file: res.file,
-      url:  `${baseURL}/${res.imagepath.replace(/\\/g, "/")}`,
-      annotations: param.annotate,
-      refId: res.imageid
-    };
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  } 
 };
 
 export const getModelFunction = async (modelversionid: number) => {
@@ -294,13 +262,12 @@ export const getModelVersion = async (modelversionid: number) => {
       currentVersion: res.versionno,
       currentStep: res.currentstep,
       modelName: res.modelname,
-      productId: res.prodid,
       description: res.modeldescription,
+      // productId: res.prodid,
       trainDataset: res.trainpercent,
       testDataset: res.testpercent,
       validationDataset: res.valpercent,
       epochs: res.epochs,
-      cameraId: res.cameraid
     };
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -341,8 +308,8 @@ export const getVersion = async (modelid : number) => {
   try {
     const res = await api.get<any>(`${API_ROUTES.detection_model.version}?modelid=${modelid}`);
     const mapData: SelectOption[] = res?.map((item) => ({
-      label: item,
-      value: item,
+      label: item.versionno,
+      value: String(item.modelversionid),
     }));
     return mapData;
   } catch (error) {
@@ -374,10 +341,13 @@ export const getImage = async (modelversionid: number) => {
       return {
           id: item.imageid,
           name: item.imagename,
+          size: item.size,
+          width: item.width,
+          height: item.height,
           file: item.file,
           url: imageUrl,
           annotate: item.annotate,
-          refId: item.imageid,
+          refId: item.imageid.toString(),
       };
     });    
     return mapData;
@@ -402,13 +372,85 @@ export const getFunctionOptions = async (q: string) => {
   }  
 };
 
-const safeParseJSON = (data: string | null): any[] => {
+export const getLabelClass = async (modelVersionId: number) => {
   try {
-    if (!data || data === 'null') return [];
-    const parsed = JSON.parse(data);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (e) {
-    console.warn('Invalid JSON in annotate:', data);
-    return [];
-  }
+    const res = await api.get<any>(`${API_ROUTES.detection_model.label_class}?modelversionid=${modelVersionId}`);
+    const mapData: ClassName[] = res?.map((item) => ({
+      name: item.classname,
+      id: item.classid,
+    }));
+    return mapData;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
 };
+
+export const updateLabelClass = async (modelVersionId, param: ClassName[]) => {
+  try {
+    const res = await api.post<any>(`${API_ROUTES.detection_model.update_label_class}?modelversionid=${modelVersionId}`, param);
+    const mapData: ClassName[] = res?.map((item) => ({
+      name: item.classname,
+      id: item.classid,
+    }));
+    return mapData;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
+};
+
+export const deleteLabelClass = async (classid: number) => {
+  try {
+    return await api.delete<any>(`${API_ROUTES.detection_model.delete_label_class}?classid=${classid}`);
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  } 
+};
+
+// export const detail = async (modelversionid: number, modelid: number) => {
+//   try {
+//     const res =  await api.get<any>(`${API_ROUTES.detection_model.detail}?modelversionid=${modelversionid}&modelid=${modelid}`);
+//     return {
+//       modelVersionId: res.modelversionid,
+//       modelId: res.modelid,
+//       statusId: res.modelstatus,
+//       currentVersion: res.versionno,
+//       currentStep: res.currentstep,
+//       productId: res.prodid,
+//       modelName: res.modelname,
+//       description: res.modeldescription,
+//       functions: res.functionids,
+//       trainDataset: res.trainpercent,
+//       testDataset: res.testpercent,
+//       validationDataset: res.valpercent,
+//       epochs: res.epochs
+//     };
+//   } catch (error) {
+//     throw new Error(extractErrorMessage(error));
+//   }  
+// };
+
+// export const uploadBase64Image = async (modelversionid: number, param: Partial<FormData>) => {
+//   try {
+//     const res = await api.post<any>(`${API_ROUTES.detection_model.upload_base64_image}`, {
+//       modelVersionId: modelversionid,
+//       productId: param.productId,
+//       cameraId: param.cameraId,
+//       modelId: param.modelId,
+//       updatedBy: param.updatedBy,
+//       annotate: param.annotate,
+//       filename: param.fileName,
+//       base64: param.base64,
+//     });
+//     return {
+//       ...param,
+//       id: res.imageid,
+//       name: res.imagename,
+//       file: res.file,
+//       url:  `${baseURL}/${res.imagepath.replace(/\\/g, "/")}`,
+//       annotations: param.annotate,
+//       refId: res.imageid
+//     };
+//   } catch (error) {
+//     throw new Error(extractErrorMessage(error));
+//   } 
+// };

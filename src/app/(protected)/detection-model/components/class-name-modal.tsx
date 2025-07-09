@@ -1,23 +1,32 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal';
 import { X, Save, Trash2 } from 'lucide-react';
 import { ClassName } from "@/app/types/class-name";
 import { z } from "zod";
+import { deleteLabelClass } from "@/app/libs/services/detection-model";
 
 interface ClassNameModalProps {
   onClose: () => void;
   onSave: (className: ClassName[]) => void;
+  onDelete: (classid: number) => void;
   data: ClassName[];
+  // setData: (className: ClassName[]) => void;
 }
 
 const classNameSchema = z.object({
-  id: z.string(),
+  id: z.number(),
   name: z.string().min(1, "Class name is required"),
 });
 
-export default function ClassNameModal({ onClose, onSave, data }: ClassNameModalProps) {
+export default function ClassNameModal({ onClose, onSave, onDelete, data }: ClassNameModalProps) {
   const [className, setClassName] = useState<ClassName[]>(data);
   const [errors, setErrors] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (data.length === 0) {
+      handleNew();
+    }
+  }, []);
 
   const handleChange = (index: number, value: string) => {
     const newLabels = [...className];
@@ -31,19 +40,23 @@ export default function ClassNameModal({ onClose, onSave, data }: ClassNameModal
   };
 
   const handleNew = () => {
-    const newLabel: ClassName = {
-      id: '',
-      name: '',
-    };
+    const newLabel: ClassName = { id: 0, name: '' };
     setClassName([...className, newLabel]);
     setErrors([...errors, '']);
   };
 
-  const handleDelete = async (index: number) => {
+  const handleDelete = async (index: number, item: ClassName) => {
     const result = await showConfirm('Are you sure you want to delete this class name?');
+
     if (result.isConfirmed) {
+      const classIdToDelete = item?.id;
+      if (classIdToDelete) {
+        await onDelete(classIdToDelete)
+      }
+
       const newLabels = className.filter((_, i) => i !== index);
       const newErrors = errors.filter((_, i) => i !== index);
+
       setClassName(newLabels);
       setErrors(newErrors);
     }
@@ -78,6 +91,8 @@ export default function ClassNameModal({ onClose, onSave, data }: ClassNameModal
 
   return (
     <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black bg-opacity-50">
+      {/* <pre>{JSON.stringify(data, null, 2)}</pre> */}
+      
       <div className="bg-white rounded-lg p-2 w-80 shadow-lg">
         {/* Close Button */}
         <div className="relative mb-1">
@@ -105,7 +120,7 @@ export default function ClassNameModal({ onClose, onSave, data }: ClassNameModal
                 />
                 <Trash2
                   size={16}
-                  onClick={() => handleDelete(index)}
+                  onClick={() => handleDelete(index, item)}
                   className="text-red-500 cursor-pointer"
                 />
               </div>

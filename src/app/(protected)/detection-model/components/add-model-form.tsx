@@ -49,9 +49,6 @@ export default function DetectionModelFormModal({
     register,
     handleSubmit,
     reset,
-    control,
-    watch,
-    getValues,
     setValue,
     formState: { errors },
   } = useForm<AddModelFormValues>({

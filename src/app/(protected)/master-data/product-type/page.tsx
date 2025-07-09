@@ -40,7 +40,7 @@ const handleSearch = async () => {
       const param: ParamSearch = {
         productTypeId: formValues.productTypeId || '',
         productTypeName: formValues.productTypeName || '',
-        status: formValues.status || undefined,
+        status: formValues.status,
       };
       const products = await search(param);
       setData(Array.isArray(products) ? products : []);

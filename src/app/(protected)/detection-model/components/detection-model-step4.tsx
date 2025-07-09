@@ -4,12 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
-import SelectField from '@/app/components/common/SelectField';
-import { FormData, DetectionModel } from "@/app/types/detection-model";
-import { SelectOption } from "@/app/types/select-option";
+import { FormData } from "@/app/types/detection-model";
 import { ModelStatus } from "@/app/constants/status"
 import { useSession } from "next-auth/react";
-import { updateStep4, getVersion, getModelVersion } from "@/app/libs/services/detection-model";
+import { updateStep4 } from "@/app/libs/services/detection-model";
 import { usePopupTraining } from '@/app/contexts/popup-training-context';
 import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
 
@@ -24,7 +22,6 @@ type Props = {
 
 export const step4Schema = z.object({
   modelVersionId: z.number(),
-  version: z.number().min(1, "Version is required"),
 });
 
 type Step4Data = z.infer<typeof step4Schema>;
@@ -33,87 +30,40 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
   const { data: session } = useSession();
   const { isTraining, cancelConnection } = useTrainingSocketStore();
   const { displayProcessing, displaySuccess, displayError, hidePopup } = usePopupTraining();
-  const [versionOptions, setVersionOptions] = useState<SelectOption[]>([]);
-  const [selectedVersion, setSelectedVersion] = useState<number>(0);
-
-  //--------------------------------------------------------------------------------------------
-  
-  useEffect(() => {
-    if(isEditMode && !isTraining) {
-      // handleStartTraining();
-    }
-  }, []);
-
-  const handleStartTraining = async () => {
-    // const result = await showConfirm('Are you sure you want to begin the training process?')
-    // if (result.isConfirmed) {
-        // setIsTraining(true);
-        
-        try {
-          console.info("isTraining", isTraining)
-          displayProcessing(`Detection model ${formData.modelName} training...`);
-
-          //await startTraining();
-
-          // if(success) {
-          //   setIsTraining(false);
-          // }
-          // await new Promise((resolve) => setTimeout(resolve, 1000));
-          // showSuccess(`Model training completed.`)
-          // setIsTraining(false);
-        } catch (error) {
-          console.error('Model training failed:', error);
-          // showError('Model training failed.')
-        } 
-    // }
-  };
-
-  //-------------------------------------------------------------------------------------------
 
   const defaultValues: Step4Data = {
     modelVersionId: modelVersionId,
-    version: 0,
   };
 
   const {
     register, 
-    getValues, 
-    setValue, 
-    reset,
     handleSubmit, 
-    clearErrors,
-    formState: { errors },
   } = useForm<Step4Data>({
     resolver: zodResolver(step4Schema),
     defaultValues
   });
 
   useEffect(() => {
-    if (!formData?.modelId) return;
-
-    const fetchVersion = async () => {
-      try {
-        const result = await getVersion(formData.modelId ?? 0);
-        setVersionOptions(result);
-      } catch (error) {
-        console.error("Failed to load data:", error);
-      }
-    };
-  
-    fetchVersion();
+    if(isEditMode && !isTraining) {
+      handleStartTraining();
+    }
   }, []);
-  
-  useEffect(() => {
-    if (!formData?.modelId || formData.currentVersion == null || modelVersionId == null) return;
 
-    setSelectedVersion(formData.currentVersion);
+  const handleStartTraining = async () => {
+    try {
+      displayProcessing(`Detection model ${formData.modelName} training...`);
 
-    reset({
-      modelVersionId,
-      version: formData.currentVersion,
-    });
-  }, [formData?.modelId, formData?.currentVersion, modelVersionId, reset]);
-
+      const result = await startTraining?.();
+      // await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (result) {
+        console.log(`Model training completed.`);
+      } else {
+        console.log(`Model training failed.`);
+      }
+    } catch (error) {
+      console.error('Model training failed:', error);
+    }
+  };
 
   const onPrevious = async () => {
     if (!isEditMode) prev();
@@ -124,7 +74,6 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
     }
 
     const result = await showConfirm('Are you sure you want to cancel this training model?');
-
     if (result?.isConfirmed) {
       const cancelled = await cancelConnection();
       if (cancelled) {
@@ -137,30 +86,23 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
 
   const onSubmitHandler = async () => {
     try {
-      const data = getValues();
-
-      if (!data.version) {
-        showError("Version is required");
-        return;
-      }
-
+      // const data = getValues();
       const updatedFormData: FormData = {
         ...formData,
         currentStep: 4,
-        version: data.version,
         updatedBy: session?.user?.userid,
       };
       
       if (isEditMode) {
-        console.log("Submit data4:", updatedFormData);
         await updateStep4(modelVersionId, updatedFormData);
+        // await showSuccess(`Saved successfully`)
       }
-
-      await showSuccess("Saved successfully!");
+      
       next({
         ...updatedFormData,
-        statusId: 'Using',
+        statusId: ModelStatus.Using,
       });
+
     } catch (error) {
       console.error('Save step1 failed:', error);
       showError(`Save failed: ${extractErrorMessage(error)}`);
@@ -181,25 +123,6 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
 
       <div className="grid grid-cols-1 gap-4 mb-6">
         <input type="hidden" {...register("modelVersionId")} />
-
-        {/* Model Version */}
-        <div className="flex items-center">
-          <label className="w-64 font-medium">Version :</label>
-          <div className="w-64">
-            <SelectField
-              value={String(selectedVersion)}
-              onChange={(value) => {
-                const parsed = parseInt(value);
-                setSelectedVersion(parsed);
-                setValue("version", parsed, { shouldValidate: true });
-                clearErrors("version");
-              }}
-              options={versionOptions}
-              disabled={isTraining}
-            />
-          </div>
-        </div>
-        {errors.version && (<p className="text-red-500 ml-260">{errors.version.message}</p>)}
       </div>
       
       <div

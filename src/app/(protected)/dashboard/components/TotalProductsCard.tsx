@@ -34,11 +34,11 @@ export default function TotalProductsCard({ data, loading, error }: TotalProduct
   const totalProducts = data?.total_products || 0;
 
   return (
-    <div className="bg-white p-3 md:p-4 rounded shadow w-full h-[100px] flex flex-col justify-center"> {/* เปลี่ยนจาก min-h-[120px] เป็น h-[150px] */}
-      <h2 className="text-lg md:text-xl font-semibold text-center mb-2">
+    <div className="bg-white p-3 md:p-15 rounded shadow w-full h-[100px] flex flex-col justify-center">
+      <h2 className="text-lg md:text-xl font-semibold text-center mb-">
         Total all products
       </h2>
-      <p className="text-2xl md:text-4xl font-bold text-center mb-2 md:mb-4">
+      <p className="text-2xl md:text-4xl font-bold text-center mb-1 md:mb-1">
         {totalProducts.toLocaleString()}
       </p>
     </div>

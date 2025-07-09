@@ -34,8 +34,10 @@ export default function Page() {
       const formValues = getValues();
       const param: ParamSearch = {
         lotNo: formValues.lotNo || '',
-        productTypeName: formValues.productType || '',
-        defectTypeName: formValues.defectType || '',
+        productId: formValues.productId || '',
+        defectTypeId: formValues.defectId || '',
+        // productTypeName: formValues.productTypeName || '',
+        // defectTypeName: formValues.defectTypeName || '',
       };
       const defects = await search(param);
       setData(Array.isArray(defects) ? defects : []);
@@ -48,8 +50,8 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     try {
-      const headers = ["Lot No", "Product Type", "Defect Type", "Total", "OK", "NG"];
-      const keys: (keyof ReportDefect)[] = ["lotNo", "productTypeName", "defectTypeName", "total", "ok", "ng"];
+      const headers = ["Lot No", "Product ID", "Defect Type ID", "Total", "OK", "NG"];
+      const keys: (keyof ReportDefect)[] = ["lotNo", "productId", "defectTypeId", "total", "ok", "ng"];
       const fileName = `ReportDefectSummary_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
         
       switch (type) {

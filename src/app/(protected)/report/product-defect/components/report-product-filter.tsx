@@ -4,8 +4,8 @@ import { Search } from 'lucide-react'
 import { UseFormRegister, Control, UseFormSetValue, useWatch } from "react-hook-form";
 import SearchFieldResponsive from '@/app/components/common/SearchField';
 import DateTimeField from '@/app/components/common/DateTimeField';
-import { getProductNameOptions } from "@/app/libs/services/product";
-import { getDefectTypeNameOptions } from "@/app/libs/services/defect-type";
+import { getProductIdOptions } from "@/app/libs/services/product";
+import { getDefectTypeIdOptions } from "@/app/libs/services/defect-type";
 import { getCameraIdOptions, getCameraNameOptions } from "@/app/libs/services/camera";
 import dayjs from 'dayjs';
 
@@ -61,7 +61,7 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           setValue={setValue}
           fieldName="cameraId"
           label="Camera ID"
-          placeholder="Search camera..."
+          placeholder="Search Camera ID..."
           dataLoader={getCameraIdOptions}
           labelField="label"
           valueField="value"
@@ -73,28 +73,28 @@ export default function ReportProductFilterForm({ register, setValue, control, o
       {/* Search Fields Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
         
-        {/* Product Name - ใช้ Product Options */}
+        {/* Product ID - ใช้ Product Options */}
         <SearchFieldResponsive
           register={register}
           setValue={setValue}
-          fieldName="productName"
-          label="Product Name"
-          placeholder="Search product..."
-          dataLoader={getProductNameOptions}
+          fieldName="productId"
+          label="Product ID"
+          placeholder="Search Product ID..."
+          dataLoader={getProductIdOptions}
           labelField="label"
           valueField="value"
           allowFreeText={true}
           className="w-full"
         />
         
-        {/* Defect Type - ใช้ Defect Type Options */}
+        {/* Defect Type ID - ใช้ Defect Type Options */}
         <SearchFieldResponsive
           register={register}
           setValue={setValue}
-          fieldName="defectTypeName"
-          label="Defect Type Name"
-          placeholder="Search defect type..."
-          dataLoader={getDefectTypeNameOptions}
+          fieldName="defectTypeId"
+          label="Defect Type ID"
+          placeholder="Search Defect Type ID..."
+          dataLoader={getDefectTypeIdOptions}
           labelField="label"
           valueField="value"
           allowFreeText={true}

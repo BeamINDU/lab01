@@ -1,8 +1,8 @@
 export type  ReportDefect = {
   runningNo: string,
   lotNo: string
-  productTypeId: string
-  productTypeName: string
+  productId: string
+  productName: string
   defectTypeId: string
   defectTypeName: string
   total: number
@@ -12,6 +12,8 @@ export type  ReportDefect = {
 
 export type ParamSearch = {
   lotNo?: string
-  productTypeName?: string
-  defectTypeName?: string
+  productId?: string
+  defectTypeId?: string
+  // productName?: string
+  // defectTypeName?: string
 }

@@ -32,12 +32,20 @@ export default function productColumns({
         return <div className="text-center">{formattedDate}</div>;
       },
       meta: {
-        style: { width: "12%" },
+        style: { width: "15%" },
       },
+    },
+    {
+      accessorKey: "productId",
+      header: "Product ID",
     },
     {
       accessorKey: "productName",
       header: "Product Name",
+    },
+    {
+      accessorKey: "defectTypeId",
+      header: "Defect Type ID",
     },
     {
       accessorKey: "defectTypeName",
@@ -46,6 +54,10 @@ export default function productColumns({
     {
       accessorKey: "cameraId",
       header: "Camera ID",
+    },
+    {
+      accessorKey: "cameraName",
+      header: "Camera Name",
     },
     {
       accessorKey: "status",

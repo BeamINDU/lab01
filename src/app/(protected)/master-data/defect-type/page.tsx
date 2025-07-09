@@ -39,7 +39,7 @@ export default function Page() {
       const param: ParamSearch = {
         defectTypeId: formValues.defectTypeId || '',
         defectTypeName: formValues.defectTypeName || '',
-        status: formValues.status || undefined,
+        status: formValues.status,
       };
       const defectTypes = await search(param);
       setData(Array.isArray(defectTypes) ? defectTypes : []);
