@@ -1,16 +1,19 @@
 export type Planning = {
   id?: string,
-  planId: string,
-  productId: string,
-  lotNo: string,
-  lineId: string,
+  planid: string,
+  prodid: string,
+  prodname?: string,
+  prodlot: string,
+  prodline: string,
   quantity: number,
-  startDate: Date | string | number,
-  endDate: Date | string | number,
-  createdDate?: Date | string,
-  createdBy?: string,
-  updatedDate?: Date | string,
-  updatedBy?: string | null,
+  startdatetime: Date | null,
+  enddatetime: Date | null,
+  actualstartdatetime?: Date | null,
+  actualenddatetime?: Date | null,
+  createddate?: Date
+  createdby?: string
+  updateddate?: Date | null
+  updatedby?: string | null
 }
 
 export type ParamSearch = {
@@ -18,7 +21,12 @@ export type ParamSearch = {
   dateFrom?: Date | string,
   dateTo?: Date | string,
   productId?: string,
+  productName?: string,
   lotNo?: string,
   lineId?: string,
+  page?: number
+  pageSize?: number
+  order_by?: string
+  order_dir?: string
 }
 

@@ -11,48 +11,48 @@ import { usePermission } from '@/app/contexts/permission-context';
 
 //---------------------------------------------------------------------------------------------------------
 
-const _menuTree: MenuItem[] = [
-  { id: "1", label: "Dashboard", icon: "dashboard", path: "/dashboard" },
-  {
-    id: "2", label: "Live inspection view", icon: "live",
-    children: [
-      {
-        id: "21", label: "Zone 1",
-        children: [
-          { id: "211", label: "CAM 1", path: "/live/cam1" },
-        ],
-      },
-      {
-        id: "22", label: "Zone 2",
-        children: [
-          { id: "221", label: "CAM 2", path: "/live/cam2" },
-          { id: "222", label: "CAM 3", path: "/live/cam3" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "3", label: "Master data", icon: "settings",
-    children: [
-      { id: "31", label: "Product", path: "/master-data/product" },
-      { id: "32", label: "Product Type", path: "/master-data/product-type" },
-      { id: "33", label: "Defect Type", path: "/master-data/defect-type" },
-      { id: "34", label: "Camera", path: "/master-data/camera" },
-      { id: "35", label: "User", path: "/master-data/user" },
-      { id: "36", label: "Role", path: "/master-data/role" },
-    ],
-  },
-  {
-    id: "4", label: "Report", icon: "report",
-    children: [
-      { id: "41", label: "Product Defect Result", path: "/report/product-defect" },
-      { id: "42", label: "Defect Summary", path: "/report/defect-summary" },
-      { id: "43", label: "Transaction", path: "/report/c" },
-    ],
-  },
-  { id: "5", label: "Detection Model", icon: "detection", path: "/detection-model" },
-  { id: "6", label: "Planning", icon: "planning", path: "/planning" },
-];
+// const _menuTree: MenuItem[] = [
+//   { id: "1", label: "Dashboard", icon: "dashboard", path: "/dashboard" },
+//   {
+//     id: "2", label: "Live inspection view", icon: "live",
+//     children: [
+//       {
+//         id: "21", label: "Zone 1",
+//         children: [
+//           { id: "211", label: "CAM 1", path: "/live/cam1" },
+//         ],
+//       },
+//       {
+//         id: "22", label: "Zone 2",
+//         children: [
+//           { id: "221", label: "CAM 2", path: "/live/cam2" },
+//           { id: "222", label: "CAM 3", path: "/live/cam3" },
+//         ],
+//       },
+//     ],
+//   },
+//   {
+//     id: "3", label: "Master data", icon: "settings",
+//     children: [
+//       { id: "31", label: "Product", path: "/master-data/product" },
+//       { id: "32", label: "Product Type", path: "/master-data/product-type" },
+//       { id: "33", label: "Defect Type", path: "/master-data/defect-type" },
+//       { id: "34", label: "Camera", path: "/master-data/camera" },
+//       { id: "35", label: "User", path: "/master-data/user" },
+//       { id: "36", label: "Role", path: "/master-data/role" },
+//     ],
+//   },
+//   {
+//     id: "4", label: "Report", icon: "report",
+//     children: [
+//       { id: "41", label: "Product Defect Result", path: "/report/product-defect" },
+//       { id: "42", label: "Defect Summary", path: "/report/defect-summary" },
+//       { id: "43", label: "Transaction", path: "/report/c" },
+//     ],
+//   },
+//   { id: "5", label: "Detection Model", icon: "detection", path: "/detection-model" },
+//   { id: "6", label: "Planning", icon: "planning", path: "/planning" },
+// ];
 
 //---------------------------------------------------------------------------------------------------------
 
@@ -62,13 +62,13 @@ type SidebarProps = {
   toggleSidebar: () => void;
 };
 
-export default function Sidebar({sidebarOpen, setSidebarOpen, toggleSidebar}: SidebarProps) {
+export default function Sidebar({ sidebarOpen, setSidebarOpen, toggleSidebar }: SidebarProps) {
   const { status, data: session } = useSession();
   const { menuTree, loading } = usePermission();
   const router = useRouter();
   const pathname = usePathname();
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({})
-  
+
   const handleLogout = () => {
     signOut({ callbackUrl: "/login" });
   };
@@ -128,29 +128,38 @@ export default function Sidebar({sidebarOpen, setSidebarOpen, toggleSidebar}: Si
         return (
           <li key={`${index}${item.id}`}>
             <div
-              className={`text-md flex items-center justify-between rounded-md cursor-pointer px-2 py-2
-                ${padding}
-                ${isActive
+              className={`text-md flex items-center justify-between rounded-md cursor-pointer px-2 py-2 ${padding}
+              ${isActive
                   ? isTopLevel
                     ? 'bg-blue-200 text-blue-700 font-semibold'
                     : 'text-blue-700 font-semibold'
                   : 'hover:bg-gray-100 text-gray-700'}
-                transition duration-150`}
+              transition duration-150`}
+              onClick={() => {
+                if (item.path) {
+                  setSidebarOpen(true);
+                  router.push(item.path);
+                } else if (hasChildren) {
+                  toggleMenu(item.label);
+                }
+              }}
             >
               <div className="flex items-center flex-1 space-x-2">
                 {mapIconNameToIcon(item.icon || item.label)}
-                {item.path ? (
-                  <Link href={item.path} onClick={() => setSidebarOpen(true)} className="flex-1">
-                    {item.label}
-                  </Link>
-                ) : (
-                  <span onClick={() => toggleMenu(item.label)}>{item.label}</span>
-                )}
+                <span className="flex-1">{item.label}</span>
               </div>
+
               {hasChildren && (
-                <button onClick={() => toggleMenu(item.label)} className="ml-2 focus:outline-none">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleMenu(item.label);
+                  }}
+                  className="ml-2 focus:outline-none"
+                >
                   <ChevronDown
-                    className={`w-4 h-4 transition-transform ${openMenus[item.label] ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 transition-transform ${openMenus[item.label] ? 'rotate-180' : ''
+                      }`}
                   />
                 </button>
               )}
@@ -162,6 +171,7 @@ export default function Sidebar({sidebarOpen, setSidebarOpen, toggleSidebar}: Si
               </div>
             )}
           </li>
+
         );
       })}
     </ul>

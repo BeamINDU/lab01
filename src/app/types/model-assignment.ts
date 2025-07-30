@@ -2,10 +2,12 @@ export type ModelAssignment = {
   id?: number
   modelId?: number
   modelName?: string
-  productId?: string
-  cameraId?: string
   modelVersionId?:  number
   versionNo?: number
+  productId?: string
+  productName?: string
+  cameraId?: string
+  cameraName?: string
   status?: boolean
   statusName?: string
   appliedDate?: Date | null
@@ -15,7 +17,9 @@ export type ModelAssignment = {
 export type ParamSearch = {
   modelName?: string
   productId?: string
+  productName?: string
   cameraId?: string
+  cameraName?: string
   versionNo?:  number
   status?: boolean
 }

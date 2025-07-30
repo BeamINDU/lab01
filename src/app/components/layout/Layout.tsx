@@ -24,9 +24,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <div className="flex flex-col flex-1 min-w-0">
         <Navbar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
 
-        {/* ✅ ปรับ main container ให้ใช้พื้นที่เต็มหน้าจอ */}
         <main className={`flex-1 overflow-hidden bg-gray-50 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : 'md:ml-0'}`}>
-          <div className="h-full overflow-y-auto">
+          <div className="h-full overflow-y-auto p-2">
             <PopupTraining />
             {children}
           </div>

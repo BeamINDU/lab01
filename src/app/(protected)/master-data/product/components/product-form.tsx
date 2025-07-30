@@ -109,7 +109,7 @@ export default function ProductFormModal({
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded shadow-lg w-1/3 relative">
+      <div className="bg-white p-6 rounded shadow-lg w-full max-w-2xl relative">
         <button
           type="button"
           className="absolute top-2 right-2 text-gray-600 hover:text-gray-900"
@@ -119,13 +119,9 @@ export default function ProductFormModal({
         </button>
 
         <h2 className="text-2xl font-semibold text-center mb-6">
-          {editingData
-            ? editingData.id
-              ? 'Add Product'
-              : canEdit
-                ? 'Edit Product'
-                : 'Detail Product'
-            : 'Add Product'}
+          {editingData?.id
+              ? canEdit ? 'Edit Product' : 'Detail Product'
+              : 'Add Product'}
         </h2>
 
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>

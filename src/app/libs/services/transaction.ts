@@ -7,22 +7,22 @@ import { extractErrorMessage } from '@/app/utils/errorHandler';
 export const search = async (param?: ParamSearch) => { 
   try {
     const res = await api.get<any>(API_ROUTES.transaction.get, param);
+    return res; 
     
-    const mapData: Transaction[] = res?.transaction?.map((item) => ({
-      runningNo: item.runningno,
-      startDate: item.actualstartdatetime,
-      endDate: item.actualenddatetime,
-      lotNo: item.prodlot,
-      productId: item.prodid,
-      productName: item.prodname,
-      quantity: item.quantity,
-      createdDate: item.createddate,
-      createdBy: item.createdby,
-      updatedDate: item.updateddate,
-      updatedBy: item.updatedby,
-    }));
-      
-    return mapData;
+    // const mapData: Transaction[] = res?.items?.map((item) => ({
+    //   runningNo: item.runningno,
+    //   startDate: item.actualstartdatetime,
+    //   endDate: item.actualenddatetime,
+    //   lotNo: item.prodlot,
+    //   productId: item.prodid,
+    //   productName: item.prodname,
+    //   quantity: item.quantity,
+    //   createdDate: item.createddate,
+    //   createdBy: item.createdby,
+    //   updatedDate: item.updateddate,
+    //   updatedBy: item.updatedby,
+    // }));
+    
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

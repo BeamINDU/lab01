@@ -107,7 +107,7 @@ export default function UserFormModal({
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded shadow-lg w-1/3 relative">
+      <div className="bg-white p-6 rounded shadow-lg w-full max-w-4xl relative">
         {/* Close Button */}
         <button
           type="button"
@@ -118,13 +118,9 @@ export default function UserFormModal({
         </button>
 
         <h2 className="text-2xl font-semibold text-center mb-6">
-          {editingData
-            ? editingData.id
-              ? 'Add User'
-              : canEdit
-                ? 'Edit User'
-                : 'Detail User'
-            : 'Add User'}
+          {editingData?.id
+              ? canEdit ? 'Edit User' : 'Detail User'
+              : 'Add User'}
         </h2>
 
         {/* Form */}
@@ -132,45 +128,49 @@ export default function UserFormModal({
           <input type="hidden" {...register('id')} />
           <input type="hidden" {...register('createdDate')} />
 
-          <div className="mb-4">
-            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">User ID:</label>
-              <input
-                {...register("userId")}
-                className="border p-2 w-full mb-1"
-              />
+          <div className="mb-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+                <label className="font-normal w-32">User ID:</label>
+                <input
+                  {...register("userId")}
+                  className="border p-2 w-full mb-1"
+                />
+              </div>
+              {errors.userId && <p className="text-red-500 ml-160">{errors.userId.message}</p>}
             </div>
-            {errors.userId && <p className="text-red-500 ml-160">{errors.userId.message}</p>}
+
+            <div>
+              <div className="grid grid-cols-[110px_1fr] items-center gap-2">
+                <label className="font-normal w-32">Username:</label>
+                <input {...register("username")} className="border p-2 w-full mb-1" />
+              </div>
+              {errors.username && <p className="text-red-500 ml-120">{errors.username.message}</p>}
+            </div>
           </div>
 
-          <div className="mb-4">
-            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">Username:</label>
-              <input {...register("username")} className="border p-2 w-full mb-1" />
+          <div className="mb-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="">
+              <div className="grid grid-cols-[150px_1fr] items-center gap-2">
+                <label className="font-normal w-32">First Name:</label>
+                <input
+                  {...register("firstname")}
+                  className="border p-2 w-full mb-1"
+                />
+              </div>
+              {errors.firstname && <p className="text-red-500 ml-160">{errors.firstname.message}</p>}
             </div>
-            {errors.username && <p className="text-red-500 ml-160">{errors.username.message}</p>}
-          </div>
 
-          <div className="mb-4">
-            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">First Name:</label>
-              <input
-                {...register("firstname")}
-                className="border p-2 w-full mb-1"
-              />
+            <div className="">
+              <div className="grid grid-cols-[110px_1fr] items-center gap-2">
+                <label className="font-normal w-32">Last Name:</label>
+                <input
+                  {...register("lastname")}
+                  className="border p-2 w-full mb-1"
+                />
+              </div>
+              {errors.lastname && <p className="text-red-500 ml-120">{errors.lastname.message}</p>}
             </div>
-            {errors.firstname && <p className="text-red-500 ml-160">{errors.firstname.message}</p>}
-          </div>
-
-          <div className="mb-4">
-            <div className="grid grid-cols-[150px_1fr] items-center gap-2">
-              <label className="font-normal w-32">Last Name:</label>
-              <input
-                {...register("lastname")}
-                className="border p-2 w-full mb-1"
-              />
-            </div>
-            {errors.lastname && <p className="text-red-500 ml-160">{errors.lastname.message}</p>}
           </div>
 
           <div className="mb-4">

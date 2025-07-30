@@ -5,7 +5,7 @@ import { UseFormRegister, Control, UseFormSetValue, useWatch } from "react-hook-
 import SearchFieldResponsive from '@/app/components/common/SearchField';
 import DateTimeField from '@/app/components/common/DateTimeField';
 import { getPlanIdOptions, getLotNoOptions, getLineNoOptions } from "@/app/libs/services/planning";
-import { getProductIdOptions } from "@/app/libs/services/product";
+import { getProductIdOptions, getProductNameOptions } from "@/app/libs/services/product";
 import dayjs from 'dayjs';
 
 interface PlanningFilterFormProps {
@@ -20,9 +20,8 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
   const dateTo = useWatch({ control, name: 'dateTo' });
 
   return (
-    <div className="md:col-span-2 space-y-4">
-      {/* Date Range Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div className="space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Date From */}
         <DateTimeField
           control={control}
@@ -51,10 +50,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           className="w-full"
           minDate={dateFrom ? dayjs(dateFrom) : undefined} 
         />
-      </div>
-      
-      {/* Search Fields Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+
         {/* Plan ID */}
         <SearchFieldResponsive 
           register={register}
@@ -68,8 +64,10 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           allowFreeText={true}
           className="w-full"
         />
-        
-        {/* Product ID */}
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+         {/* Product ID */}
         <SearchFieldResponsive 
           register={register}
           setValue={setValue}
@@ -82,24 +80,21 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           allowFreeText={true}
           className="w-full"
         />
-      </div>
-      
-      {/* Third Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {/* Lot No */}
+
+        {/* Product Name */}
         <SearchFieldResponsive 
           register={register}
           setValue={setValue}
-          fieldName="lotNo"
-          label="Lot No"
-          placeholder="Search lot number..."
-          dataLoader={getLotNoOptions}
+          fieldName="productName"
+          label="Product Name"
+          placeholder="Search product name..."
+          dataLoader={getProductNameOptions}
           labelField="label"
           valueField="value"
           allowFreeText={true}
           className="w-full"
         />
-          
+
         {/* Line ID */}
         <SearchFieldResponsive 
           register={register}
@@ -113,10 +108,28 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
           allowFreeText={true}
           className="w-full"
         />
-        <div className="hidden xl:flex items-center justify-start pt-[2px]">
+        
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+       {/* Lot No */}
+        <SearchFieldResponsive 
+          register={register}
+          setValue={setValue}
+          fieldName="lotNo"
+          label="Lot No"
+          placeholder="Search lot number..."
+          dataLoader={getLotNoOptions}
+          labelField="label"
+          valueField="value"
+          allowFreeText={true}
+          className="w-full"
+        />
+
+        {/* Search Button */}
+        <div className="flex items-end">
           <button
-            type="button"
-            className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
+            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
             onClick={onSearch}
           >
             Search

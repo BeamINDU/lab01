@@ -95,7 +95,7 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
       
       if (isEditMode) {
         await updateStep4(modelVersionId, updatedFormData);
-        // await showSuccess(`Saved successfully`)
+        await showSuccess(`Saved successfully`)
       }
       
       next({

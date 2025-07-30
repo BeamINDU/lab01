@@ -1,11 +1,11 @@
 'use client';
 
-import { Search } from 'lucide-react'
-import { UseFormRegister, UseFormSetValue } from "react-hook-form";
+import { Search } from 'lucide-react';
+import { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import SearchField from '@/app/components/common/SearchField';
-import { getProductIdOptions } from "@/app/libs/services/product";
-import { getCameraIdOptions } from "@/app/libs/services/camera";
-import { getModelNameOptions } from "@/app/libs/services/detection-model";
+import { getProductIdOptions, getProductNameOptions } from '@/app/libs/services/product';
+import { getCameraIdOptions, getCameraNameOptions } from '@/app/libs/services/camera';
+import { getModelNameOptions } from '@/app/libs/services/detection-model';
 import { ActiveStatus } from '@/app/constants/status';
 
 interface ModelAssignmentFilterFormProps {
@@ -16,9 +16,8 @@ interface ModelAssignmentFilterFormProps {
 
 export default function ModelAssignmentFilterForm({ register, setValue, onSearch }: ModelAssignmentFilterFormProps) {
   return (
-    <div className="md:col-span-2 space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Model Name - SearchField */}
+    <div className="space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         <SearchField
           register={register}
           setValue={setValue}
@@ -30,8 +29,7 @@ export default function ModelAssignmentFilterForm({ register, setValue, onSearch
           valueField="value"
           allowFreeText={true}
         />
-        
-        {/* Product ID - SearchField */}
+
         <SearchField
           register={register}
           setValue={setValue}
@@ -43,10 +41,23 @@ export default function ModelAssignmentFilterForm({ register, setValue, onSearch
           valueField="value"
           allowFreeText={true}
         />
+
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="productName"
+          label="Product Name"
+          placeholder="Search product name..."
+          dataLoader={getProductNameOptions}
+          labelField="label"
+          valueField="value"
+          allowFreeText={true}
+        />
+
+        <div></div>
       </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Camera ID - SearchField */}
+
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         <SearchField
           register={register}
           setValue={setValue}
@@ -59,7 +70,18 @@ export default function ModelAssignmentFilterForm({ register, setValue, onSearch
           allowFreeText={true}
         />
 
-        {/* Status */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="cameraName"
+          label="Camera Name"
+          placeholder="Search camera name..."
+          dataLoader={getCameraNameOptions}
+          labelField="label"
+          valueField="value"
+          allowFreeText={true}
+        />
+
         <SearchField
           register={register}
           setValue={setValue}
@@ -67,28 +89,28 @@ export default function ModelAssignmentFilterForm({ register, setValue, onSearch
           label="Status"
           placeholder="Select status..."
           options={[
-            { label: "All", value: "" },
-            ...ActiveStatus.map(status => ({
+            { label: 'All', value: '' },
+            ...ActiveStatus.map((status) => ({
               label: status.label,
               value: String(status.value),
-            }))
+            })),
           ]}
           allowFreeText={false}
           onSelectionChange={(value) => {
             console.log('Status selected:', value, typeof value);
           }}
         />
-        
-        {/* Search Button */}
-        <div className="flex items-center justify-start pt-[2px]">
+
+        <div className="flex items-end">
           <button
-            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900"
+            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
             onClick={onSearch}
           >
             Search
             <Search size={16} className="mt-1" />
           </button>
         </div>
+
       </div>
     </div>
   );

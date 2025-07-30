@@ -3,6 +3,11 @@ export const ActiveStatus = [
   { label: 'Inactive', value: false },
 ];
 
+export const ProductStatus = [
+  { label: 'NG', value: 'NG' },
+  { label: 'OK', value: 'OK' },
+];
+
 export const ModelStatusOption = [
   { label: 'Using', value: 'Using' },
   { label: 'Processing', value: 'Processing' },

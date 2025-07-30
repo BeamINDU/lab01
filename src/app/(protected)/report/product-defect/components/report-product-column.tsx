@@ -22,9 +22,12 @@ export default function productColumns({
       accessorKey: "no",
       header: "No",
       enableSorting: false,
+      meta: {
+        style: { width: "3%" },
+      },
     },
     {
-      accessorKey: "datetime",
+      accessorKey: "defecttime",
       header: "Datetime",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
@@ -32,56 +35,71 @@ export default function productColumns({
         return <div className="text-center">{formattedDate}</div>;
       },
       meta: {
-        style: { width: "15%" },
+        style: { width: "12%" },
       },
     },
     {
-      accessorKey: "productId",
+      accessorKey: "prodid",
       header: "Product ID",
-    },
-    {
-      accessorKey: "productName",
-      header: "Product Name",
-    },
-    {
-      accessorKey: "defectTypeId",
-      header: "Defect Type ID",
-    },
-    {
-      accessorKey: "defectTypeName",
-      header: "Defect Type Name",
-    },
-    {
-      accessorKey: "cameraId",
-      header: "Camera ID",
-    },
-    {
-      accessorKey: "cameraName",
-      header: "Camera Name",
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
       meta: {
         style: { width: "8%" },
+      },
+    },
+    {
+      accessorKey: "prodname",
+      header: "Product Name",
+      meta: {
+        style: { width: "15%" },
+      },
+    },
+    // {
+    //   accessorKey: "prodseq",
+    //   header: "Sequence",
+    //   meta: {
+    //     style: { width: "5%" },
+    //   },
+    // },
+    {
+      accessorKey: "defectdetail",
+      header: "Defect Detail",
+    },
+    {
+      accessorKey: "cameraid",
+      header: "Camera ID",
+      meta: {
+        style: { width: "9%" },
+      },
+    },
+    {
+      accessorKey: "cameraname",
+      header: "Camera Name",
+      meta: {
+        style: { width: "13%" },
+      },
+    },
+    {
+      accessorKey: "prodstatus",
+      header: "Status",
+      meta: {
+        style: { width: "5%" },
       },
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "",
       cell: ({ row }) => (
         <div className="flex items-center justify-center gap-2">
-          <button 
-            className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary"
+          <button
+            className="px-1 py-1 flex items-center justify-center text-blue-600 hover:text-blue-800 transition"
             onClick={() => openDetailModal(row.original)}
+            title={canEdit ? "Detail" : "View"}
           >
-            {canEdit ? 'Detail' : 'View'}
-            <Eye size={16} />
+            <SquarePen size={18} />
           </button>
         </div>
       ),
       meta: {
-        style: { width: "8%" },
+        style: { width: "3%" },
       },
     },
   ];

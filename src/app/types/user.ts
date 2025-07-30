@@ -7,6 +7,7 @@ export type User = {
   password?: string
   firstname: string
   lastname: string
+  fullname?: string
   email: string
   status: boolean
   statusName?: string
@@ -20,10 +21,8 @@ export type User = {
 
 export type ParamSearch = {
   userId?: string
-  userName?: string
-  firstname?: string
-  lastname?: string
+  username?: string
+  fullname: string
   roleName?: string
-  roleId?: string
   status?: boolean
 }

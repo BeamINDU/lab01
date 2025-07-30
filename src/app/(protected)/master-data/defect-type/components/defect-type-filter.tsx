@@ -14,8 +14,8 @@ interface DefectTypeFilterFormProps {
 
 export default function DefectTypeFilterForm({ register, setValue, onSearch }: DefectTypeFilterFormProps) {
   return (
-    <div className="md:col-span-2 space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div className="space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Defect Type ID - */}
         <SearchFieldResponsive 
           register={register}
@@ -43,7 +43,7 @@ export default function DefectTypeFilterForm({ register, setValue, onSearch }: D
         />
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Status  */}
         <SearchFieldResponsive 
           register={register}
@@ -62,9 +62,9 @@ export default function DefectTypeFilterForm({ register, setValue, onSearch }: D
         />
         
         {/* Search Button */}
-        <div className="flex items-center justify-start pt-[2px]">
+        <div className="flex items-end">
           <button
-            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900"
+            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
             onClick={onSearch}
           >
             Search

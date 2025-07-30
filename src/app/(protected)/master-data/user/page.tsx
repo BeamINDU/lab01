@@ -38,7 +38,8 @@ export default function Page() {
       const formValues = getValues();
       const param: ParamSearch = {
         userId: formValues.userId || '',
-        userName: formValues.userName || '',
+        username: formValues.username || '',
+        fullname: formValues.fullname || '',
         roleName: formValues.roleName || '', 
         status: formValues.status,
       };
@@ -53,8 +54,8 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     try {
-      const headers = ["User ID", "User Name", "First Name","Last Name","Email", "Role Name", "Status"];
-      const keys: (keyof User)[] = ["userId", "username", "firstname", "lastname", "email", "roleName", "statusName"];
+      const headers = ["User ID", "First Name","Last Name", "Username","Email", "Role Name", "Status"];
+      const keys: (keyof User)[] = ["userId", "firstname", "lastname", "username", "email", "roleName", "statusName"];
       const fileName = `User_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
     
       switch (type) {
@@ -137,7 +138,7 @@ export default function Page() {
     <>
       <h2 className="text-2xl font-bold mb-2 ml-3">User</h2>
       <div className="p-4 mx-auto">
-        <div className="mb-6 max-w-full text-sm">
+        <div className="mb-4 max-w-full text-sm">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Filters Form */}
             <div className="md:basis-[80%]">
@@ -148,7 +149,7 @@ export default function Page() {
               />
             </div>
             
-            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-4">
+            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-2">
               <div className="flex flex-wrap justify-end gap-2">
                 {/* Upload Button */}
                 {hasPermission(Menu.User, Action.Upload) && (

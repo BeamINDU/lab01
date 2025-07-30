@@ -14,6 +14,7 @@ export const search = async (param?: ParamSearch) => {
       username: item.username,
       firstname: item.ufname,
       lastname: item.ulname,
+      fullname: `${item.ufname} ${item.ulname}`,
       location: item.username,
       password: item.upassword,
       email: item.email,
@@ -47,6 +48,7 @@ export const create = async (param: Partial<User>) => {
     return {
       ...param,
       id: param.userId,
+      fullname: `${param.firstname} ${param.lastname}`,
       statusName: param.status ? 'Active' : 'Inactive',
       roleName: res.rolenames,
       createdDate: new Date(res.createddate),
@@ -62,6 +64,7 @@ export const update = async (id: string, param: Partial<User>) => {
     return {
       ...param,
       id: param.userId,
+      fullname: `${param.firstname} ${param.lastname}`,
       statusName: param.status ? 'Active' : 'Inactive',
       roleName: res.rolenames,
       updatedDate: new Date(res.updateddate),
@@ -103,6 +106,14 @@ export const getUserIdOptions = async (q: string) => {
 export const getUserNameOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.user.suggest_username}?q=${q}`);
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+}
+
+export const getFullnameOptions = async (q: string) => {
+  try {
+    return await api.get<SelectOption[]>(`${API_ROUTES.user.suggest_fullname}?q=${q}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

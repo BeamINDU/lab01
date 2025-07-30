@@ -1,7 +1,7 @@
 export type Product = {
   id?: string
   productId: string
-  productName: string
+  productName?: string
   productTypeId: string
   productTypeName?: string
   serialNo: string
@@ -19,6 +19,7 @@ export type ParamSearch = {
   productId?: string
   productName?: string
   productTypeId?: string
+  productTypeName?: string
   serialNo?: string | undefined
   status?: boolean,
 }

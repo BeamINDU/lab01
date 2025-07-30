@@ -3,6 +3,7 @@ import { API_ROUTES } from "@/app/constants/endpoint";
 import { Camera, ParamSearch } from "@/app/types/camera"
 import { SelectOption } from "@/app/types/select-option";
 import { extractErrorMessage } from '@/app/utils/errorHandler';
+import { Label } from 'recharts';
 
 export const search = async (param?: ParamSearch) => { 
   try {
@@ -85,6 +86,14 @@ export const upload = async (uploadby: string, file: File) => {
   } 
 };
 
+export const getCameraOptions = async (q: string) => {
+  try {
+    return await api.get<SelectOption[]>(`${API_ROUTES.camera.camera_options}?q=${q}`);
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+};
+
 export const getCameraIdOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_camera_id}?q=${q}`);
@@ -96,6 +105,15 @@ export const getCameraIdOptions = async (q: string) => {
 export const getCameraNameOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_camera_name}?q=${q}`);
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+}
+
+export const getCameraIpOptions = async (q: string) => {
+  try {
+    return await api.get<SelectOption[]>(`${API_ROUTES.camera.suggest_camera_ip}?q=${q}`);
+    
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

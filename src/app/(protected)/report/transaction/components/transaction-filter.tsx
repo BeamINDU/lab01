@@ -4,7 +4,7 @@ import { Search } from 'lucide-react'
 import { UseFormRegister, Control, UseFormSetValue, useWatch } from "react-hook-form";
 import SearchField from '@/app/components/common/SearchField';
 import DateTimeField from '@/app/components/common/DateTimeField'; 
-import { getProductIdOptions } from "@/app/libs/services/product";
+import { getProductIdOptions, getProductNameOptions } from "@/app/libs/services/product";
 import { getLotNoOptions } from "@/app/libs/services/transaction";
 import dayjs from 'dayjs';
 
@@ -21,9 +21,8 @@ export default function TransactionFilterForm({ register, setValue, control, onS
   const dateTo = useWatch({ control, name: 'dateTo' });
 
   return (
-    <div className="md:col-span-2 space-y-4">
-      {/* Date Range Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div className="space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Date From */}
         <DateTimeField
           control={control}
@@ -53,12 +52,8 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           className="w-full"
           minDate={dateFrom ? dayjs(dateFrom) : undefined}
         />
-      </div>
-      
-      {/* Search Fields Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        
-        {/* Lot No - ใช้ข้อมูลจาก Transaction ที่ดึง Lot No จาก Report Defect Summary */}
+
+        {/* Lot No */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -71,8 +66,10 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           allowFreeText={true}
           className="w-full"
         />
-        
-        {/* Product ID - ใช้ข้อมูลจาก Transaction */}
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">     
+        {/* Product ID */}
         <SearchField
           register={register}
           setValue={setValue}
@@ -85,6 +82,21 @@ export default function TransactionFilterForm({ register, setValue, control, onS
           allowFreeText={true}
           className="w-full"
         />
+        
+        {/* Product Name */}
+        <SearchField
+          register={register}
+          setValue={setValue}
+          fieldName="productName"
+          label="Product Name"
+          placeholder="Search Product name..."
+          dataLoader={getProductNameOptions}
+          labelField="label"
+          valueField="value"
+          allowFreeText={true}
+          className="w-full"
+        />
+
         {/* Search Button  */}
         <div className="hidden xl:flex items-center justify-start pt-[2px]">
           <button

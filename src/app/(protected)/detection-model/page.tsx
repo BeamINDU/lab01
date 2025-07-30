@@ -8,7 +8,7 @@ import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { DetectionModel, ParamSearch } from "@/app/types/detection-model"
-import { search, create, removeModel, duplicateModel } from "@/app/libs/services/detection-model";
+import { search, create, removeModelVersion, duplicateModel } from "@/app/libs/services/detection-model";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
 import { extractErrorMessage } from '@/app/utils/errorHandler';
@@ -124,10 +124,10 @@ export default function Page() {
     const result = await showConfirm('Are you sure you want to delete these detection model?')
     if (result.isConfirmed) {
       try {
-        for (const modelId of selectedIds) {
-          await removeModel(modelId);
+        for (const modelVersionId of selectedIds) {
+          await removeModelVersion(modelVersionId);
         }
-        setData(prev => prev.filter(item => !selectedIds.includes(item.modelId ?? 0)));
+        setData(prev => prev.filter(item => !selectedIds.includes(item.modelVersionId ?? 0)));
         setSelectedIds([]);
         showSuccess(`Deleted successfully`)
       } catch (error) {
@@ -157,7 +157,7 @@ export default function Page() {
       <NextTopLoader />
       <h2 className="text-2xl font-bold mb-2 ml-3">Detection Model</h2>
       <div className="p-4 mx-auto">
-        <div className="mb-6 max-w-full text-sm">
+        <div className="mb-4 max-w-full text-sm">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Filters Form */}
             <div className="md:basis-[80%]">
@@ -169,7 +169,7 @@ export default function Page() {
               />
             </div>
             
-            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-4">
+            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-2">
               <div className="flex flex-wrap justify-end gap-2">
                 {/* Upload Button */}
                 {/* {hasPermission(Menu.DetectionModel, Action.Upload) && (

@@ -39,6 +39,7 @@ export default function Page() {
       const param: ParamSearch = {
         cameraId: formValues.cameraId || '',
         cameraName: formValues.cameraName || '',
+        cameraIp: formValues.cameraIp || '',
         location: formValues.location || '',
         status: formValues.status,
       };
@@ -53,8 +54,8 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     try {
-      const headers = ["Camera ID", "Camera Name", "Location", "Status", "Created Date"];
-      const keys: (keyof Camera)[] = ["cameraId", "cameraName", "location", "statusName", "createdDate"];
+      const headers = ["Camera ID", "Camera Name", "Location", "IP Address", "Status"];
+      const keys: (keyof Camera)[] = ["cameraId", "cameraName", "location", "cameraIp", "statusName"];
       const fileName = `Camera_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
 
       switch (type) {
@@ -137,7 +138,7 @@ export default function Page() {
     <>
       <h2 className="text-2xl font-bold mb-2 ml-3">Camera</h2>
       <div className="p-4 mx-auto">
-        <div className="mb-6 max-w-full text-sm">
+        <div className="mb-4 max-w-full text-sm">
           <div className="flex flex-col md:flex-row gap-6">
             {/* CameraFilterForm */}
             <div className="md:basis-[80%]">
@@ -148,7 +149,7 @@ export default function Page() {
               />
             </div>
 
-            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-4">
+            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-2">
               <div className="flex flex-wrap justify-end gap-2">
                 {/* Upload Button */}
                 {hasPermission(Menu.Camera, Action.Upload) && (

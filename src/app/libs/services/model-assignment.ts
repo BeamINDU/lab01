@@ -11,10 +11,12 @@ export const search = async (param?: ParamSearch) => {
         id: item.id,
         modelId: item.modelid,
         modelName: item.modelname,
-        cameraId: item.cameraid,
-        productId: item.prodid,
         modelVersionId: item.modelversionid,
         versionNo: item.versionno,
+        cameraId: item.cameraid,
+        cameraName: item.cameraname,
+        productId: item.prodid,
+        productName: item.prodname,
         status: item.appliedstatus,
         statusName: item.appliedstatus ? 'Active' : 'Inactive',
         appliedDate: item.applieddate,
@@ -38,17 +40,19 @@ export const detail = async (id: string) => {
 export const update = async (id: number, param: Partial<ModelAssignment>) => {
   try {
     const res = await api.put<any>(`${API_ROUTES.model_assignment.update}?id=${id}`, {
+      modelId: param.modelId,
       productId: param.productId,
       cameraId: param.cameraId,
-      modelVersionId: param.modelVersionId,
       status: param.status,
-      appliedBy: param.appliedBy
+      appliedBy: param.appliedBy,
+      modelVersionId: param.modelVersionId,
+      version: param.versionNo
     });
     return {
       ...param,
       id: res.id,
       statusName: param.status ? 'Active' : 'Inactive',
-      applieddate: new Date(res.applieddate),
+      appliedDate: new Date(res.applieddate),
     };
   } catch (error) {
     throw new Error(extractErrorMessage(error));

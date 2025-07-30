@@ -79,19 +79,28 @@ export default function productColumns({
     {
       accessorKey: "productId",
       header: "Product ID",
+      meta: {
+        style: { width: "7%" },
+      },
     },
     {
       accessorKey: "productName",
-      header: "Production Name",
+      header: "Product Name",
     },
     {
       accessorKey: "productTypeId",
-      header: "Production Type ID",
+      header: "Product Type ID",
+      meta: {
+        style: { width: "8%" },
+      },
     },
-    // {
-    //   accessorKey: "lotNo",
-    //   header: "Lot No",
-    // },
+    {
+      accessorKey: "productTypeName",
+      header: "Product Type Name",
+      meta: {
+        style: { width: "8%" },
+      },
+    },
     {
       accessorKey: "serialNo",
       header: "Serial No",
@@ -122,22 +131,16 @@ export default function productColumns({
           </span>
         );
       },
+      meta: {
+        style: { width: "5%" },
+      },
     },    
-    // {
-    //   accessorKey: "quantity",
-    //   header: "Quantity",
-    //   cell: ({ getValue }) => {
-    //     const value = getValue<number>();
-    //     return (
-    //       <div className="text-right">
-    //         {formatNumber(value)}
-    //       </div>
-    //     );
-    //   },
-    // },
     {
       accessorKey: "createdBy",
       header: "Created By",
+      meta: {
+        style: { width: "6%" },
+      },
     },
     {
       accessorKey: "createdDate",
@@ -147,10 +150,16 @@ export default function productColumns({
         const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
+      meta: {
+        style: { width: "9%" },
+      },
     },
     {
       accessorKey: "updatedBy",
       header: "Updated By",
+      meta: {
+        style: { width: "6%" },
+      },
     },
     {
       accessorKey: "updatedDate",
@@ -160,21 +169,27 @@ export default function productColumns({
         const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
+      meta: {
+        style: { width: "9%" },
+      },
     },
     {
       id: "actions",
       header: "",
       cell: ({ row }) => (
         <div className="flex items-center justify-center gap-2">
-          <button 
-            className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary"
+          <button
+            className="px-1 py-1 flex items-center justify-center text-blue-600 hover:text-blue-800 transition"
             onClick={() => openEditModal(row.original)}
+            title={canEdit ? "Edit" : "Detail"}
           >
-            {canEdit ? 'Edit' : 'Detail'}
-            <SquarePen size={16} />
+            <SquarePen size={18} />
           </button>
         </div>
-      )
+      ),
+      meta: {
+        style: { width: "3%" },
+      },
     },
   ];
 }

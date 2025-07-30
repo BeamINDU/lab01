@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { X, Save } from 'lucide-react';
 import { ProductDetail, ParamUpdate } from "@/app/types/report-product-defect"
 import { useSession } from "next-auth/react";
+import { formatDateTime } from "@/app/utils/date";
+import { resultImage } from "@/app/libs/services/report-product-defect";
 
 interface ProductModalProps {
   showModal: boolean;
@@ -22,6 +24,8 @@ export default function ProductFormModal({
   canEdit
 }: ProductModalProps) {
   const { data: session } = useSession();
+  const [ image, setImage] = useState<any>('');
+  const [isImageLoading, setIsImageLoading] = useState(false);
 
   const {
     register,
@@ -31,19 +35,42 @@ export default function ProductFormModal({
   });
 
   useEffect(() => {
-    if (editingData) {
-      reset(editingData);
-    } else {
-      reset();
-    }
-  }, [editingData, reset]);
+    const fetchImage = async () => {
+      if (editingData) {
+        reset(editingData);
 
-  if (!showModal) return null;
+        if (editingData.imagePath) {
+          setIsImageLoading(true);
+          try {
+            const base64String = await resultImage(editingData.imagePath, `${editingData.date} ${editingData.time}`);
+            const image64 = `data:image/jpeg;base64,${base64String}`;
+            setImage(image64);
+          } catch (error) {
+            console.error("Error fetching image:", error);
+            setImage(null);
+          } finally {
+            setIsImageLoading(false);
+          }
+        }
+      } else {
+        reset();
+        setImage(null);
+      }
+    };
+
+    fetchImage();
+  }, [editingData, reset]);
 
   const onSubmit: SubmitHandler<ProductDetail> = async (formData) => {
     const formWithMeta: ParamUpdate = {
+      id: formData.id,
+      productId: formData.productId,
+      sequence: formData.sequence,
+      cameraId: formData.cameraId,
+      imagePath: formData.imagePath,
+      datetime: `${formData.date} ${formData.time}`,
       status: formData.status,
-      comment: formData.comment,
+      comment: formData.comment ?? "",
       updatedBy: session?.user?.userid,
     };
     onSave(formWithMeta);
@@ -67,16 +94,27 @@ export default function ProductFormModal({
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
-          <input type="hidden" {...register('productId')} />
+          <input type="hidden" {...register('id')} />
+          <input type="hidden" {...register('sequence')} />
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Left Side */}
             <div className="flex flex-col items-center">
-              <img
-                src={editingData?.imageUrl}
-                alt="Product"
-                className="border-0 border-yellow-500 p-1 w-[300px] h-[200px] object-contain"
-              />
+              {isImageLoading ? (
+                <div className="w-[400px] h-[300px] flex items-center justify-center border border-gray-300 text-gray-500">
+                  Loading image...
+                </div>
+              ) : image ? (
+                <img
+                  src={image}
+                  alt="Product"
+                  className="border-0 border-yellow-400 p-1 h-[300px] object-contain"
+                />
+              ) : (
+                <p className="border border-400 text-gray-500 flex items-center justify-center w-[400px] h-[300px]">
+                  No results found
+                </p>
+              )}
 
               {/* Override Status */}
               <div className="mt-6 space-y-2 w-full">
@@ -92,44 +130,47 @@ export default function ProductFormModal({
               </div>
 
               {/* Comment */}
-              <div className="mt-4 w-full">
+              <div className="mt-5 w-full">
                 <label className="block font-semibold mb-1">Comment</label>
-                <textarea {...register("comment")} className="w-full h-28 p-2 border border-gray-400 rounded resize-none" />
+                <textarea {...register("comment")} className="w-full h-20 p-2 border border-gray-400 rounded resize-none" />
               </div>
             </div>
 
             {/* Right Side */}
             <div className="space-y-4">
               {/* Info */}
-              <div className="border border-gray-400 p-2 rounded bg-white leading-7 h-[210px]">
-                <p><b>Product ID: </b> {editingData?.productId}</p>
-                <p><b>Product Name: </b> {editingData?.productName}</p>
-                <p><b>Serial No.: </b> {editingData?.serialNo}</p>
-                <p><b>Date: </b> {editingData?.date}</p>
-                <p><b>Time: </b> {editingData?.time}</p>
-                <p><b>Defect Type Name: </b> {editingData?.defectTypeName}</p>
-                <p><b>Camera ID: </b>{editingData?.cameraId}</p>
+              <div className="border border-gray-400 p-2 rounded bg-white leading-8 h-[240px]">
+                <p><b>Product ID : </b> {editingData?.productId}</p>
+                <p><b>Product Name : </b> {editingData?.productName}</p>
+                <p><b>Serial Number : </b> {editingData?.serialNo}</p>
+                <p><b>Date Time : </b> {editingData?.date} {editingData?.time}</p>
+                <p><b>Camera ID : </b>{editingData?.cameraId}</p>
+                <p><b>Defect Type Name : </b> {editingData?.defectDetail}</p>
               </div>
 
               {/* History */}
               {editingData?.history && editingData.history.length > 0 ? (
-                <div className="border border-gray-400 rounded bg-white h-200px]">
+                <div className="border border-gray-400 rounded bg-white h-[240px]">
                   <div className="bg-blue-200 p-2 font-bold rounded-t">History</div>
-                  <div className="overflow-y-auto h-[160px] text-sm">
+                  <div className="overflow-y-auto h-[200px] text-sm">
                     <table className="w-full text-left border-collapse">
                       <thead className="bg-gray-100 text-gray-700 sticky top-0">
                         <tr>
-                          <th className="p-2 border-b border-gray-300">Date</th>
-                          <th className="p-2 border-b border-gray-300">Time</th>
-                          <th className="p-2 border-b border-gray-300">Updated by</th>
+                          <th className="p-2 border-b border-gray-300 text-center align-middle">DateTime</th>
+                          <th className="p-2 border-b border-gray-300 text-center align-middle">Status</th>
+                          <th className="p-2 border-b border-gray-300 text-center align-middle">Comment</th>
+                          <th className="p-2 border-b border-gray-300 text-center align-middle whitespace-nowrap">Updated by</th>
                         </tr>
                       </thead>
                       <tbody>
                         {editingData.history.map((entry, index) => (
                           <tr key={index} className="hover:bg-gray-50">
-                            <td className="p-1 border-b border-gray-200">{entry.date}</td>
-                            <td className="p-1 border-b border-gray-200">{entry.time}</td>
-                            <td className="p-1 border-b border-gray-200">{entry.updatedBy}</td>
+                            <td className="p-1 border-b border-gray-200 text-center align-middle">
+                              {formatDateTime(entry.actiondate)}
+                            </td>
+                            <td className="p-1 border-b border-gray-200 text-center align-middle">{entry.status}</td>
+                            <td className="p-1 border-b border-gray-200">{entry.comment}</td>
+                            <td className="p-1 border-b border-gray-200 whitespace-nowrap">{entry.actionby}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -139,7 +180,7 @@ export default function ProductFormModal({
               ) : (
                 <div className="border border-gray-400 rounded bg-white">
                   <div className="bg-blue-200 p-2 font-bold rounded-t">History</div>
-                  <div className="p-4 text-sm text-gray-500 min-h-[155px] flex justify-center items-start">
+                  <div className="p-4 text-sm text-gray-500 min-h-[200px] flex justify-center items-start">
                     No history available.
                   </div>
                 </div>

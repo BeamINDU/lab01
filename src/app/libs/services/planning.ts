@@ -7,23 +7,11 @@ import { extractErrorMessage } from '@/app/utils/errorHandler';
 export const search = async (param?: ParamSearch) => { 
   try {
     const res = await api.get<any>(API_ROUTES.planning.get, param);
-
-    const mapData: Planning[] = res?.planning?.map((item) => ({
+    const mapData: Planning[] = res?.items?.map((item) => ({
+      ...item,
       id: item.planid,
-      planId: item.planid,
-      productId: item.prodid,
-      lotNo: item.prodlot,
-      lineId: item.prodline,
-      quantity: item.quantity,
-      startDate:item.startdatetime,
-      endDate:item.enddatetime,
-      createdDate: item.createddate,
-      createdBy: item.createdby,
-      updatedDate: item.updateddate,
-      updatedBy: item.updatedby,
-    }));
-
-    return mapData;
+    })); 
+     return { total:res?.total, items: mapData }; 
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -42,8 +30,9 @@ export const create = async (param: Partial<Planning>) => {
     const res = await api.post<any>(`${API_ROUTES.planning.insert}`, param);
     return {
       ...param,
-      id: param.planId,
-      createdDate: new Date(),
+      id: param.planid,
+      prodname: res.prodname,
+      createddate: new Date(res.createddate),
     };
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -55,9 +44,9 @@ export const update = async (id: string, param: Partial<Planning>) => {
     const res = await api.put<Planning>(`${API_ROUTES.planning.update}?planid=${id}`, param);
     return {
       ...param,
-      id: param.planId,
-      createdDate: new Date(),
-      updatedDate: new Date(),
+      id: param.planid,
+      prodname: res.prodname,
+      updateddate: new Date(res.updateddate ?? Date.now()),
     };
   } catch (error) {
     throw new Error(extractErrorMessage(error));
@@ -67,6 +56,32 @@ export const update = async (id: string, param: Partial<Planning>) => {
 export const remove = async (id: string) => {
   try {
     return await api.delete<Planning>(`${API_ROUTES.planning.delete}?planid=${id}`);
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+};
+
+export const start = async (param: Planning) => {
+  try {
+    const res = await api.put<Planning>(API_ROUTES.planning.start, { planid: param.planid, updatedby: param.updatedby });
+    return {
+      ...param,
+      actualstartdatetime: res.actualstartdatetime,
+      updateddate: new Date(res.updateddate ?? Date.now()),
+    };
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+};
+
+export const stop = async (param: Planning) => {
+  try {
+    const res = await api.put<Planning>(API_ROUTES.planning.stop, { planid: param.planid, updatedby: param.updatedby });
+    return {
+      ...param,
+      actualenddatetime: res.actualenddatetime,
+      updateddate: new Date(res.updateddate ?? Date.now()),
+    };
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -115,37 +130,19 @@ export const getLineNoOptions = async (q: string) => {
 export const startPlansConfirmation = async (param?: ParamSearch) => { 
   try {
     const mockPlans: Planning[] = Array.from({ length: 5000 }, (_, i) => ({
-      planId: `PLAN00${i+1}`,
-      productId: `PRO0000${i+1}`,
-      lotNo: `LOT000${i+1}`,
-      lineId: `Line${i+1}`,
+      planid: `PLAN00${i+1}`,
+      prodid: `PRO0000${i+1}`,
+      prodname: `NAME${i+1}`,
+      prodlot: `LOT000${i+1}`,
+      prodline: `Line${i+1}`,
       quantity: i+1,
-      startDate: new Date(),
-      endDate: new Date(),
+      startdatetime: new Date(),
+      enddatetime: new Date(),
+      actualstartdatetime: new Date(),
+      actualenddatetime: new Date(),
     }));
     return mockPlans;
-
-    // const res =  await api.get<any>(`${API_ROUTES.planning.plans_confirmation}?${param}`);
-    // const mapData: Planning[] = res?.planning?.map((item) => ({
-    //   planId: item.planid,
-    //   productId: item.prodid,
-    //   lotNo: item.prodlot,
-    //   lineId: item.prodline,
-    //   quantity: item.quantity,
-    //   startDate:item.startdatetime,
-    //   endDate:item.enddatetime,
-    // }));
-
-    // return mapData;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
 };
-
-export const stopPlans = async (param?: ParamSearch) => {
-  try {
-    
-  } catch (error) {
-    throw new Error(extractErrorMessage(error));
-  }  
-}

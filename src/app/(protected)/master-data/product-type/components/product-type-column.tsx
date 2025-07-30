@@ -81,7 +81,7 @@ export default function ProductTypeColumns({
     },
     {
       accessorKey: "productTypeName",
-      header: "Production Type Name",
+      header: "Product Type Name",
     },
     {
       accessorKey: "description",
@@ -134,18 +134,21 @@ export default function ProductTypeColumns({
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "",
       cell: ({ row }) => (
         <div className="flex items-center justify-center gap-2">
-          <button 
-            className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary"
+          <button
+            className="px-1 py-1 flex items-center justify-center text-blue-600 hover:text-blue-800 transition"
             onClick={() => openEditModal(row.original)}
+            title={canEdit ? "Edit" : "Detail"}
           >
-            {canEdit ? 'Edit' : 'Detail'}
-            <SquarePen size={16} />
+            <SquarePen size={18} />
           </button>
         </div>
-      )
+      ),
+      meta: {
+        style: { width: "3%" },
+      },
     },
   ];
 }

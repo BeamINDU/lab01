@@ -81,13 +81,12 @@ export default function DateFilters({
     size: "small" as const,
     className: "w-[150px]",
     placeholder: "YYYY-MM-DD HH:mm",
-    InputProps: { style: { fontSize: '10px', height: '28px', padding: '0 8px' } },
-    inputProps: { style: { fontSize: '10px', padding: '4px 0', textAlign: 'center' as const } },
+    InputProps: { style: { fontSize: '13px', height: '27px', padding: '4px 4px 0px 4px', alignItems: 'center' as const } },
     sx: {
       backgroundColor: 'white',
       borderRadius: '0.375rem',
-      '& input': { fontSize: '10px !important', padding: '4px 8px !important' },
-      '& .MuiOutlinedInput-root': { fontSize: '10px !important' }
+      '& input': { fontSize: '12px !important',  height: '27px',  padding: '4px 4px 0px 4px !important', alignItems: 'center', },
+      '& .MuiOutlinedInput-root': { fontSize: '12px !important' }
     }
   };
 
@@ -111,7 +110,6 @@ export default function DateFilters({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // ✅ เพิ่ม "All Months" กลับมา แต่เอา "All Years" ออก
   const renderDropdown = (
     ref: React.RefObject<HTMLDivElement>,
     show: boolean,

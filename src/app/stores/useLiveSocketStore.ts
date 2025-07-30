@@ -38,6 +38,7 @@ export const useLiveSocketStore = create<LiveSocketState>((set, get) => ({
     // if ('connect' in socket && typeof (socket as any).connect === 'function') {
     //   (socket as any).connect();
     // }
+
   },
 
   disconnect: () => {

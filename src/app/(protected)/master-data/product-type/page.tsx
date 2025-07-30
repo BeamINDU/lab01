@@ -138,7 +138,7 @@ const handleSearch = async () => {
     <>
       <h2 className="text-2xl font-bold mb-2 ml-3">Product Type</h2>
       <div className="p-4 mx-auto">
-        <div className="mb-6 max-w-full text-sm">
+        <div className="mb-4 max-w-full text-sm">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Filters Form */}
             <div className="md:basis-[80%]">
@@ -149,7 +149,7 @@ const handleSearch = async () => {
               />
             </div>
             
-            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-4">
+            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-2">
               <div className="flex flex-wrap justify-end gap-2">
                 {/* Upload Button */}
                 {hasPermission(Menu.ProductType, Action.Upload) && (

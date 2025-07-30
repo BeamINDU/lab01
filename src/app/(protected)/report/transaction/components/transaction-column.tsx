@@ -10,11 +10,11 @@ export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
       header: "No",
       enableSorting: false,
       meta: {
-        style: { width: "6%" },
+        style: { width: "3%" },
       },
     },
     {
-      accessorKey: "startDate",
+      accessorKey: "actualstartdatetime",
       header: "Start Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
@@ -26,7 +26,7 @@ export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
       },
     },
     {
-      accessorKey: "endDate",
+      accessorKey: "actualenddatetime",
       header: "End Date",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
@@ -38,15 +38,15 @@ export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
       },
     },
     {
-      accessorKey: "lotNo",
+      accessorKey: "prodlot",
       header: "Lot No",
     },
     {
-      accessorKey: "productId",
+      accessorKey: "prodid",
       header: "Product ID",
     },
     {
-      accessorKey: "productName",
+      accessorKey: "prodname",
       header: "Product Name",
     },
     {
@@ -64,20 +64,5 @@ export default function ReportDefectColumns(): ColumnDef<Transaction>[] {
         style: { width: "12%" },
       },
     },
-    // {
-    //   accessorKey: "totalNg",
-    //   header: "Total NG",
-    //   cell: ({ getValue }) => {
-    //     const value = getValue<number>();
-    //     return (
-    //       <div className="text-right">
-    //         {formatNumber(value)}
-    //       </div>
-    //     );
-    //   },
-    //   meta: {
-    //     style: { width: "12%" },
-    //   },
-    // },
   ];
 }

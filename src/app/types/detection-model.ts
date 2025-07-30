@@ -20,7 +20,11 @@ export type ParamSearch = {
   modelName?: string,               
   version?: number,          
   function?: string,
-  statusId?: string,               
+  statusId?: string,   
+  page?: number
+  pageSize?: number
+  order_by?: string
+  order_dir?: string            
 }
 
 export type FormData = {
@@ -56,16 +60,3 @@ export type ModelPicture = {
   url?: string,
   refId?: string
 }
-
-// export type Annotation = {
-//   id: string
-//   type: ShapeType
-//   color?: string
-//   label: ClassName,
-//   startX: number
-//   startY: number
-//   width: number
-//   height: number
-//   radius: number
-//   points: number[]
-// };

@@ -1,15 +1,11 @@
 export type Transaction = {
-  runningNo: number
-  startDate: Date
-  endDate: Date
-  lotNo: string
-  productId: string
-  productName: string
-  quantity: number
-  createdDate?: Date
-  createdBy?: string
-  updatedDate?: Date | null
-  updatedBy?: string | null
+  runningno: number
+  actualstartdatetime: Date
+  actualenddatetime: Date
+  prodlot: string
+  prodid: string
+  prodname: string
+  quantity: number 
 }
 
 export type ParamSearch = {
@@ -17,4 +13,9 @@ export type ParamSearch = {
   dateTo?: Date
   lotNo?: string
   productId?: string
+  productName?: string
+  page?: number
+  pageSize?: number
+  order_by?: string
+  order_dir?: string
 }

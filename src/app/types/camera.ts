@@ -15,6 +15,7 @@ export type Camera = {
 export type ParamSearch = {
   cameraId?: string
   cameraName?: string
+  cameraIp: string
   location?: string
   status?: boolean
 }

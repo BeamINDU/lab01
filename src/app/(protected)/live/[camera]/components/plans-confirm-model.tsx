@@ -25,7 +25,7 @@ export default function PlanningConfirmationModal({
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
-      <div className="relative flex flex-col bg-white rounded-xl w-full max-w-6xl h-[68%] p-4 shadow-xl overflow-hidden">
+      <div className="relative flex flex-col bg-white rounded-xl w-full max-w-7xl h-[68%] p-4 shadow-xl overflow-hidden">
 
         {/* Close Button */}
         <button

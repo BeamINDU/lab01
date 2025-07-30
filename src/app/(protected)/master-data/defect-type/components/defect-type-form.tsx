@@ -92,13 +92,9 @@ export default function DefectTypeFormModal({
         </button>
 
         <h2 className="text-2xl font-semibold text-center mb-6">
-          {editingData
-            ? editingData.id
-              ? 'Add Defect Type'
-              : canEdit
-                ? 'Edit Defect Type'
-                : 'Detail Defect Type'
-            : 'Add Defect Type'}
+          {editingData?.id
+              ? canEdit ? 'Edit Defect Type' : 'Detail Defect Type'
+              : 'Add Defect Type'}
         </h2>
 
         {/* Form */}

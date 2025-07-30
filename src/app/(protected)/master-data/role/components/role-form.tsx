@@ -93,13 +93,9 @@ export default function RoleFormModal({
         </button>
 
         <h2 className="text-2xl font-semibold text-center mb-6">
-          {editingData
-            ? editingData.id
-              ? 'Add Role'
-              : canEdit
-                ? 'Edit Role'
-                : 'Detail Role'
-            : 'Add Role'}
+          {editingData?.id
+              ? canEdit ? 'Edit Role' : 'Detail Role'
+              : 'Add Role'}
         </h2>
 
         {/* Form */}

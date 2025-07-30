@@ -92,13 +92,9 @@ export default function ProductTypeFormModal({
         </button>
 
         <h2 className="text-2xl font-semibold text-center mb-6">
-          {editingData
-            ? editingData.id
-              ? 'Add Product Type'
-              : canEdit
-                ? 'Edit Product Type'
-                : 'Detail Product Type'
-            : 'Add Product Type'}
+          {editingData?.id
+              ? canEdit ? 'Edit Product Type' : 'Detail Product Type'
+              : 'Add Product Type'}
         </h2>
 
         {/* Form */}

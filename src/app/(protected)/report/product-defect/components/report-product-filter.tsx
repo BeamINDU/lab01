@@ -4,9 +4,10 @@ import { Search } from 'lucide-react'
 import { UseFormRegister, Control, UseFormSetValue, useWatch } from "react-hook-form";
 import SearchFieldResponsive from '@/app/components/common/SearchField';
 import DateTimeField from '@/app/components/common/DateTimeField';
-import { getProductIdOptions } from "@/app/libs/services/product";
-import { getDefectTypeIdOptions } from "@/app/libs/services/defect-type";
+import { getProductIdOptions, getProductNameOptions } from "@/app/libs/services/product";
+import { getDefectTypeIdOptions, getDefectTypeNameOptions } from "@/app/libs/services/defect-type";
 import { getCameraIdOptions, getCameraNameOptions } from "@/app/libs/services/camera";
+import { ProductStatus } from '@/app/constants/status';
 import dayjs from 'dayjs';
 
 interface ReportProductFilterFormProps {
@@ -22,10 +23,9 @@ export default function ReportProductFilterForm({ register, setValue, control, o
   const dateTo = useWatch({ control, name: 'dateTo' });
 
   return (
-    <div className="md:col-span-2 space-y-4">
-      {/* Date Range Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        {/* Date From - ใช้ DateTimeField */}
+    <div className="space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+        {/* Date From */}
         <DateTimeField
           control={control}
           fieldName="dateFrom"
@@ -40,7 +40,7 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           maxDate={dateTo ? dayjs(dateTo) : undefined}
         />
         
-        {/* Date To - ใช้ DateTimeField */}
+        {/* Date To */}
         <DateTimeField
           control={control}
           fieldName="dateTo"
@@ -55,25 +55,29 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           minDate={dateFrom ? dayjs(dateFrom) : undefined}
         />
         
-        {/* Camera ID - ใช้ Camera Options */}
-        <SearchFieldResponsive
+        
+
+        {/* Status */}
+        <SearchFieldResponsive 
           register={register}
           setValue={setValue}
-          fieldName="cameraId"
-          label="Camera ID"
-          placeholder="Search Camera ID..."
-          dataLoader={getCameraIdOptions}
-          labelField="label"
-          valueField="value"
-          allowFreeText={true}
-          className="w-full"
+          fieldName="status"
+          label="Status"
+          placeholder="Select status..."
+          options={[
+            { label: "All", value: "" },
+            ...ProductStatus.map(status => ({
+              label: status.label,
+              value: String(status.value),
+            }))
+          ]}
+          allowFreeText={false}
         />
+
       </div>
-      
-      {/* Search Fields Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-        
-        {/* Product ID - ใช้ Product Options */}
+
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+        {/* Product ID */}
         <SearchFieldResponsive
           register={register}
           setValue={setValue}
@@ -86,32 +90,79 @@ export default function ReportProductFilterForm({ register, setValue, control, o
           allowFreeText={true}
           className="w-full"
         />
-        
-        {/* Defect Type ID - ใช้ Defect Type Options */}
+
+        {/* Product Name */}
         <SearchFieldResponsive
           register={register}
           setValue={setValue}
-          fieldName="defectTypeId"
-          label="Defect Type ID"
-          placeholder="Search Defect Type ID..."
-          dataLoader={getDefectTypeIdOptions}
+          fieldName="productName"
+          label="Product Name"
+          placeholder="Search Product Name..."
+          dataLoader={getProductNameOptions}
+          labelField="label"
+          valueField="value"
+          allowFreeText={true}
+          className="w-full"
+        />
+
+        {/* DefectType Name */}
+        <SearchFieldResponsive
+          register={register}
+          setValue={setValue}
+          fieldName="defectTypeName"
+          label="Defect Name"
+          placeholder="Search Defect Name..."
+          dataLoader={getDefectTypeNameOptions}
           labelField="label"
           valueField="value"
           allowFreeText={true}
           className="w-full"
         />
         
-        {/* Search Button  */}
-        <div className="hidden xl:flex items-center justify-start pt-[2px]">
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+
+        {/* Camera ID */}
+        <SearchFieldResponsive
+          register={register}
+          setValue={setValue}
+          fieldName="cameraId"
+          label="Camera ID"
+          placeholder="Search Camera ID..."
+          dataLoader={getCameraIdOptions}
+          labelField="label"
+          valueField="value"
+          allowFreeText={true}
+          className="w-full"
+        />
+        
+        {/* Camera Name */}
+        <SearchFieldResponsive
+          register={register}
+          setValue={setValue}
+          fieldName="cameraName"
+          label="Camera Name"
+          placeholder="Search Camera Name..."
+          dataLoader={getCameraNameOptions}
+          labelField="label"
+          valueField="value"
+          allowFreeText={true}
+          className="w-full"
+        />
+
+        
+        {/* Search Button */}
+        <div className="flex items-end">
           <button
-            type="button"
-            className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
+            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
             onClick={onSearch}
           >
             Search
             <Search size={16} className="mt-1" />
           </button>
         </div>
+
       </div>
     </div>
   );

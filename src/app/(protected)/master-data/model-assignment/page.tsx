@@ -39,7 +39,9 @@ export default function Page() {
       const param: ParamSearch = {
         modelName: formValues.modelName || '',
         productId: formValues.productId || '',
+        productName: formValues.productName || '',
         cameraId: formValues.cameraId || '',
+        cameraName: formValues.cameraName || '',
         versionNo: formValues.versionNo,
         status: formValues.status,
       };
@@ -54,8 +56,8 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     try {
-      const headers = ["Model Name", "Product ID", "Camera ID", "Version No", "Status"];
-      const keys: (keyof ModelAssignment)[] = ["modelName", "productId", "cameraId", "versionNo", "statusName"];
+      const headers = ["Model Name", "Product ID", "Product Name", "Camera ID", "Camera Name", "Version No", "Status"];
+      const keys: (keyof ModelAssignment)[] = ["modelName", "productId", "productName", "cameraId", "cameraName", "versionNo", "statusName"];
       const fileName = `Model_Assignment_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
 
       switch (type) {
@@ -108,7 +110,7 @@ export default function Page() {
     <>
       <h2 className="text-2xl font-bold mb-2 ml-3">Model Assignment</h2>
       <div className="p-4 mx-auto">
-        <div className="mb-6 max-w-full text-sm">
+        <div className="mb-4 max-w-full text-sm">
           <div className="flex flex-col md:flex-row gap-6">
             {/* ModelAssignmentFilterForm */}
             <div className="md:basis-[80%]">
@@ -119,41 +121,12 @@ export default function Page() {
               />
             </div>
 
-            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-4">
+            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-2">
               <div className="flex flex-wrap justify-end gap-2">
-                {/* Upload Button */}
-                {/* {hasPermission(Menu.ModelAssignment, Action.Upload) && (
-                  <UploadButton onUpload={handleUpload} />
-                )} */}
-
                 {/* Export Button */}
                 {hasPermission(Menu.ModelAssignment, Action.Export) && (
                   <ExportButton onExport={handleExport} />
                 )}
-              </div>
-
-              <div className="flex flex-wrap justify-end gap-2">
-                {/* Add Button */}
-                {/* {hasPermission(Menu.ModelAssignment, Action.Add) && (
-                  <button
-                    className="flex items-center gap-1 text-white px-4 py-2 rounded btn-primary"
-                    onClick={() => handleAddEdit()}
-                  >
-                    Add
-                    <Plus size={16} className="mt-1" />
-                  </button>
-                )} */}
-                {/* Delete Button */}
-                {/* {hasPermission(Menu.ModelAssignment, Action.Delete) && (
-                  <button
-                    className={`flex items-center gap-1 px-4 py-2 rounded ${selectedIds.length === 0 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "btn-danger"}`}
-                    disabled={selectedIds.length === 0}
-                    onClick={handleDelete}
-                  >
-                    Delete
-                    <Trash2 size={16} />
-                  </button>
-                )} */}
               </div>
             </div>
           </div>
@@ -162,12 +135,8 @@ export default function Page() {
         {/* DataTable */}
         <DataTable
           columns={ModelAssignmentColumns({
-            // showCheckbox: hasPermission(Menu.ModelAssignment, Action.Delete),
             canEdit: hasPermission(Menu.ModelAssignment, Action.Edit),
             openEditModal: handleAddEdit,
-            // selectedIds,
-            // setSelectedIds,
-            // data,
           })}
           data={data}
           selectedIds={selectedIds}

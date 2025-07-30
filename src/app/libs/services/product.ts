@@ -13,6 +13,7 @@ export const search = async (param?: ParamSearch) => {
       productId: item.prodid,
       productName: item.prodname,
       productTypeId: item.prodtypeid,
+      productTypeName: item.prodtype,
       serialNo: item.prodserial,
       barcode: item.barcode,
       packSize: item.packsize,

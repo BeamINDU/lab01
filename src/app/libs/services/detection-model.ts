@@ -104,6 +104,14 @@ export const removeModel = async (modelid: number) => {
   }  
 };
 
+export const removeModelVersion = async (modelversionid: number) => {
+   try {
+    return await api.delete<DetectionModel>(`${API_ROUTES.detection_model.delete_model_version}?modelversionid=${modelversionid}`);
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+};
+
 export const removeImage = async (imageid: number) => {
    try {
     return await api.delete<DetectionModel>(`${API_ROUTES.detection_model.delete_image}?imageid=${imageid}`);

@@ -8,29 +8,32 @@ export default function ReportDefectColumns(): ColumnDef<ReportDefect>[] {
       accessorKey: "no",
       header: "No",
       enableSorting: false,
+      meta: {
+        style: { width: "3%" },
+      },
     },
     {
-      accessorKey: "lotNo",
+      accessorKey: "prodlot",
       header: "Lot No",
     },
     {
-      accessorKey: "productId",
+      accessorKey: "prodid",
       header: "Product ID",
     },
     {
-      accessorKey: "productName",
+      accessorKey: "prodname",
       header: "Product Name",
     },
     {
-      accessorKey: "defectTypeId",
+      accessorKey: "defectid",
       header: "Defect Type ID",
     },
     {
-      accessorKey: "defectTypeName",
+      accessorKey: "defecttype",
       header: "Defect Type Name",
     },
     {
-      accessorKey: "total",
+      accessorKey: "totalprod",
       header: "Total",
       cell: ({ getValue }) => {
         const value = getValue<number>();
@@ -42,7 +45,7 @@ export default function ReportDefectColumns(): ColumnDef<ReportDefect>[] {
       },
     },
     {
-      accessorKey: "ok",
+      accessorKey: "totalok",
       header: "OK %",
       cell: ({ getValue }) => {
         const value = getValue<number>();
@@ -54,7 +57,7 @@ export default function ReportDefectColumns(): ColumnDef<ReportDefect>[] {
       },
     },
     {
-      accessorKey: "ng",
+      accessorKey: "totalng",
       header: "NG %",
       cell: ({ getValue }) => {
         const value = getValue<number>();

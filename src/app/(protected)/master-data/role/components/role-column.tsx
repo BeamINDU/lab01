@@ -132,25 +132,28 @@ export default function RoleColumns({
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "",
       cell: ({ row }) => (
         <div className="flex items-center justify-center gap-2">
           <button 
-            className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary"
-            onClick={() => openEditModal(row.original)}
+            className="px-1 py-1 flex items-center justify-center text-purple-600 hover:text-purple-900 transition"
+            onClick={() => openPermissionModal(row.original)}
+            title={"Permission"}
           >
-            {canEdit ? 'Edit' : 'Detail'}
-            <SquarePen size={16} />
+            <LockKeyhole size={18} />
           </button>
           <button 
-            className="flex items-center gap-1 bg-[#605DEC] text-white text-xs px-3 py-1 rounded hover:bg-purple-800"
-            onClick={() => openPermissionModal(row.original)}
+            className="px-1 py-1 flex items-center justify-center text-blue-600 hover:text-blue-800 transition"
+            onClick={() => openEditModal(row.original)}
+            title={canEdit ? "Edit" : "Detail"}
           >
-            Permission
-            <LockKeyhole size={16} />
+            <SquarePen size={18} />
           </button>
         </div>
       ),
+      meta: {
+        style: { width: "3%" },
+      },
     },
   ];
 }

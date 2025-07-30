@@ -4,7 +4,7 @@ import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive  from '@/app/components/common/SearchField';
 import { getRoleNameOptions } from '@/app/libs/services/role';
-import { getUserIdOptions, getUserNameOptions } from '@/app/libs/services/user';
+import { getUserIdOptions, getUserNameOptions, getFullnameOptions } from '@/app/libs/services/user';
 import { ActiveStatus } from '@/app/constants/status';
 
 interface UserFilterFormProps {
@@ -15,9 +15,9 @@ interface UserFilterFormProps {
 
 export default function UserFilterForm({ register, setValue, onSearch }: UserFilterFormProps) {
   return (
-    <div className="md:col-span-2 space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* User ID - แปลงจาก input เป็น SearchField */}
+    <div className="space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+        {/* User ID */}
         <SearchFieldResponsive 
           register={register}
           setValue={setValue}
@@ -30,11 +30,24 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
           allowFreeText={true}
         />
         
-        {/* Username - แปลงจาก input เป็น SearchField */}
+        {/* Fullname */}
         <SearchFieldResponsive 
           register={register}
           setValue={setValue}
-          fieldName="userName"
+          fieldName="fullname"
+          label="Full Name"
+          placeholder="Search fullname..."
+          dataLoader={getFullnameOptions}
+          labelField="label"
+          valueField="value"
+          allowFreeText={true}
+        />
+
+         {/* Username */}
+        <SearchFieldResponsive 
+          register={register}
+          setValue={setValue}
+          fieldName="username"
           label="Username"
           placeholder="Search username..."
           dataLoader={getUserNameOptions}
@@ -42,9 +55,11 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
           valueField="value"
           allowFreeText={true}
         />
+
+        
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Role */}
         <SearchFieldResponsive 
           register={register}
@@ -76,9 +91,9 @@ export default function UserFilterForm({ register, setValue, onSearch }: UserFil
         />
         
         {/* Search Button */}
-        <div className="flex items-center justify-start pt-[2px]">
+        <div className="flex items-end">
           <button
-            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900"
+            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
             onClick={onSearch}
           >
             Search

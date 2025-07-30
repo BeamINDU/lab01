@@ -55,7 +55,7 @@ export default function LoginPage() {
             />
             <div className="ml-2">
               <h1 className="text-2xl font-bold text-black">TAKUMI</h1>
-              <p className="text-black text-sm font-semibold">(Product Inspection)</p>
+              <p className="text-black text-sm font-semibold">Product Inspection</p>
             </div>
           </div>
 

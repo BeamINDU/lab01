@@ -127,7 +127,7 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
   const renderStatusBadge = (statusId?: string) => {
     const status = statusMap[statusId ?? ""] || { label: "", className: "bg-gray-100 text-gray-800" };
     return (
-      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-sm font-medium ${status.className}`}>
+      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-md font-medium ${status.className}`}>
         {status.label}
       </span>
     );
@@ -178,14 +178,22 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
 
   return (
     <div>
-      <h2 className="text-2xl font-bold mb-2 ml-3">
-        Detection Model:{" "}
-        <span className="font-light">{formData.modelName}</span>{" "}
-        <span className="font-bold">version</span>{" "}
-        <span className="font-light">{formData.currentVersion}</span>{" "}
-        {renderStatusBadge(formData.statusId)} 
-        {/* <span className="font-light text-xs">current Step: {formData.currentStep}</span>{" "} */}
-      </h2>
+      <div>
+        <h2 className="mb-2 ml-3 flex justify-between items-center">
+          <div>
+            <span className="text-2xl font-bold">Detection Model:</span>{" "}
+            <span className="text-2xl font-light">{formData.modelName}</span>{" "}
+            <span className="text-2xl font-bold">version</span>{" "}
+            <span className="text-2xl font-light">{formData.currentVersion}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-bold">Status:</span>{renderStatusBadge(formData.statusId)}
+            {/* <span className="font-light text-xs">
+              current Step: {formData.currentStep}
+            </span> */}
+          </div>
+        </h2>
+      </div>
 
       <div className="p-3 mx-auto">
         <div className="flex items-center justify-between mt-1 mb-5 px-2">

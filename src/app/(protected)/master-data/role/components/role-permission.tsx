@@ -37,13 +37,13 @@ export default function RolePermissionModal({
 
   // Memoized menu groups with selected action counts
   const menuGroups = useMemo(() => {
-    console.log('🔄 Computing menu groups...');
-    console.log('📊 AllMenus for grouping:', allMenus);
+    // console.log('Computing menu groups...');
+    // console.log('AllMenus for grouping:', allMenus);
     
     const groups: MenuGroup[] = [];
     const topLevelMenus = allMenus.filter(menu => !menu.parentId);
     
-    console.log('📋 Top Level Menus:', topLevelMenus);
+    // console.log('Top Level Menus:', topLevelMenus);
     
     topLevelMenus.forEach((topMenu, index) => {
       const children = allMenus.filter(m => m.parentId === topMenu.menuId);
@@ -63,12 +63,12 @@ export default function RolePermissionModal({
         selectedActionsCount += parentPermissions.length;
       }
       
-      console.log(`📁 Group ${index + 1} (${topMenu.menuName}):`, {
-        topMenu,
-        children,
-        childCount: children.length,
-        selectedActionsCount
-      });
+      // console.log(`Group ${index + 1} (${topMenu.menuName}):`, {
+      //   topMenu,
+      //   children,
+      //   childCount: children.length,
+      //   selectedActionsCount
+      // });
       
       groups.push({
         id: topMenu.menuId,
@@ -78,22 +78,22 @@ export default function RolePermissionModal({
       });
     });
     
-    console.log('🎯 Final Menu Groups:', groups);
+    // console.log('Final Menu Groups:', groups);
     return groups;
   }, [allMenus, selectedPermissions]); // Added selectedPermissions dependency
 
   // Get child menus for selected group
   const currentChildMenus = useMemo(() => {
     if (!selectedGroup) {
-      console.log('⚠️ No selected group');
+      // console.log('No selected group');
       return [];
     }
     
     const group = menuGroups.find(g => g.id === selectedGroup);
-    console.log('🎯 Selected Group Details:', group);
+    // console.log('Selected Group Details:', group);
     
     const children = group?.menus.filter(m => m.parentId) || [];
-    console.log('👥 Child Menus for selected group:', children);
+    // console.log('Child Menus for selected group:', children);
     
     return children;
   }, [selectedGroup, menuGroups]);
@@ -170,35 +170,35 @@ export default function RolePermissionModal({
     try {
       setIsLoading(true);
       
-      console.log('💾 Starting save process...');
-      console.log('📋 Current Selected Permissions:', selectedPermissions);
+      // console.log('Starting save process...');
+      // console.log('Current Selected Permissions:', selectedPermissions);
       
       const permissions = Object.entries(selectedPermissions)
         .filter(([menuId, actions]) => {
           const hasActions = actions.length > 0;
-          console.log(`📝 Menu ${menuId}: ${JSON.stringify(actions)} - Include: ${hasActions}`);
+          // console.log(`Menu ${menuId}: ${JSON.stringify(actions)} - Include: ${hasActions}`);
           return hasActions;
         })
         .map(([menuId, actions]) => ({ menuId, actions }));
 
       const formData = { roleId: editingData.id, permissions };
       
-      console.log('📤 Sending to API:', formData);
-      console.log('🎯 Role ID:', editingData.id);
-      console.log('📊 Permissions to save:', permissions);
+      // console.log('Sending to API:', formData);
+      // console.log('Role ID:', editingData.id);
+      // console.log('Permissions to save:', permissions);
       
       await updatePermissions(editingData.id, formData);
       
-      console.log('✅ Save successful');
+      // console.log('Save successful');
       onSave?.(formData);
       
     } catch (error) {
-      console.error('❌ Save failed:', error);
-      console.error('📄 Error Details:', extractErrorMessage(error));
+      console.error('Save failed:', error);
+      console.error('Error Details:', extractErrorMessage(error));
       setError(`Failed to save permissions: ${extractErrorMessage(error)}`);
     } finally {
       setIsLoading(false);
-      console.log('🏁 Save process finished');
+      console.log('Save process finished');
     }
   }, [editingData?.id, selectedPermissions, onSave]);
 

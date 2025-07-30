@@ -9,7 +9,7 @@ import { ModelAssignment } from "@/app/types/model-assignment";
 import { useSession } from "next-auth/react";
 import ToggleSwitch from '@/app/components/common/ToggleSwitch';
 import { SearchFieldModal } from '@/app/components/common/SearchField';
-import { getCameraIdOptions } from "@/app/libs/services/camera";
+import { getCameraOptions } from "@/app/libs/services/camera";
 import SelectField from '@/app/components/common/SelectField';
 import { SelectOption } from "@/app/types/select-option";
 import { getVersion } from "@/app/libs/services/detection-model";
@@ -19,7 +19,9 @@ const ModelAssignmentSchema = z.object({
   modelId: z.number().min(1, "Model Id is required"),
   modelName: z.string().min(1, "Model Name is required"),
   productId: z.string().min(1, "Product ID is required"),
+  productName: z.string().min(1, "Product Name is required"),
   cameraId: z.string().min(1, "Camera ID is required"),
+  cameraName: z.string().min(1, "Camera Name is required"),
   versionNo: z.number().min(1, "Version No is required"),
   modelVersionId: z.number().min(1, "Version No is required"),
   status: z.boolean(),
@@ -51,7 +53,9 @@ export default function ModelAssignmentFormModal({
     modelId: 0,
     modelName: '',
     productId: '',
+    productName: '',
     cameraId: '',
+    cameraName: '',
     modelVersionId: 0,
     versionNo: 0,
     status: true,
@@ -116,19 +120,14 @@ export default function ModelAssignmentFormModal({
         </button>
 
         <h2 className="text-2xl font-semibold text-center mb-6">
-          {editingData
-            ? editingData.id
-              ? 'Add Model Assignment'
-              : canEdit
-                ? 'Edit Model Assignment'
-                : 'Detail Model Assignment'
-            : 'Add Model Assignment'}
+          {canEdit ? 'Edit Model Assignment' : 'Detail Model Assignment'}
         </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('id')} />
           <input type="hidden" {...register('modelId')} />
+          <input type="hidden" {...register('productName')} />
 
           <div className="mb-4">
             <div className="grid grid-cols-[150px_1fr] items-center gap-2">
@@ -157,7 +156,7 @@ export default function ModelAssignmentFormModal({
               fieldName="cameraId"
               label="Camera ID"
               placeholder="Select camera ID..."
-              dataLoader={getCameraIdOptions}
+              dataLoader={getCameraOptions}
               labelField="label"
               valueField="value"
               allowFreeText={false}
@@ -165,6 +164,7 @@ export default function ModelAssignmentFormModal({
               initialValue={editingData?.cameraId}
               onSelectionChange={(value, option) => {
                 setValue("cameraId", value, { shouldValidate: true });
+                setValue("cameraName", option?.label ?? '', { shouldValidate: true });
               }}
             />
             {errors.cameraId && <p className="text-red-500 ml-160">{errors.cameraId.message}</p>}

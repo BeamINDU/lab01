@@ -10,52 +10,66 @@ export default function PlansColumns(): ColumnDef<Planning>[] {
       header: "No",
       enableSorting: false,
       meta: {
-        style: { width: "5%" },
-      },
-    },
-     {
-      accessorKey: "productId",
-      header: "Product ID",
-      meta: {
-        style: { width: "15%" },
+        style: { width: "4%" },
       },
     },
     {
-      accessorKey: "lotNo",
-      header: "Lot No",
-      meta: {
-        style: { width: "15%" },
-      },
-    },
-    {
-      accessorKey: "lineId",
-      header: "Line No",
+      accessorKey: "planid",
+      header: "Plan ID",
       meta: {
         style: { width: "10%" },
       },
     },
     {
-      accessorKey: "startDate",
-      header: "Start Datetime",
+      accessorKey: "startdatetime",
+      header: "Plan Startdate",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
         const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
       meta: {
-        style: { width: "20%" },
+        style: { width: "14%" },
       },
     },
     {
-      accessorKey: "endDate",
-      header: "End DateTime",
+      accessorKey: "enddatetime",
+      header: "Plan Enddate",
       cell: ({ getValue }) => {
         const rawValue = getValue() as string | number | Date | null | undefined;
         const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
       meta: {
-        style: { width: "20%" },
+        style: { width: "14%" },
+      },
+    },
+    {
+      accessorKey: "prodid",
+      header: "Product ID",
+      meta: {
+        style: { width: "13%" },
+      },
+    },
+    {
+      accessorKey: "prodname",
+      header: "Product Name",
+      meta: {
+        style: { width: "16%" },
+      },
+    },
+    {
+      accessorKey: "prodlot",
+      header: "Lot No",
+      meta: {
+        style: { width: "10%" },
+      },
+    },
+    {
+      accessorKey: "prodline",
+      header: "Line No",
+      meta: {
+        style: { width: "10%" },
       },
     },
     {
@@ -70,7 +84,7 @@ export default function PlansColumns(): ColumnDef<Planning>[] {
         );
       },
       meta: {
-        style: { width: "15%" },
+        style: { width: "9%" },
       },
     },
   ];

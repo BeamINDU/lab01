@@ -40,7 +40,8 @@ export default function Page() {
       const param: ParamSearch = {
         productId: formValues.productId || '',
         productName: formValues.productName || '',
-        productTypeId: formValues.productTypeId || '', 
+        productTypeId: formValues.productTypeId || '',
+        productTypeName: formValues.productTypeName || '', 
         serialNo: formValues.serialNo || '',
         status: formValues.status,
       };
@@ -56,8 +57,8 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     try {
-      const headers = ["Product ID", "Product Name", "Product Type ID", "Serial No", "Status"];
-      const keys: (keyof Product)[] = ["productId", "productName", "productTypeId", "serialNo", "statusName"];
+      const headers = ["Product ID", "Product Name", "Product Type ID", "Product Type Name", "Serial No", "Barcode", "Pack Size", "Status"];
+      const keys: (keyof Product)[] = ["productId", "productName", "productTypeId", "productTypeName", "serialNo", "barcode", "packSize", "statusName"];
       const fileName = `Product_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
     
       switch (type) {
@@ -141,7 +142,7 @@ export default function Page() {
     <>
       <h2 className="text-2xl font-bold mb-2 ml-3">Product</h2>
       <div className="p-4 mx-auto">
-        <div className="mb-6 max-w-full text-sm">
+        <div className="mb-4 max-w-full text-sm">
           <div className="flex flex-col md:flex-row gap-6">
             {/* Filters Form */}
             <div className="md:basis-[80%]">
@@ -152,7 +153,7 @@ export default function Page() {
               />
             </div>
             
-            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-4">
+            <div className="md:basis-[20%] flex flex-col justify-end items-end gap-2">
               <div className="flex flex-wrap justify-end gap-2">
                 {/* Upload Button */}
                 {hasPermission(Menu.Product, Action.Upload) && (

@@ -2,7 +2,7 @@
 
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
-import SearchFieldResponsive  from '@/app/components/common/SearchField';
+import SearchFieldResponsive from '@/app/components/common/SearchField';
 import { getProductTypeIdOptions, getProductTypeNameOptions } from "@/app/libs/services/product-type";
 import { ActiveStatus } from '@/app/constants/status';
 
@@ -14,10 +14,10 @@ interface ProductTypeFilterFormProps {
 
 export default function ProductTypeFilterForm({ register, setValue, onSearch }: ProductTypeFilterFormProps) {
   return (
-    <div className="md:col-span-2 space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div className="space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Product Type ID */}
-        <SearchFieldResponsive 
+        <SearchFieldResponsive
           register={register}
           setValue={setValue}
           fieldName="productTypeId"
@@ -28,9 +28,9 @@ export default function ProductTypeFilterForm({ register, setValue, onSearch }: 
           valueField="value"
           allowFreeText={true}
         />
-        
+
         {/* Product Type Name */}
-        <SearchFieldResponsive 
+        <SearchFieldResponsive
           register={register}
           setValue={setValue}
           fieldName="productTypeName"
@@ -42,10 +42,10 @@ export default function ProductTypeFilterForm({ register, setValue, onSearch }: 
           allowFreeText={true}
         />
       </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Status  */}
-        <SearchFieldResponsive 
+        <SearchFieldResponsive
           register={register}
           setValue={setValue}
           fieldName="status"
@@ -60,11 +60,11 @@ export default function ProductTypeFilterForm({ register, setValue, onSearch }: 
           ]}
           allowFreeText={false}
         />
-        
+
         {/* Search Button */}
-        <div className="flex items-center justify-start pt-[2px]">
+        <div className="flex items-end">
           <button
-            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900"
+            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
             onClick={onSearch}
           >
             Search

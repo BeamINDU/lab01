@@ -3,7 +3,7 @@
 import { Search } from 'lucide-react'
 import { UseFormRegister, UseFormSetValue } from "react-hook-form";
 import SearchFieldResponsive  from '@/app/components/common/SearchField';
-import { getProductTypeIdOptions } from '@/app/libs/services/product-type'; 
+import { getProductTypeIdOptions, getProductTypeNameOptions } from '@/app/libs/services/product-type'; 
 import { getProductIdOptions, getProductNameOptions, getSerialNoOptions  } from '@/app/libs/services/product';
 import { ActiveStatus } from '@/app/constants/status'; 
 
@@ -15,8 +15,8 @@ interface ProductFilterFormProps {
 
 export default function ProductFilterForm({ register, setValue, onSearch }: ProductFilterFormProps) {
   return (
-    <div className="md:col-span-2 space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div className="space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Product ID */}
         <SearchFieldResponsive 
           register={register}
@@ -43,21 +43,6 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           allowFreeText={true}
         />
         
-        {/* Product Type ID */}
-        <SearchFieldResponsive 
-          register={register}
-          setValue={setValue}
-          fieldName="productTypeId"
-          label="Product Type ID"
-          placeholder="Search product type..."
-          dataLoader={getProductTypeIdOptions}
-          labelField="label"
-          valueField="value"
-          allowFreeText={true}
-        />
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Serial No */}
         <SearchFieldResponsive 
           register={register}
@@ -70,6 +55,35 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
           valueField="value"
           allowFreeText={true}
         />
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+         {/* Product Type ID */}
+        <SearchFieldResponsive 
+          register={register}
+          setValue={setValue}
+          fieldName="productTypeId"
+          label="Product Type ID"
+          placeholder="Search product type ID..."
+          dataLoader={getProductTypeIdOptions}
+          labelField="label"
+          valueField="value"
+          allowFreeText={true}
+        />
+
+        {/* Product Type Name */}
+        <SearchFieldResponsive 
+          register={register}
+          setValue={setValue}
+          fieldName="productTypeName"
+          label="Product Type Name"
+          placeholder="Search product type name..."
+          dataLoader={getProductTypeNameOptions}
+          labelField="label"
+          valueField="value"
+          allowFreeText={true}
+        />
+        
         
         {/* Status */}
         <SearchFieldResponsive 
@@ -89,16 +103,16 @@ export default function ProductFilterForm({ register, setValue, onSearch }: Prod
         />
         
         {/* Search Button */}
-        <div className="flex items-center justify-start pt-[2px]">
+        <div className="flex items-end">
           <button
-            type="button"
-            className="flex items-center gap-1 bg-[#004798] text-white px-4 py-2 rounded hover:bg-blue-900"
+            className="flex items-center gap-1 btn-primary-dark text-white px-4 py-2 rounded hover:bg-blue-900 whitespace-nowrap"
             onClick={onSearch}
           >
             Search
             <Search size={16} className="mt-1" />
           </button>
         </div>
+
       </div>
     </div>
   );

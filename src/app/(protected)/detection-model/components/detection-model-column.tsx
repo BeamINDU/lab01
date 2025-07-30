@@ -151,45 +151,48 @@ export default function DetectionModelColumns({
     },
     {
       id: "actions",
-      header: "Actions",
+      header: "",
       cell: ({ row }) => {
         const id = row.original.modelVersionId;
         const statusId = row.original.statusId;
-        const modelName = row.original.modelName;
+        const modelName = `model ${row.original.modelName} version ${row.original.currentVersion}`;
 
         return (
           <div className="flex items-center justify-center gap-2">
+            {typeof id === "number" && (
+              <button
+                className="px-1 py-1 flex items-center justify-center text-purple-600 hover:text-purple-700 transition"
+                onClick={() => onAction(id, 'view')}
+                title={"View"}
+              >
+                <Eye size={20} />
+              </button>
+            )}
+
             {typeof id === "number" && canEdit && (
               statusId === ModelStatus.Using ? (
                 <button
-                  className="w-20 flex items-center justify-center text-center gap-1 text-xs px-3 py-1 rounded bg-purple-600 text-white hover:bg-purple-700"
+                  className="px-1 py-1 flex items-center justify-center text-green-600 hover:text-green-700 transition"
                   onClick={() => onAction(id, 'duplicate', modelName)}
+                  title={"Duplicate"}
                 >
-                  Duplicate
-                  {/* <Copy size={16} /> */}
+                  <Copy size={18} />
                 </button>
               ) : (
                 <button
-                  className="w-20 flex items-center justify-center text-center gap-1 text-xs px-3 py-1 rounded btn-primary"
+                  className="px-1 py-1 flex items-center justify-center text-blue-800 hover:text-blue-900 transition"
                   onClick={() => onAction(id, 'edit')}
+                  title={canEdit ? "Edit" : "Detail"}
                 >
-                  Edit
-                  <SquarePen size={16} />
+                  <SquarePen size={18} />
                 </button>
               )
             )}
-
-            {typeof id === "number" && (
-              <button
-                className="flex items-center gap-1 text-xs px-3 py-1 rounded btn-primary-dark"
-                onClick={() => onAction(id, 'view')}
-              >
-                View
-                <Eye size={16} />
-              </button>
-            )}
           </div>
         );
+      },
+      meta: {
+        style: { width: "3%" },
       },
     }
   ];

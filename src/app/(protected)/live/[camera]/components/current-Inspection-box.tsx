@@ -6,10 +6,10 @@ import { CurrentInspection } from "@/app/types/live";
 type CurrentInspectionBoxProps = {
   data: CurrentInspection;
   loading: boolean;
-  onStartPlan: () => void;
+  // onStartPlan: () => void;
 };
 
-export default function CurrentInspectionBox({ data, loading, onStartPlan }: CurrentInspectionBoxProps) {
+export default function CurrentInspectionBox({ data, loading }: CurrentInspectionBoxProps) {
   return (
     <div className="grid grid-cols-2 gap-0 text-lg font-semibold space-y-1 items-center">
       <Field label="Product ID" value={data?.productId} loading={loading} />
@@ -19,12 +19,13 @@ export default function CurrentInspectionBox({ data, loading, onStartPlan }: Cur
       <Field label="Production Time" value={formatTime(data?.productDateTime)} loading={loading} />
       
       {/* ปุ่มให้กิน 1 คอลัมน์ และจัดชิดขวา */}
-      <div
+      {/* <div
         className={`${loading ? "animate-pulse" : ""} justify-self-end`}
       >
         {loading ? (
           <div className="w-28 h-10 bg-gray-300 animate-pulse" />
-        ) : (
+        ) 
+        : (
           <button
             className="w-20 text-sm bg-blue-400 text-white font-semibold px-2 py-1 rounded hover:bg-blue-500 transition"
             onClick={onStartPlan}
@@ -32,7 +33,8 @@ export default function CurrentInspectionBox({ data, loading, onStartPlan }: Cur
             START
           </button>
         )}
-      </div>
+      </div> */}
+      
     </div>
   );
 }

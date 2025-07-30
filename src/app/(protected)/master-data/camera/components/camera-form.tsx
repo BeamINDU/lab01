@@ -101,13 +101,9 @@ export default function CameraFormModal({
         </button>
 
         <h2 className="text-2xl font-semibold text-center mb-6">
-          {editingData
-            ? editingData.id
-              ? 'Add Camera'
-              : canEdit
-                ? 'Edit Camera'
-                : 'Detail Camera'
-            : 'Add Camera'}
+          {editingData?.id
+              ? canEdit ? 'Edit Camera' : 'Detail Camera'
+              : 'Add Camera'}
         </h2>
 
         {/* Form */}
