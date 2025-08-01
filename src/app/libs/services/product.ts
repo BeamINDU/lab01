@@ -88,6 +88,14 @@ export const upload = async (uploadby: string, file: File) => {
   } 
 };
 
+export const getProductOptions = async (q: string) => {
+  try {
+    return await api.get<SelectOption[]>(`${API_ROUTES.product.product_options}?q=${q}`);
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+};
+
 export const getProductIdOptions = async (q: string) => {
   try {
     return await api.get<SelectOption[]>(`${API_ROUTES.product.suggest_product_id}?q=${q}`);

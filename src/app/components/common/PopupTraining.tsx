@@ -8,7 +8,7 @@ import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore';
 
 export const PopupTraining = () => {
   const { displayProcessing, displayError, hidePopup, popup } = usePopupTraining();
-  const { cancelConnection } = useTrainingSocketStore();
+  const { cancelTraining } = useTrainingSocketStore();
   // const { cancelConnection } = useWebSocket(); 
 
   if (!popup.isVisible) return null;
@@ -45,7 +45,7 @@ export const PopupTraining = () => {
     console.log(result); 
   
     if (result && result.isConfirmed) {
-      const cancelled = await cancelConnection();
+      const cancelled = await cancelTraining();
       if (cancelled) {
         await showError('Training cancelled by user.');
         displayError('Training cancelled by user.');

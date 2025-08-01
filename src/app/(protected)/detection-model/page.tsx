@@ -54,8 +54,8 @@ export default function Page() {
   };
 
   const handleExport = (type: ExportType) => {
-    const headers = ["Model Name", "Version", "Function", "Status" ];
-    const keys: (keyof DetectionModel)[] = ["modelName", "currentVersion", "function", "statusId" ];
+    const headers = ["Model Name", "Version", "Function", "step", "Status" ];
+    const keys: (keyof DetectionModel)[] = ["modelName", "currentVersion", "function", "currentStep", "statusId" ];
     const fileName = "Detection Model";
   
     switch (type) {
@@ -102,7 +102,7 @@ export default function Page() {
       }
     } catch (error) {
       console.error('Failed to open modal:', error);
-      showError('Failed to load  details');
+      showError('Failed to load details');
     }
   };
 
@@ -132,7 +132,7 @@ export default function Page() {
         showSuccess(`Deleted successfully`)
       } catch (error) {
         console.error('Delete operation failed:', error);
-        showError('Delete failed')
+        showError(`Delete failed: ${extractErrorMessage(error)}`);
       }
     }
   };
@@ -145,7 +145,7 @@ export default function Page() {
       router.push(`/detection-model/edit/${newData.modelVersionId}`);
     } catch (error) {
       console.error('Save operation failed:', error);
-      showError('Save failed')
+      showError(`Save failed: ${extractErrorMessage(error)}`);
     } finally {
       reset();
       setIsFormModalOpen(false);

@@ -10,6 +10,7 @@ export const API_ROUTES = {
     update: "/update-product",
     delete: "/delete-product",
     upload: "/upload-products",
+    product_options: "/product-options",
     suggest_product_id: "/suggest-product-id",
     suggest_product_name: "/suggest-product-name",
     suggest_serial_no: "/suggest-serial-no",
@@ -77,20 +78,24 @@ export const API_ROUTES = {
   },
   report_product: {
     get: "/report-product-defect",
+    export: "/export-report-product-defect",
     detail: "/product-defect-detail",
     update: "/update-product-defect-detail",
     image: "/result-image",
   },
   report_defect: {
     get: "/report-defect-summary",
+    export: "/export-report-defect-summary",
     suggest_lotno: "/suggest-defect-lotno",
   },
   transaction: {
     get: "/transaction",
+    export: "/export-transaction",
     suggest_lotno: "/suggest-transaction-lotno",
   },
   planning: {
     get: "/planning",
+    export: "/export-planning",
     detail: "",
     insert: "/add-planning", 
     update: "/update-planning",
@@ -145,4 +150,10 @@ export const API_ROUTES = {
     cameras_list: "/filter-cameras", 
     lines_list: "/filter-lines",
   },
+  socket: {
+    live_defect: "live-defect",
+    training_action: "training-action",
+    training_status: "training-status",
+  },
+  start_flow: "reload-lots"
 };

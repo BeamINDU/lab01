@@ -68,116 +68,110 @@ export default function SearchField({
   const isUserTypingRef = useRef(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Stable debounced function
+  const shouldCallDataLoader = (input: string): boolean => {
+    if (!dataLoader) return false;
+    
+
+    const trimmedInput = input.trim();
+    return trimmedInput.length >= minSearchLength || input.length > 0;
+  };
+
   const debouncedFetchOptions = useRef(
     debounce(async (searchQuery: string) => {
-      if (!dataLoader || searchQuery.length < minSearchLength) {
+      if (!shouldCallDataLoader(searchQuery)) {
         setSearchOptions(options);
         setLoading(false);
         loadingRef.current = false;
         return;
       }
 
-      if (lastQueryRef.current === searchQuery) {
-        setLoading(false);
-        loadingRef.current = false;
+      if (lastQueryRef.current === searchQuery && !loadingRef.current) {
         return;
       }
 
-      try {
-        if (abortControllerRef.current) {
-          abortControllerRef.current.abort();
-        }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
 
+      try {
+        loadingRef.current = true;
+        setLoading(true);
+        lastQueryRef.current = searchQuery;
+        
         abortControllerRef.current = new AbortController();
         
-        setLoading(true);
-        loadingRef.current = true;
-        lastQueryRef.current = searchQuery;
-
-        const data = await dataLoader(searchQuery);
-
+        const queryToSend = searchQuery.trim() || "";
+        
+        if (!dataLoader) {
+          setSearchOptions(options);
+          return;
+        }
+        
+        const rawData = await dataLoader(queryToSend);
+        
         if (abortControllerRef.current?.signal.aborted) {
           return;
         }
 
-        let transformedOptions: SelectOption[] = [];
+        const mappedOptions: SelectOption[] = rawData?.map((item: any) => ({
+          label: item?.[labelField] || item?.label || String(item || ''),
+          value: item?.[valueField] || item?.value || String(item || '')
+        })) || [];
 
-        if (Array.isArray(data) && data.length > 0) {
-          if (typeof data[0] === 'string') {
-            transformedOptions = data.map((item) => ({
-              label: item,
-              value: item
-            }));
-          } else if (typeof data[0] === 'object') {
-            transformedOptions = data.map((item) => ({
-              label: item[labelField] || item.label || String(item),
-              value: item[valueField] || item.value || item[labelField]
-            }));
-          }
-        }
-
-        if (lastQueryRef.current === searchQuery && loadingRef.current) {
-          setSearchOptions(transformedOptions);
-        }
-
-      } catch (error: unknown) {
-        if (error && typeof error === 'object' && 'name' in error && error.name !== 'AbortError') {
-          console.error(`Failed to load data for ${fieldName}:`, error);
-          setSearchOptions([]);
+        setSearchOptions(mappedOptions);
+        
+      } catch (error: any) {
+        if (error?.name !== 'AbortError') {
+          console.error('Error fetching options:', error);
+          setSearchOptions(options);
         }
       } finally {
-        if (lastQueryRef.current === searchQuery) {
-          setLoading(false);
-          loadingRef.current = false;
-        }
+        setLoading(false);
+        loadingRef.current = false;
       }
     }, 300)
   ).current;
 
-  // Handle input change
   const handleInputChange = useCallback((input: string) => {
     isUserTypingRef.current = true;
-    
-    // Clear previous timeout
+    setControlledValue(input);
+
+
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
-    
-    // Set new timeout to reset typing flag
+
     typingTimeoutRef.current = setTimeout(() => {
       isUserTypingRef.current = false;
-    }, 500);
+    }, 1000);
 
-    // Update controlled value immediately
-    setControlledValue(input);
 
-    // Reset options if empty input
-    if (!input.trim()) {
-      setSearchOptions(options);
-      setLoading(false);
-      loadingRef.current = false;
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+    if (input.trim() === '') {
       setValue?.(fieldName, '');
       onSelectionChange?.('', null);
+      
+
+      if (input.length > 0 && dataLoader) {
+        debouncedFetchOptions(input);
+      } else {
+        setSearchOptions(options);
+      }
       return;
     }
 
-    // Start loading new data
-    if (dataLoader && input.length >= minSearchLength) {
+
+    if (shouldCallDataLoader(input)) {
       debouncedFetchOptions(input);
     }
 
-    // Update form value for free text
+
     if (allowFreeText) {
       setValue?.(fieldName, input);
       onSelectionChange?.(input, null);
     }
   }, [dataLoader, minSearchLength, allowFreeText, fieldName, setValue, onSelectionChange, options, debouncedFetchOptions]);
 
-  // Handle selection
+
   const handleSelect = useCallback((option: SelectOption | null) => {
     isUserTypingRef.current = false;
     
@@ -189,14 +183,14 @@ export default function SearchField({
     onSelectionChange?.(value, option);
   }, [fieldName, setValue, onSelectionChange]);
 
-  // Initialize options
+
   useEffect(() => {
     if (options.length > 0) {
       setSearchOptions(options);
     }
   }, [options]);
 
-  // Initialize with initialValue
+
   useEffect(() => {
     if (initialValue !== undefined && !isUserTypingRef.current) {
       setControlledValue(initialValue);
@@ -204,10 +198,19 @@ export default function SearchField({
     }
   }, [initialValue, fieldName, setValue]);
 
-  // Cleanup on unmount
+
+  useEffect(() => {
+    if (dataLoader && searchOptions.length === 0 && options.length === 0) {
+      debouncedFetchOptions('');
+    }
+  }, [dataLoader, searchOptions.length, options.length]);
+
+
   useEffect(() => {
     return () => {
-      debouncedFetchOptions.cancel();
+      if (debouncedFetchOptions?.cancel) {
+        debouncedFetchOptions.cancel();
+      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -215,7 +218,7 @@ export default function SearchField({
         clearTimeout(typingTimeoutRef.current);
       }
     };
-  }, [debouncedFetchOptions]);
+  }, []);
 
   const renderLayout = () => {
     const baseSearch = (
@@ -315,7 +318,7 @@ export default function SearchField({
               {label !== '' && (
                 <label className="font-semibold text-sm sm:text-base whitespace-nowrap min-w-[130px] sm:min-w-[150px]">
                   {label}
-                  {required && <span className="text-red-500 ml-1">*</span>}
+                  {required && <span className="text-red-500 ml-1">*</span>}:
                 </label>
               )}
               <div className="w-full min-w-0">{inputElement}</div>

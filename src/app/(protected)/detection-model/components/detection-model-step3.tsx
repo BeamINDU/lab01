@@ -1,26 +1,21 @@
 import { useState, useRef, useEffect, ChangeEvent } from "react";
-import { useForm } from "react-hook-form";
 import Konva from 'konva';
 import { Stage, Layer, Rect, Circle, Line, Text, Group } from 'react-konva';
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Eye, SquarePen, Trash2, Plus } from "lucide-react";
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
 import { extractErrorMessage } from '@/app/utils/errorHandler';
-import { SelectOption } from "@/app/types/select-option";
-import { ShapeType } from "@/app/constants/shape-type";
-import { FormData, DetectionModel, ModelPicture } from "@/app/types/detection-model";
-import type { Annotation, RectangleAnnotation, CircleAnnotation, PolygonAnnotation, PointAnnotation } from "@/app/types/annotation";
+import { FormData, ModelPicture } from "@/app/types/detection-model";
+import type { Annotation } from "@/app/types/annotation";
 import { updateStep3, removeImage, getImage, annotateImage } from "@/app/libs/services/detection-model";
 import { useSession } from "next-auth/react";
 import ImageLoading from "@/app/components/loading/ImageLoading";
-import SpinnerLoading from "@/app/components/loading/SpinnerLoading";
 import AnnotationModal from "./annotation-modal";
 import { nanoid } from 'nanoid';
-import { usePopupTraining } from '@/app/contexts/popup-training-context';
-import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
+// import { UseTrainingStatusWebSocket } from '@/app/stores/useTrainingStatusSocketStore'; 
+// import { usePopupTraining } from '@/app/contexts/popup-training-context';
+// import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
 
 type Props = {
   modelVersionId: number;
@@ -28,9 +23,10 @@ type Props = {
   isEditMode: boolean;
   next: (data: any) => void;
   prev: () => void;
+  isTraining: boolean;
 };
 
-export default function DetectionModelStep3Page({ next, prev, modelVersionId, formData, isEditMode }: Props) {
+export default function DetectionModelStep3Page({ next, prev, modelVersionId, formData, isEditMode, isTraining }: Props) {
   const { data: session } = useSession();
   const { hasPermission } = usePermission();
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -42,8 +38,8 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
   const stageRef = useRef<Konva.Stage | null>(null);
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [imageObj, setImageObj] = useState<HTMLImageElement | null>(null);
-  const { isTraining } = useTrainingSocketStore();
-  const [data, setData] = useState<FormData>({} as FormData);
+  // const { isTraining } = UseTrainingStatusWebSocket();
+  // const [data, setData] = useState<FormData>({} as FormData);
   // const { register, getValues, setValue, reset, handleSubmit, clearErrors, formState: { errors } } = useForm ();
 
   useEffect(() => {

@@ -42,7 +42,7 @@ export default function ProductFormModal({
         if (editingData.imagePath) {
           setIsImageLoading(true);
           try {
-            const base64String = await resultImage(editingData.imagePath, `${editingData.date} ${editingData.time}`);
+            const base64String = await resultImage(editingData.imagePath, `${formatDateTime(editingData.defecttime)}`);
             const image64 = `data:image/jpeg;base64,${base64String}`;
             setImage(image64);
           } catch (error) {
@@ -68,7 +68,7 @@ export default function ProductFormModal({
       sequence: formData.sequence,
       cameraId: formData.cameraId,
       imagePath: formData.imagePath,
-      datetime: `${formData.date} ${formData.time}`,
+      datetime: formatDateTime(formData.defecttime),
       status: formData.status,
       comment: formData.comment ?? "",
       updatedBy: session?.user?.userid,
@@ -139,13 +139,38 @@ export default function ProductFormModal({
             {/* Right Side */}
             <div className="space-y-4">
               {/* Info */}
-              <div className="border border-gray-400 p-2 rounded bg-white leading-8 h-[240px]">
-                <p><b>Product ID : </b> {editingData?.productId}</p>
-                <p><b>Product Name : </b> {editingData?.productName}</p>
-                <p><b>Serial Number : </b> {editingData?.serialNo}</p>
-                <p><b>Date Time : </b> {editingData?.date} {editingData?.time}</p>
-                <p><b>Camera ID : </b>{editingData?.cameraId}</p>
-                <p><b>Defect Type Name : </b> {editingData?.defectDetail}</p>
+              <div className="border border-gray-400 p-2 rounded bg-white leading-7 h-[240px] bg-white overflow-y-auto">
+                <div className="space-y-0">
+                  <div className="flex">
+                    <div className="w-40 font-semibold">Sequence:</div>
+                    <div>{editingData?.sequence}</div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-40 font-semibold">Product:</div>
+                    <div>{editingData?.productId} - {editingData?.productName}</div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-40 font-semibold">Serial Number:</div>
+                    <div>{editingData?.serialNo}</div>
+                  </div>
+                  
+                  <div className="flex">
+                    <div className="w-40 font-semibold">Camera ID:</div>
+                    <div>{editingData?.cameraId}</div>
+                  </div>
+                  <div className="flex">
+                    <div className="w-40 font-semibold">Date Time:</div>
+                    <div>{formatDateTime(editingData?.defecttime)}</div>
+                  </div>
+                  <div className="flex items-start">
+                    <div className="w-40 font-semibold">Defect Type Name:</div>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: (editingData?.defectDetail ?? '').replace(/\n/g, '<br />'),
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* History */}

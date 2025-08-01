@@ -4,30 +4,20 @@ import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } f
 import { Search, ChevronDown, X } from 'lucide-react';
 import { SelectOption } from "@/app/types/select-option";
 
-// Props ของ Component
 interface GoogleStyleSearchProps {
-  // ข้อมูลพื้นฐาน
-  options: SelectOption[];          // รายการตัวเลือกทั้งหมด
-  value?: string;                   // ค่าที่เลือกอยู่ปัจจุบัน
-  placeholder?: string;             // ข้อความ placeholder
-  label?: string;                   // ป้ายกำกับ
-
-  // การจัดการเหตุการณ์
-  onSelect?: (option: SelectOption | null) => void;  // เมื่อเลือกตัวเลือก
-  onInputChange?: (inputValue: string) => void;      // เมื่อพิมพ์ใน input
-
-  // การปรับแต่งรูปแบบ
-  disabled?: boolean;               // ปิดการใช้งาน
-  error?: string;                   // ข้อความ error
-  className?: string;               // CSS class เพิ่มเติม
-
-  // ตัวเลือกการทำงาน
-  allowClear?: boolean;             // อนุญาตให้ล้างค่าได้
-  showDropdownIcon?: boolean;       // แสดงไอคอน dropdown
-  minSearchLength?: number;         // จำนวนตัวอักษรขั้นต่ำในการค้นหา
-  maxDisplayItems?: number;         // จำนวนรายการสูงสุดที่แสดง
-
-  // สำหรับ React Hook Form
+  options: SelectOption[];
+  value?: string;
+  placeholder?: string;
+  label?: string;
+  onSelect?: (option: SelectOption | null) => void;
+  onInputChange?: (inputValue: string) => void;
+  disabled?: boolean;
+  error?: string;
+  className?: string;
+  allowClear?: boolean;
+  showDropdownIcon?: boolean;
+  minSearchLength?: number;
+  maxDisplayItems?: number;
   name?: string;
 }
 
@@ -47,22 +37,30 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
   maxDisplayItems = 10,
   name
 }, ref) => {
-  // State สำหรับการทำงานของ Component
-  const [isOpen, setIsOpen] = useState(false);           // เปิด/ปิด dropdown
-  const [inputValue, setInputValue] = useState('');      // ค่าที่พิมพ์ใน input
-  const [filteredOptions, setFilteredOptions] = useState<SelectOption[]>([]); // ตัวเลือกที่กรองแล้ว
-  const [highlightedIndex, setHighlightedIndex] = useState(-1); // index ของรายการที่ highlight
-  const [selectedOption, setSelectedOption] = useState<SelectOption | null>(null); // ตัวเลือกที่เลือก
-  const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom'); // ตำแหน่ง dropdown
+  const [isOpen, setIsOpen] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [filteredOptions, setFilteredOptions] = useState<SelectOption[]>([]);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [selectedOption, setSelectedOption] = useState<SelectOption | null>(null);
+  const [dropdownPosition, setDropdownPosition] = useState<'bottom' | 'top'>('bottom');
 
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // เชื่อมต่อ ref กับ parent component
   useImperativeHandle(ref, () => inputRef.current!, []);
 
-  // ค้นหา
+
+  const isEffectivelyEmpty = (input: string): boolean => {
+    return !input || input.trim().length === 0;
+  };
+
+
+  const getEffectiveSearchLength = (input: string): number => {
+    return input.trim().length;
+  };
+
+  // Initialize value
   useEffect(() => {
     if (value) {
       const option = options.find(opt => opt.value === value);
@@ -79,22 +77,27 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
     }
   }, [value, options]);
 
-  // กรองตัวเลือกตามที่พิมพ์
+
   useEffect(() => {
-    if (inputValue.length >= minSearchLength) {
+    const effectiveLength = getEffectiveSearchLength(inputValue);
+    
+    if (effectiveLength >= minSearchLength) {
+      const trimmedInput = inputValue.trim();
       const filtered = options.filter(option =>
-        option.label.toLowerCase().includes(inputValue.toLowerCase()) ||
-        option.value.toLowerCase().includes(inputValue.toLowerCase())
+        option.label.toLowerCase().includes(trimmedInput.toLowerCase()) ||
+        option.value.toLowerCase().includes(trimmedInput.toLowerCase())
       ).slice(0, maxDisplayItems);
 
       setFilteredOptions(filtered);
       setHighlightedIndex(-1);
     } else {
-      setFilteredOptions([]);
+
+      setFilteredOptions(options.slice(0, maxDisplayItems));
+      setHighlightedIndex(-1);
     }
   }, [inputValue, options, minSearchLength, maxDisplayItems]);
 
-  // คำนวณตำแหน่ง dropdown
+  // Calculate dropdown position
   useEffect(() => {
     if (isOpen && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
@@ -102,7 +105,6 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
       const spaceBelow = viewportHeight - rect.bottom;
       const spaceAbove = rect.top;
 
-      // ถ้าพื้นที่ด้านล่างไม่พอ และพื้นที่ด้านบนมากกว่า ให้แสดงด้านบน
       if (spaceBelow < 240 && spaceAbove > spaceBelow) {
         setDropdownPosition('top');
       } else {
@@ -111,69 +113,65 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
     }
   }, [isOpen]);
 
-  // ปิด dropdown เมื่อคลิกข้างนอก
+  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
         setHighlightedIndex(-1);
-        // ถ้าไม่มีการเลือกตัวเลือกใดๆ ให้กลับไปใช้ค่าเดิม
         if (!selectedOption && value) {
           setInputValue(value);
-        } else if (selectedOption) {
-          setInputValue(selectedOption.label);
         }
       }
     };
 
-    // จัดการการ resize หน้าจอ
-    const handleResize = () => {
-      if (isOpen) {
-        // อัพเดทตำแหน่ง dropdown เมื่อมีการ resize
-        setTimeout(() => {
-          if (containerRef.current) {
-            const rect = containerRef.current.getBoundingClientRect();
-            const viewportHeight = window.innerHeight;
-            const spaceBelow = viewportHeight - rect.bottom;
-            const spaceAbove = rect.top;
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [selectedOption, value]);
 
-            if (spaceBelow < 240 && spaceAbove > spaceBelow) {
-              setDropdownPosition('top');
-            } else {
-              setDropdownPosition('bottom');
-            }
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isOpen) return;
+
+      switch (event.key) {
+        case 'ArrowDown':
+          event.preventDefault();
+          setHighlightedIndex(prev => 
+            prev < filteredOptions.length - 1 ? prev + 1 : 0
+          );
+          break;
+        case 'ArrowUp':
+          event.preventDefault();
+          setHighlightedIndex(prev => 
+            prev > 0 ? prev - 1 : filteredOptions.length - 1
+          );
+          break;
+        case 'Enter':
+          event.preventDefault();
+          if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
+            handleSelectOption(filteredOptions[highlightedIndex]);
           }
-        }, 100);
+          break;
+        case 'Escape':
+          setIsOpen(false);
+          setHighlightedIndex(-1);
+          break;
       }
     };
 
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      window.addEventListener('resize', handleResize);
-      window.addEventListener('scroll', handleResize);
-    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, filteredOptions, highlightedIndex]);
 
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleResize);
-    };
-  }, [isOpen, selectedOption, value]);
-
-  // จัดการการพิมพ์ใน input
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
     setIsOpen(true);
-    // ถ้าล้างค่าใน input ให้รีเซ็ตการเลือก
-    if (newValue === '') {
-      setSelectedOption(null);
-      onSelect?.(null);
-    }
+    setSelectedOption(null);
     onInputChange?.(newValue);
   };
 
-  // จัดการการเลือกตัวเลือก
   const handleSelectOption = (option: SelectOption) => {
     setSelectedOption(option);
     setInputValue(option.label);
@@ -182,101 +180,57 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
     onSelect?.(option);
   };
 
-  // จัดการการกดปุ่มคีย์บอร์ด
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isOpen && (e.key === 'ArrowDown' || e.key === 'Enter')) {
-      setIsOpen(true);
-      return;
-    }
-
-    if (isOpen) {
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          setHighlightedIndex(prev =>
-            prev < filteredOptions.length - 1 ? prev + 1 : 0
-          );
-          break;
-
-        case 'ArrowUp':
-          e.preventDefault();
-          setHighlightedIndex(prev =>
-            prev > 0 ? prev - 1 : filteredOptions.length - 1
-          );
-          break;
-
-        case 'Enter':
-          e.preventDefault();
-          if (highlightedIndex >= 0 && filteredOptions[highlightedIndex]) {
-            handleSelectOption(filteredOptions[highlightedIndex]);
-          }
-          break;
-
-        case 'Escape':
-          setIsOpen(false);
-          setHighlightedIndex(-1);
-          inputRef.current?.blur();
-          break;
-      }
-    }
-  };
-
-  // ล้างค่าที่เลือก
-  const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setSelectedOption(null);
+  const handleClear = () => {
     setInputValue('');
+    setSelectedOption(null);
     setIsOpen(false);
     onSelect?.(null);
     onInputChange?.('');
     inputRef.current?.focus();
   };
 
-  // เปิด/ปิด dropdown
-  const toggleDropdown = () => {
+  const handleInputClick = () => {
     if (!disabled) {
       setIsOpen(!isOpen);
-      if (!isOpen) {
-        inputRef.current?.focus();
-      }
+    }
+  };
+
+  const handleIconClick = () => {
+    if (!disabled) {
+      setIsOpen(!isOpen);
     }
   };
 
   return (
-    <div className={`relative w-full ${className}`} ref={containerRef}>
-      {/* Label */}
+    <div ref={containerRef} className={`relative ${className}`}>
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-1">
           {label}
         </label>
       )}
-
-      {/* Input Container */}
-      <div className={`
-        relative flex items-center border rounded-md bg-white
-        ${error ? 'border-red-300' : 'border-gray-300'}
-        ${disabled ? 'bg-gray-50 cursor-not-allowed' : 'hover:border-gray-400'}
-        ${isOpen ? 'ring-2 ring-blue-500 border-blue-500' : ''}
-        transition-all duration-200
-      `}>
-
-        {/* Input Field */}
+      
+      {/* Input Field */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Search className="h-4 w-4 text-gray-400" />
+        </div>
+        
         <input
           ref={inputRef}
           type="text"
           name={name}
           value={inputValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onFocus={() => !disabled && setIsOpen(true)}
           placeholder={placeholder}
+          onChange={handleInputChange}
+          onClick={handleInputClick}
           disabled={disabled}
           className={`
-            flex-1 px-3 py-2 bg-transparent outline-none text-sm
-            ${disabled ? 'cursor-not-allowed text-gray-500' : 'text-gray-900'}
-            placeholder:text-gray-500 min-w-0
+            block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm 
+            placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 
+            sm:text-sm
+            ${disabled ? 'bg-gray-50 text-gray-500 cursor-not-allowed' : 'bg-white'}
+            ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : ''}
           `}
-          autoComplete="off"
         />
 
         {/* Clear Button */}
@@ -284,10 +238,9 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
           <button
             type="button"
             onClick={handleClear}
-            className="flex-shrink-0 p-1 mr-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
-            tabIndex={-1}
+            className="absolute inset-y-0 right-8 flex items-center pr-2 hover:text-gray-700"
           >
-            <X size={14} />
+            <X className="h-4 w-4 text-gray-400" />
           </button>
         )}
 
@@ -295,17 +248,14 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
         {showDropdownIcon && (
           <button
             type="button"
-            onClick={toggleDropdown}
-            className={`
-              flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 transition-colors
-              ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'}
-            `}
-            tabIndex={-1}
+            onClick={handleIconClick}
             disabled={disabled}
+            className="absolute inset-y-0 right-0 flex items-center pr-3 hover:text-gray-700 disabled:cursor-not-allowed"
           >
-            <ChevronDown
-              size={16}
-              className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+            <ChevronDown 
+              className={`h-4 w-4 text-gray-400 transition-transform duration-200 ${
+                isOpen ? 'rotate-180' : ''
+              }`} 
             />
           </button>
         )}
@@ -327,7 +277,6 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
           `}
           style={{
             minWidth: '200px',
-
             maxWidth: '90vw'
           }}
         >
@@ -335,7 +284,7 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
             <>
               {filteredOptions.map((option, index) => (
                 <button
-                  key={option.value}
+                  key={`${option.value}_${option.label}_${index}`} 
                   type="button"
                   onClick={() => handleSelectOption(option)}
                   className={`
@@ -345,12 +294,12 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
                     transition-colors duration-150 break-words
                   `}
                 >
-                  {/* Highlight ส่วนที่ค้นหา */}
+
                   <span
                     className="block"
                     dangerouslySetInnerHTML={{
                       __html: option.label.replace(
-                        new RegExp(`(${inputValue})`, 'gi'),
+                        new RegExp(`(${inputValue.trim()})`, 'gi'),
                         '<mark class="bg-yellow-200 px-0">$1</mark>'
                       )
                     }}
@@ -358,17 +307,15 @@ const GoogleStyleSearch = forwardRef<HTMLInputElement, GoogleStyleSearchProps>((
                 </button>
               ))}
             </>
-          ) : inputValue.length >= minSearchLength ? (
-            <div className="px-4 py-3 text-sm text-gray-500 text-center">
-              No results found for {inputValue}
-            </div>
-          ) : minSearchLength > 0 ? (
-            <div className="px-4 py-3 text-sm text-gray-500 text-center">
-              Please enter at least {minSearchLength} characters
-            </div>
           ) : (
+
             <div className="px-4 py-3 text-sm text-gray-500 text-center">
-              Start typing to search...
+              {isEffectivelyEmpty(inputValue) 
+                ? "Start typing to search..." 
+                : getEffectiveSearchLength(inputValue) < minSearchLength
+                  ? `Please enter at least ${minSearchLength} characters`
+                  : `No results found for "${inputValue.trim()}"`
+              }
             </div>
           )}
         </div>

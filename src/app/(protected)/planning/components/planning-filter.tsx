@@ -21,7 +21,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
 
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Date From */}
         <DateTimeField
           control={control}
@@ -66,7 +66,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
         />
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
          {/* Product ID */}
         <SearchFieldResponsive 
           register={register}
@@ -111,7 +111,7 @@ export default function PlanningFilterForm({ register, setValue, control, onSear
         
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
        {/* Lot No */}
         <SearchFieldResponsive 
           register={register}

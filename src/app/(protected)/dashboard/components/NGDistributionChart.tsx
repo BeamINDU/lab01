@@ -15,6 +15,7 @@ import {
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import type { NgDistributionData } from '@/app/types/dashboard';
+import { ChartColorSystem } from '@/app/utils/colorSystem';
 
 ChartJS.register(
   CategoryScale,
@@ -32,19 +33,6 @@ interface NGDistributionChartProps {
   error?: string;
 }
 
-const getDefectTypeColor = (defectType: string): string => {
-  const colorPalette: Record<string, string> = {
-    'Crack': 'rgba(220, 38, 127, 0.8)',     
-    'Scratch': 'rgba(59, 130, 246, 0.8)',    
-    'Dent': 'rgba(34, 197, 94, 0.8)',        
-    'Missing Part': 'rgba(245, 158, 11, 0.8)', 
-    'Misalignment': 'rgba(107, 114, 128, 0.8)', 
-    'Stain': 'rgba(239, 68, 68, 0.8)',      
-  };
-  
-  const defaultColor = 'rgba(168, 85, 247, 0.8)'; 
-  return colorPalette[defectType] || defaultColor;
-};
 
 const NGDistributionChart = React.memo<NGDistributionChartProps>(({ data, loading, error }) => {
   const chartData = useMemo(() => {
@@ -62,38 +50,40 @@ const NGDistributionChart = React.memo<NGDistributionChartProps>(({ data, loadin
       };
     }
 
-
     const validData = data.filter(item => item.hour_slot && item.defecttype);
-    
-    // Group by hour และ defect type
-    const groupedByHour = groupBy(validData, item => 
-      new Date(item.hour_slot).toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        hour12: false 
+    const defectTypes = [...new Set(validData.map(item => item.defecttype))].sort();
+    const colors = ChartColorSystem.getColorsForKeys(defectTypes, 'business');
+
+    const groupedByHour = groupBy(validData, item =>
+      new Date(item.hour_slot).toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
       })
     );
 
-    const defectTypes = [...new Set(validData.map(item => item.defecttype))].sort();
     const timeLabels = Object.keys(groupedByHour).sort();
 
-
-
-  const datasets = defectTypes.map(defectType => ({
-    label: defectType,
-    data: timeLabels.map(hour => {
-      const hourData = groupedByHour[hour] || [];
-      return sumBy(hourData.filter(item => item.defecttype === defectType), 'defect_count');
-    }),
-    backgroundColor: getDefectTypeColor(defectType),
-    borderColor: getDefectTypeColor(defectType).replace('0.8', '1'),
-    borderWidth: 1, 
-    borderRadius: 0, 
-    borderSkipped: false,
-  }));
+    const datasets = defectTypes.map((defectType, index) => ({
+      label: defectType,
+      data: timeLabels.map(hour => {
+        const hourData = groupedByHour[hour] || [];
+        return sumBy(
+          hourData.filter(item => item.defecttype === defectType),
+          'defect_count'
+        );
+      }),
+      backgroundColor: colors[index].background,
+      borderColor: colors[index].border,
+      hoverBackgroundColor: colors[index].hover,
+      borderWidth: 1,
+      borderRadius: 0,
+      borderSkipped: false,
+    }));
 
     return { labels: timeLabels, datasets };
   }, [data]);
+
 
   const options: ChartOptions<'bar'> = {
     responsive: true,
@@ -146,11 +136,12 @@ const NGDistributionChart = React.memo<NGDistributionChartProps>(({ data, loadin
       },
       datalabels: {
         display: true,
-        anchor: 'center',
-        align: 'center',
-        color: '#black',
+        anchor: 'center', 
+        align: 'center', 
+        color: '#000000',
         font: { 
-          size: 11 
+          size: 11,
+          weight: 'bold'
         },
         formatter: (value: any) => {
           try {
@@ -159,22 +150,6 @@ const NGDistributionChart = React.memo<NGDistributionChartProps>(({ data, loadin
             return '';
           }
         },
-        backgroundColor: function(context: any) {
-          try {
-            return context.parsed?.y > 0 ? 'rgba(0, 0, 0, 0.6)' : 'transparent';
-          } catch {
-            return 'transparent';
-          }
-        },
-        borderRadius: 3,
-        padding: { 
-          top: 2, 
-          bottom: 2, 
-          left: 3, 
-          right: 3 
-        },
-        textStrokeColor: 'rgba(0, 0, 0, 0.8)',
-        textStrokeWidth: 1,
       },
     },
     scales: {

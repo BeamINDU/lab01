@@ -1,3 +1,5 @@
+import { ExportType } from '@/app/constants/export-type';
+
 export type Transaction = {
   runningno: number
   actualstartdatetime: Date
@@ -18,4 +20,5 @@ export type ParamSearch = {
   pageSize?: number
   order_by?: string
   order_dir?: string
+  exportType?: ExportType
 }

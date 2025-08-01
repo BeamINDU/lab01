@@ -96,6 +96,10 @@ export default function DetectionModelColumns({
       header: "Function",
     },
     {
+      accessorKey: "currentStep",
+      header: "Step",
+    },
+    {
       accessorKey: "statusId",
       header: "Status",
       cell: ({ getValue }) => {
@@ -144,10 +148,6 @@ export default function DetectionModelColumns({
         const formattedDate = formatDateTime(rawValue);
         return <div className="text-center">{formattedDate}</div>;
       },
-    },
-    {
-      accessorKey: "currentStep",
-      header: "Step",
     },
     {
       id: "actions",

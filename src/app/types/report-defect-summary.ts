@@ -1,3 +1,5 @@
+import { ExportType } from '@/app/constants/export-type';
+
 export type  ReportDefect = {
   summaryid: string,
   prodlot: string
@@ -20,4 +22,5 @@ export type ParamSearch = {
   pageSize?: number
   order_by?: string
   order_dir?: string
+  exportType?: ExportType
 }

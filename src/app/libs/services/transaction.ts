@@ -3,26 +3,25 @@ import { API_ROUTES } from "@/app/constants/endpoint";
 import type { Transaction, ParamSearch } from "@/app/types/transaction"
 import { SelectOption } from "@/app/types/select-option";
 import { extractErrorMessage } from '@/app/utils/errorHandler';
+import axios, { AxiosResponse } from 'axios'
+
+const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
 export const search = async (param?: ParamSearch) => { 
   try {
     const res = await api.get<any>(API_ROUTES.transaction.get, param);
     return res; 
-    
-    // const mapData: Transaction[] = res?.items?.map((item) => ({
-    //   runningNo: item.runningno,
-    //   startDate: item.actualstartdatetime,
-    //   endDate: item.actualenddatetime,
-    //   lotNo: item.prodlot,
-    //   productId: item.prodid,
-    //   productName: item.prodname,
-    //   quantity: item.quantity,
-    //   createdDate: item.createddate,
-    //   createdBy: item.createdby,
-    //   updatedDate: item.updateddate,
-    //   updatedBy: item.updatedby,
-    // }));
-    
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+};
+
+export const download = async (param?: ParamSearch) => { 
+  try {
+    const res = await api.get(API_ROUTES.transaction.export, param, {
+      responseType: 'blob',
+    });
+    return res;
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

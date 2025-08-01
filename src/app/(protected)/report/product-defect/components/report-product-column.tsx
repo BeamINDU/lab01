@@ -52,13 +52,6 @@ export default function productColumns({
         style: { width: "15%" },
       },
     },
-    // {
-    //   accessorKey: "prodseq",
-    //   header: "Sequence",
-    //   meta: {
-    //     style: { width: "5%" },
-    //   },
-    // },
     {
       accessorKey: "defectdetail",
       header: "Defect Detail",
@@ -84,6 +77,20 @@ export default function productColumns({
         style: { width: "5%" },
       },
     },
+    // {
+    //   accessorKey: "prodseq",
+    //   header: "Sequence",
+    //   meta: {
+    //     style: { width: "5%" },
+    //   },
+    // },
+    // {
+    //   accessorKey: "imagepath",
+    //   header: "Image Path",
+    //   meta: {
+    //     style: { width: "5%" },
+    //   },
+    // },
     {
       id: "actions",
       header: "",

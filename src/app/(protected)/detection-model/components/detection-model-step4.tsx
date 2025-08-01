@@ -7,9 +7,9 @@ import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { FormData } from "@/app/types/detection-model";
 import { ModelStatus } from "@/app/constants/status"
 import { useSession } from "next-auth/react";
-import { updateStep4 } from "@/app/libs/services/detection-model";
+import { updateStep4, getModelVersion } from "@/app/libs/services/detection-model";
 import { usePopupTraining } from '@/app/contexts/popup-training-context';
-import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
+// import { UseTrainingStatusWebSocket } from '@/app/stores/useTrainingStatusSocketStore'; 
 
 type Props = {
   modelVersionId: number;
@@ -17,7 +17,9 @@ type Props = {
   isEditMode: boolean;
   next: (data: any) => void;
   prev: () => void;
-  startTraining?: () => Promise<boolean>;
+  startTraining?: (modelVersionId: number) => Promise<boolean>;
+  cancelTraining: () => Promise<boolean>;
+  isTraining: boolean;
 };
 
 export const step4Schema = z.object({
@@ -26,10 +28,11 @@ export const step4Schema = z.object({
 
 type Step4Data = z.infer<typeof step4Schema>;
 
-export default function DetectionModelStep4Page({ prev, next, modelVersionId, formData, isEditMode, startTraining }: Props) {
+export default function DetectionModelStep4Page({ prev, next, modelVersionId, formData, isEditMode, startTraining, cancelTraining, isTraining }: Props) {
   const { data: session } = useSession();
-  const { isTraining, cancelConnection } = useTrainingSocketStore();
+  // const { isTraining, cancelConnection } = UseTrainingStatusWebSocket();
   const { displayProcessing, displaySuccess, displayError, hidePopup } = usePopupTraining();
+  const [currentStep, setCurrentStep] = useState(0);
 
   const defaultValues: Step4Data = {
     modelVersionId: modelVersionId,
@@ -44,17 +47,26 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
   });
 
   useEffect(() => {
-    if(isEditMode && !isTraining) {
-      handleStartTraining();
-    }
+    const fetchData = async () => {
+      const modelVersion = await getModelVersion(modelVersionId);
+      const currentStep = modelVersion.currentStep;
+      setCurrentStep(currentStep);
+
+      if (isEditMode && !isTraining && currentStep !== 4) {
+        handleStartTraining();
+      }
+    };
+
+    fetchData();
   }, []);
 
   const handleStartTraining = async () => {
     try {
       displayProcessing(`Detection model ${formData.modelName} training...`);
 
-      const result = await startTraining?.();
+      const result = await startTraining?.(modelVersionId);
       // await new Promise((resolve) => setTimeout(resolve, 2000));
+      
       if (result) {
         console.log(`Model training completed.`);
       } else {
@@ -75,7 +87,7 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
 
     const result = await showConfirm('Are you sure you want to cancel this training model?');
     if (result?.isConfirmed) {
-      const cancelled = await cancelConnection();
+      const cancelled = await cancelTraining();
       if (cancelled) {
         displayError('Training cancelled by user.');
         await showError('Training cancelled by user.');
@@ -95,12 +107,13 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
       
       if (isEditMode) {
         await updateStep4(modelVersionId, updatedFormData);
+        setCurrentStep(4);
         await showSuccess(`Saved successfully`)
       }
       
       next({
         ...updatedFormData,
-        statusId: ModelStatus.Using,
+        statusId: ModelStatus.Ready,
       });
 
     } catch (error) {
@@ -109,6 +122,7 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
     }
   };
   
+  // console.log("isTraining", isTraining)
   return (
     <div className="w-full">
       <div className="h-80 bg-white border border-gray-300 flex items-center justify-center mb-6">
@@ -135,7 +149,7 @@ export default function DetectionModelStep4Page({ prev, next, modelVersionId, fo
         >
           Previous
         </button>
-        {isEditMode && (
+        {isEditMode && currentStep != 4 && (
           <button 
             // className={`px-4 py-2 rounded gap-2 w-32 ${isTraining ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "btn-primary-dark text-white"}`}
             className="px-4 py-2 btn-primary-dark rounded gap-2 w-32 disabled:bg-gray-400 disabled:cursor-not-allowed"

@@ -56,8 +56,8 @@ export default function Page() {
 
   const handleExport = (type: ExportType) => {
     try {
-      const headers = ["Model Name", "Product ID", "Product Name", "Camera ID", "Camera Name", "Version No", "Status"];
-      const keys: (keyof ModelAssignment)[] = ["modelName", "productId", "productName", "cameraId", "cameraName", "versionNo", "statusName"];
+      const headers = ["Model Name", "Version No", "Product ID", "Product Name", "Camera ID", "Camera Name", "Status"];
+      const keys: (keyof ModelAssignment)[] = ["modelName", "versionNo", "productId", "productName", "cameraId", "cameraName", "statusName"];
       const fileName = `Model_Assignment_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}`;
 
       switch (type) {

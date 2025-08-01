@@ -7,7 +7,7 @@ import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { Planning, ParamSearch } from "@/app/types/planning"
-import { search, detail, create, update, remove, upload, start, stop } from "@/app/libs/services/planning";
+import { search, detail, create, update, remove, upload, download, start, stop, startFlow, stopFlow } from "@/app/libs/services/planning";
 import { usePermission } from '@/app/contexts/permission-context';
 import { useSession } from "next-auth/react";
 import { Menu, Action } from '@/app/constants/menu';
@@ -28,60 +28,69 @@ export default function Page() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [sorting, setSorting] = useState<{ id: string; desc: boolean }>({
-    id: 'planid',
-    desc: true,
-  });
+  const [sorting, setSorting] = useState<{ id: string; desc: boolean }>({ id: 'planid', desc: true });
+  // const [triggerSource, setTriggerSource] = useState<"search" | "pagination">('search');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingData, setEditingData] = useState<Planning | null>(null);
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const buildSearchParams = (
+    override?: Partial<{ page: number; pageSize: number; sorting: { id: string; desc: boolean } }>
+  ): ParamSearch => {
+    const values = getValues();
+    return {
+      planId: values.planId || '',
+      dateFrom: values.dateFrom || '',
+      dateTo: values.dateTo || '',
+      productId: values.productId || '',
+      productName: values.productName || '',
+      lotNo: values.lotNo || '',
+      lineId: values.lineId || '',
+      page: override?.page ?? page,
+      pageSize: override?.pageSize ?? pageSize,
+      order_by: override?.sorting?.id ?? sorting.id,
+      order_dir: (override?.sorting?.desc ?? sorting.desc) ? 'desc' : 'asc',
+    };
+  };
+
+  const fetchData = useCallback( async (
+    override?: Partial<{ page: number; pageSize: number; sorting: { id: string; desc: boolean } }>
+  ) => {
+    try {
+      const newPage = override?.page ?? page;
+      const newPageSize = override?.pageSize ?? pageSize;
+      const newSorting = override?.sorting ?? sorting;
+
+      const params = buildSearchParams(override);
+      const result = await search(params);
+      setData(result.items || []);
+      setTotal(result.total || 0);
+      setPage(newPage);
+      setPageSize(newPageSize);
+      setSorting(newSorting);
+    } catch (error) {
+      console.error('Search failed:', error);
+      showError('Search failed');
+      setData([]);
+    }
+  }, [getValues, page, pageSize, sorting]);
 
   useEffect(() => {
-    handleSearch();
+    fetchData();
   }, []);
 
-  const handleSearch = useCallback(
-    async (
-      override?: Partial<{
-        page: number;
-        pageSize: number;
-        sorting: { id: string; desc: boolean };
-      }>
-    ) => {
-      try {
-        const values = getValues();
-        const newPage = override?.page ?? page;
-        const newPageSize = override?.pageSize ?? pageSize;
-        const newSorting = override?.sorting ?? sorting;
+  const handleSearch = () => {
+    setPage(1);
+    fetchData({page: 1})
+  };
 
-        const params: ParamSearch = {
-          planId: values.planId || '',
-          dateFrom: values.dateFrom || '',
-          dateTo: values.dateTo || '',
-          productId: values.productId || '',
-          productName: values.productName || '',
-          lotNo: values.lotNo || '',
-          lineId: values.lineId || '',
-          page: newPage,
-          pageSize: newPageSize,
-          order_by: newSorting.id,
-          order_dir: newSorting.desc ? 'desc' : 'asc',
-        };
-
-        const result = await search(params);
-        setData(result.items || []);
-        setTotal(result.total || 0);
-        setPage(newPage);
-        setPageSize(newPageSize);
-        setSorting(newSorting);
-      } catch (error) {
-        console.error('Search failed:', error);
-        showError('Search failed');
-        setData([]);
-      }
-    },
-    [getValues, page, pageSize, sorting]
-  );
+  const handleChangePage = ({ page: newPage = page, pageSize: newPageSize = pageSize, sorting: newSorting = sorting }) => {
+    setPage(newPage);
+    setPageSize(newPageSize);
+    setSorting(newSorting);
+    fetchData({ page: newPage, pageSize: newPageSize, sorting: newSorting }); 
+  };
 
   const handleExport = (type: ExportType) => {
     try {
@@ -97,6 +106,24 @@ export default function Page() {
           exportExcel(data, headers, keys, fileName);
           break;
       }
+    } catch (error) {
+      console.error("Export operation failed:", error);
+      showError(`Export failed: ${extractErrorMessage(error)}`);
+    }
+  };
+
+  const handleDownload = async (type: ExportType) => {
+    try {
+      const params = { ...buildSearchParams(), exportType: type };
+      const response = await download(params);
+      const blob = response as Blob;
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Plan_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}.${type === ExportType.Excel ? 'xlsx' : 'csv'}`;
+      a.click();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Export operation failed:", error);
       showError(`Export failed: ${extractErrorMessage(error)}`);
@@ -134,8 +161,9 @@ export default function Page() {
     const result = await showConfirm('Are you sure you want to delete these planning?')
     if (result.isConfirmed) {
       try {
+        const updatedby = session?.user?.userid ?? "";
         for (const productTypeId of selectedIds) {
-          await remove(productTypeId);
+          await remove(productTypeId, updatedby);
         }
         setData(prev => prev.filter(item => !selectedIds.includes(item.id ?? "")));
         setSelectedIds([]);
@@ -171,8 +199,12 @@ export default function Page() {
       try {
         const param = { ...plan, updatedby: session?.user?.userid };
         const updated = await start(param);
-        setData(prev => prev.map(item => (item.planid === updated.planid ? updated : item)));
-        showSuccess(`Start plan successfully`)
+
+        const res = await startFlow(plan.planid);
+        if(res === 'ok') {
+          setData(prev => prev.map(item => (item.planid === updated.planid ? updated : item)));
+          showSuccess(`Start plan successfully`)
+        }
       } catch (error) {
         console.error('Start plan operation failed:', error);
         showError(`Start plan failed: ${extractErrorMessage(error)}`);
@@ -186,8 +218,12 @@ export default function Page() {
       try {
         const param = { ...plan, updatedby: session?.user?.userid };
         const updated = await stop(param);
-        setData(prev => prev.map(item => (item.planid === updated.planid ? updated : item)));
-        showSuccess(`Stop plan successfully`)
+
+        const res = await stopFlow(plan.planid);
+        if(res === 'ok') {
+          setData(prev => prev.map(item => (item.planid === updated.planid ? updated : item)));
+          showSuccess(`Stop plan successfully`)
+        }
       } catch (error) {
         console.error('Stop plan operation failed:', error);
         showError(`Stop plan failed: ${extractErrorMessage(error)}`);
@@ -220,7 +256,7 @@ export default function Page() {
 
                 {/* Export Button */}
                 {hasPermission(Menu.Planning, Action.Export) && (
-                  <ExportButton onExport={handleExport} />
+                  <ExportButton onExport={handleDownload} />
                 )}
               </div>
 
@@ -269,15 +305,13 @@ export default function Page() {
           page={page}
           pageSize={pageSize}
           sorting={[sorting]}
+          onChangePage={(p) => handleChangePage({ page: p })}
+          onChangePageSize={(s) => handleChangePage({ page: 1, pageSize: s })}
           onSortingChange={(updater) => {
             const nextSorting = typeof updater === 'function' ? updater([sorting]) : updater;
-            const sort = nextSorting[0] ?? { id: 'planId', desc: false };
-
-            setSorting(sort);
-            handleSearch({ sorting: sort, page: 1 });
+            const sort = nextSorting[0] ?? { id: 'planid', desc: false };
+            handleChangePage({ page: 1, sorting: sort });
           }}
-          onChangePage={(p) => handleSearch({ page: p })}
-          onChangePageSize={(s) => handleSearch({ page: 1, pageSize: s })}
         />
 
         {/* Add & Edit Modal */}

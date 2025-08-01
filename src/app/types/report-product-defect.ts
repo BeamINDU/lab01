@@ -1,3 +1,5 @@
+import { ExportType } from '@/app/constants/export-type';
+
 export type ReportProduct = {
   runningno: number
   defecttime: Date
@@ -7,21 +9,20 @@ export type ReportProduct = {
   prodstatus: string
   defectdetail: string
   cameraid: string
-  cameraname: string
+  cameraname?: string
   imagepath: string
 }
 
 export type ProductDetail = {
   id: number
+  defecttime: Date
   productId: string
   productName: string
   sequence: number
   serialNo: string
-  date: string
-  time: string
   defectDetail: string
   cameraId: string
-  cameraName: string
+  cameraName?: string
   imagePath: string
   history: History[]
   status: string
@@ -51,6 +52,7 @@ export type ParamSearch = {
   pageSize?: number
   order_by?: string
   order_dir?: string
+  exportType?: ExportType
 }
 
 export type ParamDetail = {

@@ -46,6 +46,22 @@ const getCameraColor = (cameraIndex: number): string => {
   return colorPalette[cameraIndex % colorPalette.length];
 };
 
+// เพิ่มฟังก์ชันเพื่อกำหนดสีให้ Defect Type แทน
+const getDefectTypeColor = (defectType: string): string => {
+  // คุณสามารถสร้างสีที่แตกต่างกันสำหรับแต่ละ defectType ได้ที่นี่
+  // หรือใช้ hash function เพื่อสร้างสีจาก string
+  const colors = {
+    'Scratch': 'rgba(59, 130, 246, 0.8)',
+    'Dent': 'rgba(34, 197, 94, 0.8)',
+    'Discoloration': 'rgba(239, 68, 68, 0.8)',
+    'Crack': 'rgba(245, 158, 11, 0.8)',
+    'Bubble': 'rgba(168, 85, 247, 0.8)',
+    'Unknown': 'rgba(156, 163, 175, 0.8)',
+  };
+  return colors[defectType] || getCameraColor(defectType.length);
+};
+
+
 const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loading, error }) => {
   const chartData = useMemo(() => {
     if (!data || data.length === 0) {
@@ -62,23 +78,24 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
       };
     }
 
-    const validData = data.filter(item => 
+    const validData = data.filter(item =>
       (item.cameraname || item.cameraid) && item.defecttype
     );
 
 
-    const cameraTotals = Object.entries(groupBy(validData, item => 
+    const cameraTotals = Object.entries(groupBy(validData, item =>
       item.cameraname || item.cameraid || 'Unknown Camera'
     )).map(([cameraName, items]) => ({
       cameraName,
       total: sumBy(items, 'totalng')
     }));
 
+
     const topCameras = orderBy(cameraTotals, 'total', 'desc')
       .slice(0, 5)
       .map(item => item.cameraName);
 
-    // กรองข้อมูลเฉพาะ top cameras
+
     const filteredData = validData.filter(item => {
       const cameraName = item.cameraname || item.cameraid || 'Unknown Camera';
       return topCameras.includes(cameraName);
@@ -87,23 +104,21 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
 
     const defectTypes = [...new Set(filteredData.map(item => item.defecttype))].sort();
 
+ 
+    const datasets = defectTypes.map((defectType, index) => {
+      const defectData = filteredData.filter(item => item.defecttype === defectType);
 
-    const datasets = topCameras.map((cameraName, index) => {
-      const cameraData = filteredData.filter(item => 
-        (item.cameraname || item.cameraid || 'Unknown Camera') === cameraName
-      );
-      
-      const cameraDefectData = groupBy(cameraData, 'defecttype');
+      const cameraDefectTotals = groupBy(defectData, item => item.cameraname || item.cameraid || 'Unknown Camera');
 
-      const dataValues = defectTypes.map(defectType => 
-        sumBy(cameraDefectData[defectType] || [], 'totalng')
+      const dataValues = topCameras.map(cameraName =>
+        sumBy(cameraDefectTotals[cameraName] || [], 'totalng')
       );
 
       return {
-        label: cameraName,
+        label: defectType, 
         data: dataValues,
-        backgroundColor: getCameraColor(index),
-        borderColor: getCameraColor(index).replace('0.8', '1'),
+        backgroundColor: getDefectTypeColor(defectType), // ใช้สีตาม Defect Type
+        borderColor: getDefectTypeColor(defectType).replace('0.8', '1'),
         borderWidth: 1,
         borderRadius: {
           topLeft: 4,
@@ -112,26 +127,22 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
           bottomRight: 4,
         },
         borderSkipped: false,
-        hoverBackgroundColor: getCameraColor(index).replace('0.8', '0.95'),
-        hoverBorderColor: getCameraColor(index).replace('0.8', '1'),
+        hoverBackgroundColor: getDefectTypeColor(defectType).replace('0.8', '0.95'),
+        hoverBorderColor: getDefectTypeColor(defectType).replace('0.8', '1'),
         hoverBorderWidth: 2,
       };
     });
 
-    return { labels: defectTypes, datasets };
+    return { labels: topCameras, datasets }; 
   }, [data]);
 
-  const maxStackedValue = useMemo(() => {
+  // Max value สำหรับแกน X (ในกรณีที่ไม่ได้ Stacked)
+  const maxAxisValue = useMemo(() => {
     if (!chartData.datasets.length) return 0;
-    
-    return Math.max(
-      ...chartData.labels.map((_, labelIndex) => 
-        chartData.datasets.reduce((sum, dataset) => 
-          sum + (dataset.data[labelIndex] || 0), 0
-        )
-      )
-    );
+    // หาค่าสูงสุดของข้อมูลทั้งหมดในแต่ละ dataset
+    return Math.max(...chartData.datasets.flatMap(dataset => dataset.data as number[]));
   }, [chartData]);
+
 
   const options: ChartOptions<'bar'> = {
     indexAxis: 'y',
@@ -157,37 +168,34 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
         titleColor: 'white',
         bodyColor: 'white',
         callbacks: {
-          title: (context: any) => `Defect Type: ${context[0].label}`,
+          title: (context: any) => `Camera: ${context[0].label}`,
           label: (context: any) => {
             try {
-              const cameraName = context.dataset.label;
+              const defectType = context.dataset.label;
               const count = context.parsed?.x || 0;
-              return `${cameraName}: ${count} defects`;
+              return `${defectType}: ${count} defects`;
             } catch {
               return 'Invalid data';
             }
           },
           afterBody: (context: any) => {
-            try {
-              const total = context.reduce((sum: number, item: any) => {
-                const value = item?.parsed?.x;
-                return sum + (typeof value === 'number' && !isNaN(value) ? value : 0);
-              }, 0);
-              return [``, `Total Defects: ${total}`];
-            } catch {
-              return [`Total: --`];
-            }
+            const cameraName = context[0].label;
+            const totalDefectsForCamera = sumBy(data, item =>
+                ((item.cameraname || item.cameraid) === cameraName) ? item.totalng : 0
+            );
+            return [``, `Total Defects for ${cameraName}: ${totalDefectsForCamera}`];
           }
         }
       },
       datalabels: {
         display: true,
-        anchor: 'center',
-        align: 'center',
-        color: '#00000',
-        font: { 
-          size: 11  ,
-          //weight: 'bold'
+        anchor: 'end', 
+        align: 'end',  
+        offset: 4,     
+        color: '#000000',
+        font: {
+          size: 11,
+          weight: 'bold'
         },
         formatter: (value: any) => {
           try {
@@ -196,18 +204,16 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
             return '';
           }
         },
-        textStrokeColor: 'rgba(0, 0, 0, 0.8)',
-        textStrokeWidth: 1,
       },
     },
     scales: {
       x: {
         beginAtZero: true,
-        stacked: true,
-        max: Math.ceil(maxStackedValue * 1.2),
+        stacked: false, // ยังคงเป็น false สำหรับ grouped bar chart
+        max: Math.ceil(maxAxisValue * 1.2), // ใช้ maxAxisValue
         title: {
           display: true,
-          text: 'Defects Count',
+          text: 'Quantity',
           font: { size: 11, weight: 'bold' as const }
         },
         grid: {
@@ -216,15 +222,15 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
         ticks: {
           font: { size: 10 },
           callback: function(value: any) {
-            return value <= maxStackedValue ? value : '';
+            return value;
           }
         }
       },
       y: {
-        stacked: true,
+        stacked: false, // ยังคงเป็น false สำหรับ grouped bar chart
         title: {
           display: true,
-          text: 'Defect Types',
+          text: 'Camera ID / Camera Name', // เปลี่ยน title ของแกน Y
           font: { size: 11, weight: 'bold' as const }
         },
         grid: {
@@ -262,9 +268,9 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
   return (
      <div className="bg-white rounded-xl shadow p-3 md:p-4 h-[345px]">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
-        Top 5 Defects Most Found by Cameras
+        Defects by Camera (Top 5 Cameras)
       </h2>
-      
+
       {loading ? (
         <LoadingState />
       ) : error ? (

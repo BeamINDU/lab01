@@ -1,11 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Check } from "lucide-react";
 import clsx from "clsx";
-
 import { usePermission } from "@/app/contexts/permission-context";
 import { useTrainingSocketStore } from "@/app/stores/useTrainingSocketStore";
+import { UseTrainingStatusWebSocket } from '@/app/stores/useTrainingStatusSocketStore'; 
 import { usePopupTraining } from "@/app/contexts/popup-training-context";
-
 import { getModelVersion } from "@/app/libs/services/detection-model";
 import DetectionModelStep1 from './detection-model-step1';
 import DetectionModelStep2 from './detection-model-step2';
@@ -22,9 +21,9 @@ const stepOptions = [
 ];
 
 const statusMap: Record<string, { label: string; className: string }> = {
-  Using: { label: "Using", className: "bg-green-100 text-green-800" },
   Processing: { label: "Processing", className: "bg-yellow-100 text-yellow-800" },
   Ready: { label: "Ready", className: "bg-blue-100 text-blue-800" },
+  Using: { label: "Using", className: "bg-green-100 text-green-800" },
 };
 
 type DetectionModelStepsProps = {
@@ -34,9 +33,9 @@ type DetectionModelStepsProps = {
 
 export default function DetectionModelSteps({ modelVersionId, isEditMode }: DetectionModelStepsProps) {
   const { hasPermission } = usePermission();
-  const { connect, send } = useTrainingSocketStore();
+  const { connectTraining, sendTraining, cancelTraining } = useTrainingSocketStore();
+  const { connect, isTraining } = UseTrainingStatusWebSocket();
   const { displaySuccess, displayError } = usePopupTraining();
-
   const [formData, setFormData] = useState<FormData>({} as FormData);
   const [step, setStep] = useState(1);
   const [maxStep, setMaxStep] = useState(4);
@@ -55,6 +54,9 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
         setMaxStep(allowedMaxStep);
 
         setStep(Math.min(currentStep, allowedMaxStep));
+        // setStep(prevStep => {
+        //   return Math.min(prevStep, allowedMaxStep);
+        // });
 
         setFormData(prev => ({
           ...prev,
@@ -73,48 +75,54 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
     fetchModelVersion();
   }, [modelVersionId, isEditMode]);
 
+  useEffect(() => {
+    checkTrainingStatus(modelVersionId);
+  }, [modelVersionId]);
+
   const next = useCallback((data: any) => {
     setFormData(prev => ({ ...prev, ...data }));
     setStep(prev => Math.min(prev + 1, maxStep));
   }, [maxStep]);
 
   const prev = useCallback(() => {
-    setStep(prev => Math.max(prev - 1, 1));
+    // setStep(prev => Math.max(prev - 1, 1));
+    setStep(prev => {
+       console.log("prev", Math.max(prev - 1, 1))
+      return Math.max(prev - 1, 1);
+    });
   }, []);
 
   const handleNextStep = useCallback((nextStep: number) => {
     setStep(nextStep);
   }, []);
 
-  const handleStartTraining = useCallback(async (): Promise<boolean> => {
+  const checkTrainingStatus = useCallback(async (modelVersionId: number): Promise<boolean> => {
     try {
       await new Promise<void>((resolve) => {
-        connect((status) => {
-          if (status === 'done') {
-            displaySuccess(`Detection model ${formData.modelName} training completed.`);
+        connect(modelVersionId, (status) => {
+          if (status === 'success') {
+            // displaySuccess(`Detection model ${formData.modelName} training completed.`);
           } else if (status === 'error') {
-            displayError(`Detection model ${formData.modelName} training failed.`);
+            // displayError(`Detection model ${formData.modelName} training failed.`);
           }
         });
 
-        const checkSocketOpen = () => {
-          const socket = useTrainingSocketStore.getState().socket;
-          if (socket && socket.readyState === WebSocket.OPEN) {
-            resolve();
-          } else {
-            setTimeout(checkSocketOpen, 100);
-          }
-        };
-
-        checkSocketOpen();
+        // const checkSocketOpen = () => {
+        //   const socket = UseTrainingStatusWebSocket.getState().socket;
+        //   if (socket && socket.readyState === WebSocket.OPEN) {
+        //     resolve();
+        //   } else {
+        //     setTimeout(checkSocketOpen, 100);
+        //   }
+        // };
+        // checkSocketOpen();
       });
 
-      const success = await send({ action: 'start-training', data: formData });
-
-      if (!success) {
-        displayError('Model training failed.');
-        return false;
-      }
+      // const success = await send({ action: 'start-training', data: formData });
+      // if (!success) {
+      //   displayError('Model training failed.');
+      //   return false;
+      // }
 
       return true;
     } catch (error) {
@@ -122,7 +130,43 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
       displayError('Model training failed.');
       return false;
     }
-  }, [formData, connect, send, displaySuccess, displayError]);
+  }, [formData, connectTraining, displaySuccess, displayError]);
+
+  const handleStartTraining = useCallback(async (modelVersionId: number): Promise<boolean> => {
+    try {
+      await new Promise<void>((resolve) => {
+        connectTraining(modelVersionId, (status) => {
+          if (status === 'completed all') {
+            displaySuccess(`Detection model ${formData.modelName} training completed.`);
+          } else if (status === 'error') {
+            displayError(`Detection model ${formData.modelName} training failed.`);
+          }
+        });
+
+        // const checkSocketOpen = () => {
+        //   const socket = useTrainingSocketStore.getState().socket;
+        //   if (socket && socket.readyState === WebSocket.OPEN) {
+        //     resolve();
+        //   } else {
+        //     setTimeout(checkSocketOpen, 100);
+        //   }
+        // };
+        // checkSocketOpen();
+      });
+
+      // const success = await Training({ action: 'start-training', data: formData });
+      // if (!success) {
+      //   displayError('Model training failed.');
+      //   return false;
+      // }
+
+      return true;
+    } catch (error) {
+      console.error('Training operation failed:', error);
+      displayError('Model training failed.');
+      return false;
+    }
+  }, [formData, connect, sendTraining, displaySuccess, displayError]);
 
   const renderStatusBadge = (statusId?: string) => {
     const status = statusMap[statusId ?? ""] || { label: "", className: "bg-gray-100 text-gray-800" };
@@ -171,10 +215,12 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
     DetectionModelStep1,
     DetectionModelStep2,
     DetectionModelStep3,
-    DetectionModelStep4
+    DetectionModelStep4,
   ], []);
 
   const StepComponent = stepComponents[step - 1];
+
+  console.log("step", step)
 
   return (
     <div>
@@ -208,6 +254,8 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
             next={next}
             prev={prev}
             startTraining={step === 4 ? handleStartTraining : undefined}
+            cancelTraining={cancelTraining}
+            isTraining={isTraining}
           />
         )}
       </div>

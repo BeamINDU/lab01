@@ -17,7 +17,7 @@ interface ModelAssignmentFilterFormProps {
 export default function ModelAssignmentFilterForm({ register, setValue, onSearch }: ModelAssignmentFilterFormProps) {
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         <SearchField
           register={register}
           setValue={setValue}
@@ -57,7 +57,7 @@ export default function ModelAssignmentFilterForm({ register, setValue, onSearch
         <div></div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         <SearchField
           register={register}
           setValue={setValue}

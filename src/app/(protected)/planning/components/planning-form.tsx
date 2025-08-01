@@ -11,8 +11,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs from 'dayjs';
-import { getLineNoOptions, getLotNoOptions, getPlanIdOptions } from '@/app/libs/services/planning';
-import { getProductIdOptions } from '@/app/libs/services/product';
+import { getProductOptions } from '@/app/libs/services/product';
 import { SearchFieldModal } from '@/app/components/common/SearchField';
 
 const PlanningSchema = z.object({
@@ -21,9 +20,13 @@ const PlanningSchema = z.object({
   startdatetime: z.string().min(1, "Plan Startdate is required"),
   enddatetime: z.string().min(1, "Plan Enddate is required"),
   prodid: z.string().min(1, "Product ID is required"),
+  prodname: z.string().min(1, "Product ID is required"),
   prodlot: z.string().min(1, "Lot No is required"),
   prodline: z.string().min(1, "Line ID is required"),
   quantity: z.number(),
+  seq_no: z.coerce.number().optional(),
+  actualstartdatetime: z.coerce.string().optional(),
+  actualenddatetime: z.coerce.string().optional(),
 });
 
 type PlanningFormValues = z.infer<typeof PlanningSchema>;
@@ -50,12 +53,16 @@ export default function PlanningFormModal({
   const defaultValues: PlanningFormValues = {
     id: '',
     planid: '',
+    startdatetime: '',
+    enddatetime: '',
     prodid: '',
+    prodname: '',
     prodlot: '',
     prodline: '',
     quantity: 0,
-    startdatetime: '',
-    enddatetime: '',
+    seq_no: 0,
+    actualstartdatetime: '',
+    actualenddatetime: '',
   };
 
   const {
@@ -78,6 +85,8 @@ export default function PlanningFormModal({
         ...editingData,
         startdatetime: editingData.startdatetime ? dayjs(editingData.startdatetime).format('YYYY-MM-DDTHH:mm') : undefined,
         enddatetime: editingData.enddatetime ? dayjs(editingData.enddatetime).format('YYYY-MM-DDTHH:mm') : undefined,
+        actualstartdatetime: editingData.actualstartdatetime ? dayjs(editingData.actualstartdatetime).format('YYYY-MM-DDTHH:mm') : undefined,
+        actualenddatetime: editingData.actualenddatetime ? dayjs(editingData.actualenddatetime).format('YYYY-MM-DDTHH:mm') : undefined,
       });
     } else {
       reset(defaultValues);
@@ -91,11 +100,15 @@ export default function PlanningFormModal({
       ...formData,
       startdatetime: new Date(formData.startdatetime),
       enddatetime: new Date(formData.enddatetime),
+      actualstartdatetime: formData.actualstartdatetime ? new Date(formData.actualstartdatetime) : undefined,
+      actualenddatetime: formData.actualenddatetime ? new Date(formData.actualenddatetime) : undefined,
       createdby: session?.user?.userid,
       updatedby: formData.id ? session?.user?.userid : null,
     };
     onSave(formWithMeta);
   };
+
+  console.log('errors', errors)
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black bg-opacity-50">
@@ -116,6 +129,10 @@ export default function PlanningFormModal({
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className='text-sm'>
           <input type="hidden" {...register('id')} />
+          <input type="hidden" {...register('seq_no')} />
+          <input type="hidden" {...register('actualstartdatetime')} />
+          <input type="hidden" {...register('actualenddatetime')} />
+          
 
           {/* Plan ID */}
           <div className="mb-4">
@@ -218,15 +235,15 @@ export default function PlanningFormModal({
               fieldName="prodid"
               label="Product ID"
               placeholder="Select product ID..."
-              dataLoader={getProductIdOptions}
-              labelField="label"
-              valueField="value"
+              dataLoader={getProductOptions}
+              labelField="value"
+              valueField="label"
               allowFreeText={false}
               disabled={!canEdit}
               initialValue={editingData?.prodid}
               onSelectionChange={(value, option) => {
-                console.log('Product ID selected:', value, option);
-                setValue("prodid", value, { shouldValidate: true });
+                setValue("prodid", option?.label ?? '', { shouldValidate: true });
+                setValue("prodname", value, { shouldValidate: true });
               }}
             />
             {errors.prodid && <p className="text-red-500 ml-160">{errors.prodid.message}</p>}

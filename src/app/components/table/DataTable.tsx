@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { ChevronLeft, ChevronRight, ChevronFirst, ChevronLast, ChevronUp, ChevronDown } from "lucide-react";
 import { useReactTable, getCoreRowModel, ColumnDef, ColumnMeta, SortingState, flexRender, Row } from "@tanstack/react-table";
 import { formatNumber } from "@/app/utils/format";
@@ -64,6 +64,12 @@ export default function DataTable<TData>({ columns, data, selectedIds, defaultSo
   const isFirstPage = page === 1;
   const isLastPage = page >= totalPages;
 
+  useEffect(() => {
+    if (page > totalPages && totalPages > 0) {
+      setPage(1);
+    }
+  }, [page, totalPages]);
+
   return (
     <div>
       <table className="border-collapse border border-gray-200 bg-white w-full text-sm">
@@ -84,9 +90,7 @@ export default function DataTable<TData>({ columns, data, selectedIds, defaultSo
                       }
                     >
                       {flexRender(header.column.columnDef.header, header.getContext())}
-                      {header.id !== "select" &&
-                        header.id !== "no" &&
-                        header.id !== "actions" && (
+                      {header.id !== "select" && header.id !== "no" && header.id !== "actions" && (
                           <button
                             onClick={() => handleSort(header.id)}
                             className="ml-2 text-gray-600"

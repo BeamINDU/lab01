@@ -4,7 +4,15 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash';
 import { showError } from '@/app/utils/swal';
-import { getDashboardData } from '@/app/libs/services/dashboard';
+import { 
+  getDashboardData,
+  getTotalProducts,
+  getGoodNGRatio,
+  getTopDefects,
+  getTopTrends,
+  getDefectsByCamera,
+  getNGDistribution
+} from '@/app/libs/services/dashboard';
 import type { DashboardData, DashboardFilters } from '@/app/types/dashboard';
 import HeaderFilters from './HeaderFilters';
 import TotalProductsCard from './TotalProductsCard';
@@ -33,17 +41,27 @@ export default function DashboardPage() {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const currentFiltersRef = useRef<DashboardFilters>({});
 
-  // Initialize dates with current year only (All Months)
+  // Initialize with empty state - แต่ละ card จะแสดงเมื่อข้อมูลมา
   useEffect(() => {
     const today = dayjs();
-    const currentYear = today.year().toString(); // 2025
+    const currentYear = today.year().toString();
+    
+    // Initialize empty state
+    setDashboardData({
+      totalProducts: null,
+      goodNgRatio: null,
+      defectsByType: null,
+      trendData: null,
+      defectsByCamera: null,
+      ngDistribution: null
+    });
     
     setFilters(prev => ({
       ...prev,
-      month: '', // เริ่มต้นเป็น All Months
+      month: '',
       year: currentYear,
-      dateFrom: today.startOf('year').format('YYYY-MM-DD HH:mm'), // Start of current year
-      dateTo: today.endOf('year').format('YYYY-MM-DD HH:mm')       // End of current year
+      dateFrom: today.startOf('year').format('YYYY-MM-DD HH:mm'),
+      dateTo: today.endOf('year').format('YYYY-MM-DD HH:mm')
     }));
   }, []);
 
@@ -58,17 +76,67 @@ export default function DashboardPage() {
     year: filters.year || undefined,
   }), [filters]);
 
-  // Data fetching
+  // Data fetching - แยก loading แต่ละ component
   const fetchData = useCallback(async (filterData: DashboardFilters, isAuto = false) => {
     try {
       if (!isAuto) {
-        setLoading(true);
         setError(undefined);
       }
-      const data = await getDashboardData(filterData);
-      setDashboardData(data);
-    } catch (err) {
-      console.error('Dashboard error:', err);
+
+      // เรียก API แยกแต่ละตัว แทนที่จะรอกันทั้งหมด
+      const fetchPromises = [
+        getTotalProducts(filterData).then(data => 
+          setDashboardData(prev => ({ 
+            ...(prev || {}), 
+            totalProducts: data 
+          } as DashboardData))
+        ).catch(err => console.error('Total Products error:', err)),
+        
+        getGoodNGRatio(filterData).then(data => 
+          setDashboardData(prev => ({ 
+            ...(prev || {}), 
+            goodNgRatio: data 
+          } as DashboardData))
+        ).catch(err => console.error('Good NG Ratio error:', err)),
+        
+        getTopDefects(filterData).then(data => 
+          setDashboardData(prev => ({ 
+            ...(prev || {}), 
+            defectsByType: data 
+          } as DashboardData))
+        ).catch(err => console.error('Top Defects error:', err)),
+        
+        getTopTrends(filterData).then(data => 
+          setDashboardData(prev => ({ 
+            ...(prev || {}), 
+            trendData: data 
+          } as DashboardData))
+        ).catch(err => console.error('Top Trends error:', err)),
+        
+        getDefectsByCamera(filterData).then(data => 
+          setDashboardData(prev => ({ 
+            ...(prev || {}), 
+            defectsByCamera: data 
+          } as DashboardData))
+        ).catch(err => console.error('Defects by Camera error:', err)),
+        
+        getNGDistribution(filterData).then(data => 
+          setDashboardData(prev => ({ 
+            ...(prev || {}), 
+            ngDistribution: data 
+          } as DashboardData))
+        ).catch(err => console.error('NG Distribution error:', err))
+      ];
+
+      // ไม่รอทั้งหมด แต่ให้แต่ละตัวอัปเดตเมื่อเสร็จ
+      Promise.allSettled(fetchPromises).then(() => {
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Dashboard ${isAuto ? 'auto-' : ''}refreshed at:`, new Date().toLocaleTimeString());
+        }
+      });
+      
+    } catch (error) {
+      console.error('Dashboard error:', error);
       setError('Failed to load dashboard data');
       if (!isAuto) showError('Failed to load dashboard data');
     } finally {

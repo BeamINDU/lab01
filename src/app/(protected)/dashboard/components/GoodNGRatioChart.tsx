@@ -61,10 +61,10 @@ const GoodNGRatioChart = React.memo<GoodNGRatioChartProps>(({ data, loading, err
         fill={color}
         textAnchor={x > cx ? 'start' : 'end'} 
         dominantBaseline="central"
-        fontSize={12}  
+        fontSize={10}  
         fontWeight="bold"
       >
-        {`${(percent * 100).toFixed(1)}%`}
+        {`${(percent * 100).toFixed(2)}%`}
       </text>
     );
   };

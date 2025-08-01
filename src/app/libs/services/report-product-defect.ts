@@ -2,6 +2,7 @@ import { api } from '@/app/utils/api'
 import { API_ROUTES } from "@/app/constants/endpoint";
 import type { ReportProduct, ParamSearch, ProductDetail, ParamDetail, ParamUpdate  } from "@/app/types/report-product-defect"
 import { extractErrorMessage } from '@/app/utils/errorHandler';
+import axios, { AxiosResponse } from 'axios'
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -9,21 +10,17 @@ export const search = async (param?: ParamSearch) => {
   try {
     const res = await api.get<any>(API_ROUTES.report_product.get, param);
     return res;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+};
 
-    // const mapData: ReportProduct[] = res?.items?.map((item) => ({
-    //   id: item.no,
-    //   datetime: item.defecttime,
-    //   productId: item.prodid,
-    //   productName: item.prodname,
-    //   defectDetail: item.defectdetail,
-    //   cameraId: item.cameraid,
-    //   cameraName: item.cameraname,
-    //   status: item.prodstatus,
-    //   sequence: item.prodseq,
-    //   imagePath: item.imagepath,
-    // }));
-
-    // return { total:res?.total, items: mapData }; 
+export const download = async (param?: ParamSearch) => { 
+  try {
+    const res = await api.get(API_ROUTES.report_product.export, param, {
+      responseType: 'blob',
+    });
+    return res; 
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  
@@ -35,18 +32,17 @@ export const detail = async (param?: ParamDetail) => {
 
     const mapData = {
       id: param?.id ?? 0,
-      date: res.defectdate,
-      time: res.defecttime,
+      defecttime: res.defecttime,
       productId: res.prodid,
       productName: res.prodname,
       serialNo: res.prodserial,
-      productTypeId: res.prodtypeid, 
-      productTypeName: res.prodtype, 
-      defectDetail: res.defectdetail,
-      cameraId: res.cameraid,
-      cameraName: res.cameraname,
-      status: res.prodstatus,
       sequence: res.prodseq,
+      // productTypeId: res.prodtypeid, 
+      // productTypeName: res.prodtype, 
+      defectDetail: res.defect_summary,
+      cameraId: res.cameraid,
+      // cameraName: res.cameraname,
+      status: res.prodstatus,
       imagePath: res.imagepath,
       comment: res.comment,
       history: res.history,
@@ -85,7 +81,7 @@ export const resultImage = async (filename: string, defecttime : string) => {
   try {
     const res = await api.get<any>(API_ROUTES.report_product.image, { filename: filename, defecttime: defecttime });
     const imageBase64 = res?.results?.[0]?.image_b64;
-    console.log("imageBase64", imageBase64)
+    // console.log("imageBase64", imageBase64)
     return imageBase64; 
   } catch (error) {
     throw new Error(extractErrorMessage(error));

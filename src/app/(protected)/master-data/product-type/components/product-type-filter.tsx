@@ -15,7 +15,7 @@ interface ProductTypeFilterFormProps {
 export default function ProductTypeFilterForm({ register, setValue, onSearch }: ProductTypeFilterFormProps) {
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Product Type ID */}
         <SearchFieldResponsive
           register={register}
@@ -43,7 +43,7 @@ export default function ProductTypeFilterForm({ register, setValue, onSearch }: 
         />
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Status  */}
         <SearchFieldResponsive
           register={register}

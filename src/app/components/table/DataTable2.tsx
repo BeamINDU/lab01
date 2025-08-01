@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, ChevronFirst, ChevronLast, ChevronUp, ChevronDown,} from "lucide-react";
 import {
   useReactTable,
@@ -159,10 +159,7 @@ export default function DataTable<TData>({
           <select
             className="border px-2 py-1 rounded"
             value={pageSize}
-            onChange={(e) => {
-              onChangePageSize(Number(e.target.value));
-              onChangePage(1);
-            }}
+            onChange={(e) => { onChangePageSize(Number(e.target.value)) }}
           >
             {[10, 20, 50, 100].map((size) => (
               <option key={size} value={size}>

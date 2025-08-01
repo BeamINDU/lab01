@@ -22,7 +22,7 @@ export default function TransactionFilterForm({ register, setValue, control, onS
 
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Date From */}
         <DateTimeField
           control={control}
@@ -68,7 +68,7 @@ export default function TransactionFilterForm({ register, setValue, control, onS
         />
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">     
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Product ID */}
         <SearchField
           register={register}

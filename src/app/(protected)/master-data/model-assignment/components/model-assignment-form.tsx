@@ -157,14 +157,14 @@ export default function ModelAssignmentFormModal({
               label="Camera ID"
               placeholder="Select camera ID..."
               dataLoader={getCameraOptions}
-              labelField="label"
-              valueField="value"
+              labelField="value"
+              valueField="label"
               allowFreeText={false}
               disabled={!canEdit}
               initialValue={editingData?.cameraId}
               onSelectionChange={(value, option) => {
-                setValue("cameraId", value, { shouldValidate: true });
-                setValue("cameraName", option?.label ?? '', { shouldValidate: true });
+                setValue("cameraId", option?.label ?? '', { shouldValidate: true });
+                setValue("cameraName", value, { shouldValidate: true });
               }}
             />
             {errors.cameraId && <p className="text-red-500 ml-160">{errors.cameraId.message}</p>}

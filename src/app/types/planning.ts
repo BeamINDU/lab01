@@ -1,3 +1,5 @@
+import { ExportType } from '@/app/constants/export-type';
+
 export type Planning = {
   id?: string,
   planid: string,
@@ -14,6 +16,7 @@ export type Planning = {
   createdby?: string
   updateddate?: Date | null
   updatedby?: string | null
+  seq_no?: number
 }
 
 export type ParamSearch = {
@@ -28,5 +31,6 @@ export type ParamSearch = {
   pageSize?: number
   order_by?: string
   order_dir?: string
+  exportType?: ExportType
 }
 

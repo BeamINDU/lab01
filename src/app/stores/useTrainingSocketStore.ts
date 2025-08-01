@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { MockTrainingWebSocket } from '@/app/mocks/mock-traning-websocket';
 import { showSuccess, showError } from '@/app/utils/swal';
+import { API_ROUTES } from "@/app/constants/endpoint";
 
 interface WebSocketPayload {
   action: string;
@@ -8,121 +9,117 @@ interface WebSocketPayload {
 }
 
 interface TrainingSocketState {
-  socket: WebSocket | MockTrainingWebSocket | null;
-  isTraining: boolean;
-  connect: (onStatus?: (status: 'done' | 'error' | 'cancel') => void) => void;
-  disconnect: () => void;
-  send: (payload: WebSocketPayload, onProcessing?: () => void) => Promise<boolean>;
-  cancelConnection: () => Promise<boolean>;
+  socketTraining: WebSocket | MockTrainingWebSocket | null;
+  connectTraining: (modelversionId: number, onStatus?: (status: 'completed' |'completed all' | 'error') => void) => void;
+  disconnectTraining: () => void;
+  sendTraining: (payload: WebSocketPayload, onProcessing?: () => void) => Promise<boolean>;
+  cancelTraining: () => Promise<boolean>;
 }
 
 export const useTrainingSocketStore = create<TrainingSocketState>((set, get) => ({
-  socket: null,
-  isTraining: false,
+  socketTraining: null,
 
-  connect: (onStatus) => {
-    console.log('[connect] called');
+  connectTraining: (modelversionId: number, onStatus) => {
+    // console.log('[connect] called');
 
-    const currentSocket = get().socket;
-    console.log('[connect] current readyState =', currentSocket?.readyState);
+    const currentSocket = get().socketTraining;
+    // console.log('[connect] current readyState =', currentSocket?.readyState);
 
     if (
       currentSocket &&
       ([WebSocket.OPEN, WebSocket.CONNECTING] as const).includes(currentSocket.readyState as 0 | 1)
     ) {
-      console.log('[connect] skipping: socket already connected or connecting');
+      console.log('[connect] skipping: socket training already connected or connecting');
       return;
     }
 
-    const isDev = process.env.NODE_ENV !== 'production';
-    const socketUrl = process.env.NEXT_PUBLIC_TRANING_SOCKET_URL || 'ws://localhost:8000/ws/training';
+    // For MockTrainingWebSocket
+    // const socket = new MockTrainingWebSocket(modelversionId);
 
-    const socket = isDev
-      ? new MockTrainingWebSocket()
-      : new WebSocket(socketUrl);
+    const socketUrl = `${process.env.NEXT_PUBLIC_SOCKET_URL || 'ws://127.0.0.1:8010'}/${API_ROUTES.socket.training_action}/${modelversionId}`;
+    const socket = new WebSocket(socketUrl);
 
-    // console.log('[connect] socket created', socket);
+    console.log('[connect] socket training created', socket);
 
     socket.onopen = () => {
       console.log('Training WebSocket connected');
-      set({ socket });
+      set({ socketTraining: socket });
     };
     
     socket.onerror = (event) => {
-      console.error('WebSocket error event:', event);
-      showError('WebSocket connection error.');
+      console.error('WebSocket training error event:', event);
+      showError('WebSocket training connection error.');
     };
     
     socket.onclose = (event) => {
-      console.log(`WebSocket closed, code: ${event.code}, reason: ${event.reason}`);
-      set({ socket: null, isTraining: false });
+      console.log(`WebSocket training closed, code: ${event.code}, reason: ${event.reason}`);
+      set({ socketTraining: null });
     };
 
     socket.onmessage = (event: MessageEvent) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('Message from WebSocket:', data);
+        console.log('Message from WebSocket training:', data);
     
-        if (data.status === 'done') {
-          set({ isTraining: false });
-          onStatus?.('done');
+        if (data.status === 'completed all') {
+          onStatus?.('completed all');
+          get().disconnectTraining();
         } else if (data.status === 'error') {
-          set({ isTraining: false });
           onStatus?.('error');
         }
       } catch (err) {
-        console.error('Failed to parse WebSocket message:', err);
+        console.error('Failed to parse WebSocket training message:', err);
       }
     };
 
-    // เรียก connect ถ้าเป็น mock
-    if ('connect' in socket && typeof (socket as MockTrainingWebSocket).connect === 'function') {
-      (socket as MockTrainingWebSocket).connect();
-    }
+    // Call connect() only for mock
+    // if (socket instanceof MockTrainingWebSocket) {
+    //   socket.connect(modelversionId);
+    // }
+
   },
 
-  disconnect: () => {
-    const socket = get().socket;
+  disconnectTraining: () => {
+    const socket = get().socketTraining;
     if (socket) {
-      console.log('[disconnect] closing WebSocket...');
+      console.log('[disconnect] closing WebSocket training...');
       socket.close();
-      set({ socket: null, isTraining: false });
+      set({ socketTraining: null });
     }
   },
 
-  send: async (payload, onProcessing) => {
-    const socket = get().socket;
+  sendTraining: async (payload, onProcessing) => {
+    const socket = get().socketTraining;
 
     if (socket?.readyState === WebSocket.OPEN) {
       console.log('[send] sending payload:', payload);
       socket.send(JSON.stringify(payload));
-      set({ isTraining: true });
       onProcessing?.();
       return true;
     } else {
-      console.warn('[send] WebSocket not ready');
-      showError('WebSocket is not connected.');
+      console.warn('[send] WebSocket training not ready');
+      showError('WebSocket training is not connected.');
       return false;
     }
   },
 
-  cancelConnection: async () => {
-    const socket = get().socket;
+  cancelTraining: async () => {
+    const socket = get().socketTraining;
 
     if (socket?.readyState === WebSocket.OPEN) {
       try {
-        console.log('[cancelConnection] closing WebSocket...');
+        console.log('[cancelConnection] closing WebSocket training...');
         socket.close();
-        set({ socket: null, isTraining: false });
+        set({ socketTraining: null });
         return true;
       } catch (err) {
-        console.error('[cancelConnection] Error:', err);
+        console.error('[cancelConnection] WebSocket training error:', err);
         return false;
       }
     }
 
-    console.warn('[cancelConnection] WebSocket already closed or not connected');
-    set({ socket: null, isTraining: false });
+    console.warn('[cancelConnection] WebSocket training already closed or not connected');
+    set({ socketTraining: null });
     return false;
   },
 }));

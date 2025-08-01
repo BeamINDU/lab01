@@ -15,7 +15,7 @@ interface RoleFilterFormProps {
 export default function RoleFilterForm({ register, setValue, onSearch }: RoleFilterFormProps) {
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Role Name  */}
         <SearchFieldResponsive 
           register={register}

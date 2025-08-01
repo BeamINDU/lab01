@@ -15,7 +15,7 @@ interface DefectTypeFilterFormProps {
 export default function DefectTypeFilterForm({ register, setValue, onSearch }: DefectTypeFilterFormProps) {
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Defect Type ID - */}
         <SearchFieldResponsive 
           register={register}
@@ -43,7 +43,7 @@ export default function DefectTypeFilterForm({ register, setValue, onSearch }: D
         />
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Status  */}
         <SearchFieldResponsive 
           register={register}

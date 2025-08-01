@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { MockLiveWebSocket } from '@/app/mocks/mock-live-websocket';
+import { API_ROUTES } from "@/app/constants/endpoint";
 
 interface LiveSocketState {
   socket: WebSocket | MockLiveWebSocket | null;
   connect: (cameraId: string) => void;
   disconnect: () => void;
-  send: (data: any) => void;
+  // send: (data: any) => void;
 }
 
 export const useLiveSocketStore = create<LiveSocketState>((set, get) => ({
@@ -17,7 +18,7 @@ export const useLiveSocketStore = create<LiveSocketState>((set, get) => ({
     // For MockLiveWebSocket
     // const socket = new MockLiveWebSocket(cameraId) as unknown as WebSocket;
 
-    const socketUrl = `${process.env.NEXT_PUBLIC_LIVE_SOCKET_URL}/${cameraId}` || `ws://localhost:8010/live-defect/${cameraId}`;
+    const socketUrl = `${process.env.NEXT_PUBLIC_SOCKET_URL || 'ws://18.142.88.150:8010'}/${API_ROUTES.socket.live_defect}/${cameraId}`;
     const socket = new WebSocket(socketUrl);
 
     socket.onopen = () => {
@@ -47,12 +48,13 @@ export const useLiveSocketStore = create<LiveSocketState>((set, get) => ({
     set({ socket: null });
   },
 
-  send: (data: any) => {
-    const socket = get().socket;
-    if (socket?.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify(data));
-    } else {
-      console.warn("WebSocket not ready");
-    }
-  },
+  // send: (data: any) => {
+  //   const socket = get().socket;
+  //   if (socket?.readyState === WebSocket.OPEN) {
+  //     socket.send(JSON.stringify(data));
+  //   } else {
+  //     console.warn("WebSocket not ready");
+  //   }
+  // },
+
 }));

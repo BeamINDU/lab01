@@ -16,7 +16,7 @@ interface ReportDefectFilterFormProps {
 export default function ReportDefectFilterForm({ register, setValue, onSearch }: ReportDefectFilterFormProps) {
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Lot No */}
         <SearchFieldResponsive
           register={register}
@@ -57,7 +57,7 @@ export default function ReportDefectFilterForm({ register, setValue, onSearch }:
         />
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[3fr_3fr_3fr_1fr] gap-4">
         {/* Defect Type ID */}
         <SearchFieldResponsive
           register={register}

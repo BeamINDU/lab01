@@ -6,8 +6,14 @@ export class MockTrainingWebSocket {
   onmessage: ((event: MessageEvent) => void) | null = null;
 
   private timeoutId: ReturnType<typeof setTimeout> | null = null;
+  private modelversionId: number | null = null;
 
-  connect() {
+  constructor(modelversionId: number) {
+    this.modelversionId = modelversionId;
+  }
+
+  connect(modelversionId: number) {
+    this.modelversionId = modelversionId;
     setTimeout(() => {
       this.readyState = WebSocket.OPEN;
       this.onopen?.();
@@ -15,16 +21,20 @@ export class MockTrainingWebSocket {
   }
 
   send(data: string) {
+    if (this.readyState !== WebSocket.OPEN) {
+      this.onerror?.(new Event('Mock WebSocket not open'));
+      return;
+    }
+
     this.timeoutId = setTimeout(() => {
       const payload = JSON.parse(data);
-      if (payload.action === 'start-training' || payload.action === 'processing') {
-        this.onmessage?.({
-          data: JSON.stringify({ status: 'done' }),
-        } as MessageEvent);
+      if (payload.action === 'start-training') {
+        const mockResponse = { status: 'done' };
+        this.onmessage?.({ data: JSON.stringify(mockResponse) } as MessageEvent);
       } else {
-        this.onerror?.(new Event('error'));
+        this.onerror?.(new Event('Invalid action'));
       }
-    }, 15000);
+    }, 10000);
   }
 
   close() {

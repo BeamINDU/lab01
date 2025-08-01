@@ -143,18 +143,21 @@ const FrequentDefectsChart = React.memo<FrequentDefectsChartProps>(({ data, load
         }
       },
       datalabels: {
-        display: (context: any) => context.datasetIndex === chartData.datasets.length - 1,
-        anchor: 'end',
-        align: 'right',
-        color: '#1f2937',
-        font: { weight: 'bold', size: 10 },
-        formatter: (value: number, context: any) => {
-          const total = chartData.datasets.reduce((sum, dataset) => 
-            sum + (dataset.data[context.dataIndex] || 0), 0
-          );
-          return total;
+        display: true,
+        anchor: 'center', 
+        align: 'center', 
+        color: '#000000',
+        font: { 
+          size: 11,
+          weight: 'bold'
         },
-        offset: 8,
+        formatter: (value: any) => {
+          try {
+            return (value && value > 0) ? value.toString() : '';
+          } catch {
+            return '';
+          }
+        },
       },
     },
     scales: {
@@ -214,7 +217,7 @@ const FrequentDefectsChart = React.memo<FrequentDefectsChartProps>(({ data, load
 return (
    <div className="bg-white rounded-xl shadow p-3 md:p-4 h-[345px]">
     <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
-      Top 5 Most Frequent Defect Types
+      Top 5 Most Frequent Defect Types by Lines
     </h2>
     
     {loading ? (

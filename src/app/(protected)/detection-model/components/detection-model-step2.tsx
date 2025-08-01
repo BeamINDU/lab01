@@ -5,7 +5,7 @@ import { z } from "zod";
 import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { FormData, DetectionModel } from "@/app/types/detection-model";
-import { updateStep2, getModelVersion,  getCamera, getModelCamera } from "@/app/libs/services/detection-model";
+import { updateStep2, getModelVersion } from "@/app/libs/services/detection-model";
 import { useSession } from "next-auth/react";
 import { getProductIdOptions } from "@/app/libs/services/product";
 import { SearchFieldModal } from '@/app/components/common/SearchField';
@@ -40,7 +40,6 @@ export default function DetectionModelStep2Page({ next, prev, modelVersionId, fo
     modelId: 0,
     modelName: '',
     description: '',
-    // productId: '',
     trainDataset: 0,
     testDataset: 0,
     validationDataset: 0,

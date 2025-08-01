@@ -19,12 +19,12 @@ const formatDateTime = (date: Date): string => {
   return date.toISOString().slice(0, 19);
 };
 
-// แก้ไข buildParams เพื่อรองรับ month และ year
+// แก้ไข buildParams เพื่อให้ตรงกับ Backend parameters
 const buildParams = (filters: DashboardFilters) => ({
   start: formatDateTime(filters.startDate!),
   end: formatDateTime(filters.endDate!),
-  ...(filters.productId && { productname: filters.productId }),
-  ...(filters.lineId && { prodline: filters.lineId }),
+  ...(filters.productId && { productname: filters.productId }),  // ✅ แก้เป็น productname
+  ...(filters.lineId && { prodline: filters.lineId }),           // ✅ แก้เป็น prodline
   ...(filters.cameraId && { cameraid: filters.cameraId }),
   ...(filters.month && { month: filters.month }),
   ...(filters.year && { year: filters.year }),
@@ -155,6 +155,7 @@ export const getDashboardData = async (filters: DashboardFilters): Promise<Dashb
     console.log('Fetching dashboard data with filters:', filters);
   }
 
+  // เรียก API แบบ parallel แต่ return ทีละตัว
   const [
     totalProducts,
     goodNgRatio, 
@@ -162,7 +163,7 @@ export const getDashboardData = async (filters: DashboardFilters): Promise<Dashb
     trendData,
     defectsByCamera,
     ngDistribution
-  ] = await Promise.all([
+  ] = await Promise.allSettled([
     getTotalProducts(filters),
     getGoodNGRatio(filters),
     getTopDefects(filters),
@@ -172,12 +173,12 @@ export const getDashboardData = async (filters: DashboardFilters): Promise<Dashb
   ]);
 
   const result: DashboardData = {
-    totalProducts,
-    goodNgRatio,
-    defectsByType,
-    trendData,
-    defectsByCamera,
-    ngDistribution
+    totalProducts: totalProducts.status === 'fulfilled' ? totalProducts.value : null,
+    goodNgRatio: goodNgRatio.status === 'fulfilled' ? goodNgRatio.value : null,
+    defectsByType: defectsByType.status === 'fulfilled' ? defectsByType.value : null,
+    trendData: trendData.status === 'fulfilled' ? trendData.value : null,
+    defectsByCamera: defectsByCamera.status === 'fulfilled' ? defectsByCamera.value : null,
+    ngDistribution: ngDistribution.status === 'fulfilled' ? ngDistribution.value : null
   };
 
   if (process.env.NODE_ENV === 'development') {
@@ -185,4 +186,40 @@ export const getDashboardData = async (filters: DashboardFilters): Promise<Dashb
   }
 
   return result;
+};
+
+// เพิ่มฟังก์ชันสำหรับเรียก API แยกกัน
+export const getDashboardDataIndividual = async (filters: DashboardFilters, dataType: string) => {
+  if (!filters.startDate || !filters.endDate) {
+    throw new Error('Start date and end date are required');
+  }
+
+  switch (dataType) {
+    case 'totalProducts':
+      const totalProducts = await getTotalProducts(filters);
+      return { totalProducts };
+    
+    case 'goodNgRatio':
+      const goodNgRatio = await getGoodNGRatio(filters);
+      return { goodNgRatio };
+    
+    case 'defectsByType':
+      const defectsByType = await getTopDefects(filters);
+      return { defectsByType };
+    
+    case 'trendData':
+      const trendData = await getTopTrends(filters);
+      return { trendData };
+    
+    case 'defectsByCamera':
+      const defectsByCamera = await getDefectsByCamera(filters);
+      return { defectsByCamera };
+    
+    case 'ngDistribution':
+      const ngDistribution = await getNGDistribution(filters);
+      return { ngDistribution };
+    
+    default:
+      throw new Error('Invalid data type');
+  }
 };

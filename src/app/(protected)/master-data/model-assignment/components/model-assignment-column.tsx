@@ -22,6 +22,21 @@ export default function ModelAssignmentColumns({ openEditModal, canEdit }: Model
       header: "Model Name",
     },
     {
+      accessorKey: "versionNo",
+      header: "Version No",
+      cell: ({ getValue }) => {
+        const value = getValue<number>();
+        return (
+          <div className="text-right">
+            {formatNumber(value)}
+          </div>
+        );
+      },
+      meta: {
+        style: { width: "7%" },
+      },
+    },
+    {
       accessorKey: "productId",
       header: "Product ID",
     },
@@ -36,21 +51,6 @@ export default function ModelAssignmentColumns({ openEditModal, canEdit }: Model
     {
       accessorKey: "cameraName",
       header: "Camera Name",
-    },
-    {
-      accessorKey: "versionNo",
-      header: "Version No",
-      cell: ({ getValue }) => {
-        const value = getValue<number>();
-        return (
-          <div className="text-right">
-            {formatNumber(value)}
-          </div>
-        );
-      },
-      meta: {
-        style: { width: "7%" },
-      },
     },
     {
       accessorKey: "status",

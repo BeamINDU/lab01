@@ -6,7 +6,7 @@ import { showConfirm, showSuccess, showError } from '@/app/utils/swal'
 import { exportExcel, exportCSV } from "@/app/libs/export";
 import { ExportType } from '@/app/constants/export-type';
 import { Transaction, ParamSearch } from "@/app/types/transaction"
-import { search } from "@/app/libs/services/transaction";
+import { search, download } from "@/app/libs/services/transaction";
 import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
 import { extractErrorMessage } from '@/app/utils/errorHandler';
@@ -23,55 +23,62 @@ export default function Page() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [sorting, setSorting] = useState<{ id: string; desc: boolean }>({
-    id: 'actualstartdatetime',
-    desc: true,
-  });
+  const [sorting, setSorting] = useState<{ id: string; desc: boolean }>({ id: 'actualstartdatetime', desc: true });
+
+  const buildSearchParams = (
+    override?: Partial<{ page: number; pageSize: number; sorting: { id: string; desc: boolean } }>
+  ): ParamSearch => {
+    const values = getValues();
+    return {
+      dateFrom: values.dateFrom || '',
+      dateTo: values.dateTo || '',
+      lotNo: values.lotNo || '',
+      productId: values.productId || '',
+      productName: values.productName || '',
+      page: override?.page ?? page,
+      pageSize: override?.pageSize ?? pageSize,
+      order_by: override?.sorting?.id ?? sorting.id,
+      order_dir: (override?.sorting?.desc ?? sorting.desc) ? 'desc' : 'asc',
+    };
+  };
+
+  const fetchData = useCallback( async (
+    override?: Partial<{ page: number; pageSize: number; sorting: { id: string; desc: boolean } }>
+  ) => {
+    try {
+      const newPage = override?.page ?? page;
+      const newPageSize = override?.pageSize ?? pageSize;
+      const newSorting = override?.sorting ?? sorting;
+
+      const params = buildSearchParams(override);
+      const result = await search(params);
+      setData(result.items || []);
+      setTotal(result.total || 0);
+      setPage(newPage);
+      setPageSize(newPageSize);
+      setSorting(newSorting);
+    } catch (error) {
+      console.error('Search failed:', error);
+      showError('Search failed');
+      setData([]);
+    }
+  }, [getValues, page, pageSize, sorting]);
 
   useEffect(() => {
-    handleSearch();
+    fetchData();
   }, []);
 
-  const handleSearch = useCallback(
-    async (
-      override?: Partial<{
-        page: number;
-        pageSize: number;
-        sorting: { id: string; desc: boolean };
-      }>
-    ) => {
-      try {
-        const values = getValues();
-        const newPage = override?.page ?? page;
-        const newPageSize = override?.pageSize ?? pageSize;
-        const newSorting = override?.sorting ?? sorting;
+  const handleSearch = () => {
+    setPage(1);
+    fetchData({page: 1})
+  };
 
-        const params: ParamSearch = {
-          dateFrom: values.dateFrom || '',
-          dateTo: values.dateTo || '',
-          lotNo: values.lotNo || '',
-          productId: values.productId || '',
-          productName: values.productName || '',
-          page: newPage,
-          pageSize: newPageSize,
-          order_by: newSorting.id,
-          order_dir: newSorting.desc ? 'desc' : 'asc',
-        };
-
-        const result = await search(params);
-        setData(result.items || []);
-        setTotal(result.total || 0);
-        setPage(newPage);
-        setPageSize(newPageSize);
-        setSorting(newSorting);
-      } catch (error) {
-        console.error('Search failed:', error);
-        showError('Search failed');
-        setData([]);
-      }
-    },
-    [getValues, page, pageSize, sorting]
-  );
+  const handleChangePage = ({ page: newPage = page, pageSize: newPageSize = pageSize, sorting: newSorting = sorting }) => {
+    setPage(newPage);
+    setPageSize(newPageSize);
+    setSorting(newSorting);
+    fetchData({ page: newPage, pageSize: newPageSize, sorting: newSorting }); 
+  };
 
   const handleExport = (type: ExportType) => {
     try {
@@ -93,6 +100,23 @@ export default function Page() {
     }
   };
 
+  const handleDownload = async (type: ExportType) => {
+    try {
+      const params = { ...buildSearchParams(), exportType: type };
+      const response = await download(params);
+      const blob = response as Blob;
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url
+      a.download = `Transaction_${formatDateTime(new Date(), 'yyyyMMdd_HHmmss')}.${type === ExportType.Excel ? 'xlsx' : 'csv'}`;
+      a.click()
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error("Export operation failed:", error);
+      showError(`Export failed: ${extractErrorMessage(error)}`);
+    }
+  }
 
   return (
     <>
@@ -114,7 +138,7 @@ export default function Page() {
               <div className="flex flex-wrap justify-end gap-2 mr-2 ">
                 {/* Export Button */}
                 {hasPermission(Menu.ReportTransaction, Action.Export) && (
-                  <ExportButton onExport={handleExport} />
+                  <ExportButton onExport={handleDownload} />
                 )}
               </div>
               
@@ -130,15 +154,13 @@ export default function Page() {
           page={page}
           pageSize={pageSize}
           sorting={[sorting]}
+          onChangePage={(p) => handleChangePage({ page: p })}
+          onChangePageSize={(s) => handleChangePage({ page: 1, pageSize: s })}
           onSortingChange={(updater) => {
             const nextSorting = typeof updater === 'function' ? updater([sorting]) : updater;
             const sort = nextSorting[0] ?? { id: 'actualstartdatetime', desc: false };
-
-            setSorting(sort);
-            handleSearch({ sorting: sort, page: 1 });
+            handleChangePage({ page: 1, sorting: sort });
           }}
-          onChangePage={(p) => handleSearch({ page: p })}
-          onChangePageSize={(s) => handleSearch({ page: 1, pageSize: s })}
         />
 
       </div>
