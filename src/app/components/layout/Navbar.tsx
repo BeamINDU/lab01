@@ -62,7 +62,7 @@ export default function Navbar({ sidebarOpen, toggleSidebar }: NavbarProps) {
                     Profile
                   </a>
                 </li>
-                <li>
+                {/* <li>
                   <a
                     href="/change-password"
                     className="flex items-center px-4 py-2 hover:bg-gray-100 transition"
@@ -70,7 +70,7 @@ export default function Navbar({ sidebarOpen, toggleSidebar }: NavbarProps) {
                     <KeyRound className="w-4 h-4 mr-2" />
                     Change Password
                   </a>
-                </li>
+                </li> */}
                 {/* <li>
                   <a
                     href="/settings"

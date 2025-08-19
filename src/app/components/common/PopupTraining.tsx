@@ -3,7 +3,7 @@
 import { X } from 'lucide-react';
 import { showConfirm, showError, showSuccess } from '@/app/utils/swal';
 import { usePopupTraining } from '@/app/contexts/popup-training-context';
-import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
+import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore';
 // import { useWebSocket } from '@/app/contexts/websocket-context';
 
 export const PopupTraining = () => {
@@ -42,8 +42,8 @@ export const PopupTraining = () => {
 
   const handleCancel = async () => {
     const result = await showConfirm('Are you sure you want to cancel this training model?');
-    console.log(result); 
-  
+    console.log(result);
+
     if (result && result.isConfirmed) {
       const cancelled = await cancelTraining();
       if (cancelled) {
@@ -52,10 +52,10 @@ export const PopupTraining = () => {
       }
     }
   };
-  
+
   return (
     <div
-      className={`fixed bottom-5 right-5 z-[2000] rounded-2xl shadow-2xl border-2 w-[430px] min-h-[90px] flex flex-col justify-center items-center text-center transition-all duration-300 ${getStatusStyles()}`}
+      className={`fixed bottom-5 right-5 z-[2000] rounded-2xl shadow-2xl border-2 w-[430px] min-h-[90px] flex flex-col justify-center items-start transition-all duration-300 ${getStatusStyles()}`}
     >
       <button
         onClick={hidePopup}
@@ -65,24 +65,23 @@ export const PopupTraining = () => {
         <X className="w-5 h-5" />
       </button>
 
-      <div className="flex items-center gap-4 justify-start">
+      <div className="flex items-center gap-3 justify-start px-4 pt-0">
         {getStatusDot()}
         <span className="text-sm leading-snug line-clamp-2 max-w-[300px] text-left">
           {popup.message}
         </span>
-        {/* <span className="text-md leading-snug truncate max-w-[300px] whitespace-nowrap overflow-hidden">
-          {popup.message}
-        </span> */}
       </div>
-      
+
       {/* {popup.status === 'processing' && (
         <button
           onClick={handleCancel}
-          className="mt-3 inline-block px-4 py-1 bg-red-300 text-red-800 rounded-lg hover:bg-red-400 text-xs"
+          className="mt-3 ml-4 inline-block px-4 py-1 bg-red-300 text-red-800 rounded-lg hover:bg-red-400 text-xs"
         >
           Stop training
         </button>
       )} */}
+
     </div>
+
   );
 };

@@ -36,7 +36,7 @@ export const search = async (param?: ParamSearch) => {
 
 export const detail = async (id: string) => {
   try {
-    return await api.get<User>(`${API_ROUTES.user.detail}/${id}`);
+    return await api.get<User>(`${API_ROUTES.user.detail}?userid=${id}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

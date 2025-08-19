@@ -54,12 +54,31 @@ export const getPermissions = async (userid: string) => {
   }  
 };
 
-
 export const validateLogin = async (username: string, password: string) => {
   try {
     const res =  await api.get<any>(`${API_ROUTES.auth.login}?username=${username}&password=${password}`);
-    
     return res;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+};
+
+export const changePassword = async (userid: string, currentPassword: string, newPassword: string) => {
+  try {
+    const res = await api.post<any>(`${API_ROUTES.auth.changePassword}`, {
+      userid: userid,
+      current_password: currentPassword, 
+      new_password: newPassword
+    });
+    return res;
+  } catch (error) {
+    throw new Error(extractErrorMessage(error));
+  }  
+};
+
+export const userInfo = async (id: string) => {
+  try {
+    return await api.get<any>(`${API_ROUTES.auth.userInfo}?userid=${id}`);
   } catch (error) {
     throw new Error(extractErrorMessage(error));
   }  

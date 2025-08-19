@@ -1,7 +1,10 @@
+import { changePassword } from "../libs/services/user-permissions";
+
 export const API_ROUTES = {
   auth: {
     login: "/login",
     userInfo: "/user-info",
+    changePassword: "/change-password",
   },
   product: {
     get: "/products",
@@ -50,7 +53,7 @@ export const API_ROUTES = {
   },
   user: {
     get: "/users",
-    detail: '',
+    detail: '/detail',
     insert: "/add-user", 
     update: "/update-user",
     delete: "/delete-user",

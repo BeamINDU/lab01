@@ -46,10 +46,8 @@ const getCameraColor = (cameraIndex: number): string => {
   return colorPalette[cameraIndex % colorPalette.length];
 };
 
-// เพิ่มฟังก์ชันเพื่อกำหนดสีให้ Defect Type แทน
+
 const getDefectTypeColor = (defectType: string): string => {
-  // คุณสามารถสร้างสีที่แตกต่างกันสำหรับแต่ละ defectType ได้ที่นี่
-  // หรือใช้ hash function เพื่อสร้างสีจาก string
   const colors = {
     'Scratch': 'rgba(59, 130, 246, 0.8)',
     'Dent': 'rgba(34, 197, 94, 0.8)',
@@ -117,7 +115,7 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
       return {
         label: defectType, 
         data: dataValues,
-        backgroundColor: getDefectTypeColor(defectType), // ใช้สีตาม Defect Type
+        backgroundColor: getDefectTypeColor(defectType),
         borderColor: getDefectTypeColor(defectType).replace('0.8', '1'),
         borderWidth: 1,
         borderRadius: {
@@ -136,10 +134,10 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
     return { labels: topCameras, datasets }; 
   }, [data]);
 
-  // Max value สำหรับแกน X (ในกรณีที่ไม่ได้ Stacked)
+
   const maxAxisValue = useMemo(() => {
     if (!chartData.datasets.length) return 0;
-    // หาค่าสูงสุดของข้อมูลทั้งหมดในแต่ละ dataset
+
     return Math.max(...chartData.datasets.flatMap(dataset => dataset.data as number[]));
   }, [chartData]);
 
@@ -209,8 +207,8 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
     scales: {
       x: {
         beginAtZero: true,
-        stacked: false, // ยังคงเป็น false สำหรับ grouped bar chart
-        max: Math.ceil(maxAxisValue * 1.2), // ใช้ maxAxisValue
+        stacked: false, 
+        max: Math.ceil(maxAxisValue * 1.2), 
         title: {
           display: true,
           text: 'Quantity',
@@ -227,10 +225,10 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
         }
       },
       y: {
-        stacked: false, // ยังคงเป็น false สำหรับ grouped bar chart
+        stacked: false, 
         title: {
           display: true,
-          text: 'Camera ID / Camera Name', // เปลี่ยน title ของแกน Y
+          text: 'Camera ID / Camera Name', 
           font: { size: 11, weight: 'bold' as const }
         },
         grid: {
@@ -268,7 +266,7 @@ const DefectByCameraChart = React.memo<DefectByCameraChartProps>(({ data, loadin
   return (
      <div className="bg-white rounded-xl shadow p-3 md:p-4 h-[345px]">
       <h2 className="text-lg md:text-xl font-semibold text-center mb-2 md:mb-4">
-        Defects by Camera (Top 5 Cameras)
+        Top 5 Defects Most Found by Cameras
       </h2>
 
       {loading ? (

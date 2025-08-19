@@ -9,13 +9,15 @@ export const ProductStatus = [
 ];
 
 export const ModelStatusOption = [
-  { label: 'Using', value: 'Using' },
   { label: 'Processing', value: 'Processing' },
+  { label: 'Training', value: 'Training' },
   { label: 'Ready', value: 'Ready' },
+  { label: 'Using', value: 'Using' },
 ];
 
 export enum ModelStatus {
-  Using = "Using",
   Processing = "Processing",
+  Training = "Training",
   Ready = "Ready",
+  Using = "Using",
 }

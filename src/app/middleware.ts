@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const protectedRoutes = [
+  '/profile',
   '/dashboard',
   '/live/:path*',
   '/master-data/:path*',
@@ -31,6 +32,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    '/profile',
     '/dashboard',
     '/live/:path*',
     '/master-data/:path*',

@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Nunito } from "next/font/google";
 import Image from "next/image";
+import { z } from "zod";
+import { changePassword } from "@/app/libs/services/user-permissions";
+import { Session } from "inspector/promises";
 
 const nunito = Nunito({ subsets: ["latin"], weight: ["400", "600", "700"] });
 
@@ -14,27 +17,58 @@ export default function ChangePasswordForm() {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    currentPassword?: string;
+    newPassword?: string;
+    confirmNewPassword?: string;
+  }>({});
+
+  const passwordSchema = z
+    .object({
+      currentPassword: z.string().min(1, "Current password is required."),
+      newPassword: z
+        .string()
+        .min(8, "New password must be at least 8 characters long.")
+        .regex(/[A-Z]/, "New password must contain at least one uppercase letter.")
+        .regex(/[0-9]/, "New password must contain at least one number.")
+        .regex(/[^a-zA-Z0-9]/, "New password must contain at least one special character."),
+      confirmNewPassword: z.string(),
+    })
+    .refine((data) => data.newPassword === data.confirmNewPassword, {
+      message: "Passwords do not match.",
+      path: ["confirmNewPassword"],
+    });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (newPassword !== confirmNewPassword) {
-      setError("New passwords do not match.");
-      return;
-    }
+    setError(null);
+    setMessage(null);
+    setFieldErrors({}); // reset field errors
 
-    if (!currentPassword || !newPassword) {
-      setError("Please fill out all fields.");
-      return;
-    }
+    const formData = {
+      currentPassword,
+      newPassword,
+      confirmNewPassword,
+    };
 
     try {
-      // await changePassword(currentPassword, newPassword);
+      passwordSchema.parse(formData);
+      // ถ้า validate ผ่าน
       setMessage("Password changed successfully.");
-      setError(null);
-    } catch (error) {
-      setError("Failed to change password. Please try again.");
-      setMessage(null);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        const errors: { [key: string]: string } = {};
+        err.errors.forEach((e) => {
+          const field = e.path[0];
+          if (typeof field === "string") {
+            errors[field] = e.message;
+          }
+        });
+        setFieldErrors(errors);
+      } else {
+        setError("Failed to change password. Please try again.");
+      }
     }
   };
 
@@ -74,6 +108,9 @@ export default function ChangePasswordForm() {
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              {fieldErrors.currentPassword && (
+                <p className="text-red-500 text-sm mt-1">{fieldErrors.currentPassword}</p>
+              )}
             </div>
 
             <div>
@@ -86,6 +123,9 @@ export default function ChangePasswordForm() {
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              {fieldErrors.newPassword && (
+                <p className="text-red-500 text-sm mt-1">{fieldErrors.newPassword}</p>
+              )}
             </div>
 
             <div>
@@ -98,6 +138,9 @@ export default function ChangePasswordForm() {
                 required
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              {fieldErrors.confirmNewPassword && (
+                <p className="text-red-500 text-sm mt-1">{fieldErrors.confirmNewPassword}</p>
+              )}
             </div>
 
             <button

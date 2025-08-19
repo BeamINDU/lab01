@@ -7,14 +7,15 @@ import { usePermission } from '@/app/contexts/permission-context';
 import { Menu, Action } from '@/app/constants/menu';
 import { extractErrorMessage } from '@/app/utils/errorHandler';
 import { FormData, ModelPicture } from "@/app/types/detection-model";
+import { ModelStatus } from "@/app/constants/status"
 import type { Annotation } from "@/app/types/annotation";
 import { updateStep3, removeImage, getImage, annotateImage } from "@/app/libs/services/detection-model";
 import { useSession } from "next-auth/react";
 import ImageLoading from "@/app/components/loading/ImageLoading";
 import AnnotationModal from "./annotation-modal";
 import { nanoid } from 'nanoid';
+import { usePopupTraining } from '@/app/contexts/popup-training-context';
 // import { UseTrainingStatusWebSocket } from '@/app/stores/useTrainingStatusSocketStore'; 
-// import { usePopupTraining } from '@/app/contexts/popup-training-context';
 // import { useTrainingSocketStore } from '@/app/stores/useTrainingSocketStore'; 
 
 type Props = {
@@ -24,9 +25,11 @@ type Props = {
   next: (data: any) => void;
   prev: () => void;
   isTraining: boolean;
+  startTraining?: (modelVersionId: number) => Promise<boolean>;
+  // cancelTraining: () => Promise<boolean>;
 };
 
-export default function DetectionModelStep3Page({ next, prev, modelVersionId, formData, isEditMode, isTraining }: Props) {
+export default function DetectionModelStep3Page({ next, prev, modelVersionId, formData, isEditMode, isTraining, startTraining }: Props) {
   const { data: session } = useSession();
   const { hasPermission } = usePermission();
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -38,11 +41,17 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
   const stageRef = useRef<Konva.Stage | null>(null);
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [imageObj, setImageObj] = useState<HTMLImageElement | null>(null);
+  const { displayProcessing, displaySuccess, displayError, hidePopup } = usePopupTraining();
+
   // const { isTraining } = UseTrainingStatusWebSocket();
   // const [data, setData] = useState<FormData>({} as FormData);
   // const { register, getValues, setValue, reset, handleSubmit, clearErrors, formState: { errors } } = useForm ();
 
   useEffect(() => {
+    if(formData.statusId === ModelStatus.Training) {
+      handleNext();
+    }
+
     const fetchPicture = async () => {
       try {
         const result = await getImage(modelVersionId);
@@ -339,7 +348,9 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
 
       if (isEditMode) {
         await updateStep3(modelVersionId, updatedFormData);
-        // await showSuccess(`Saved successfully`)
+        displayProcessing(`Detection model ${formData.modelName} training...`);
+        await startTraining?.(modelVersionId);
+        // training();
       }
 
       next(updatedFormData);
@@ -348,9 +359,28 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
       showError(`Save failed: ${extractErrorMessage(error)}`);
     }
   }
+
+  // const training = async () => {
+  //   try {
+  //     displayProcessing(`Detection model ${formData.modelName} training...`);
+
+  //     const result = await startTraining?.(modelVersionId);
+  //     // await new Promise((resolve) => setTimeout(resolve, 2000));
+      
+  //     if (result) {
+  //       console.log(`Model training completed.`);
+  //     } else {
+  //       console.log(`Model training failed.`);
+  //     }
+  //   } catch (error) {
+  //     console.error('Model training failed:', error);
+  //   }
+  // };
   
   const stageWidth = 760;
   const stageHeight = 500;
+
+  // console.log("isTraining", isTraining)
 
   return (
     <div className="w-full">
@@ -479,7 +509,7 @@ export default function DetectionModelStep3Page({ next, prev, modelVersionId, fo
             Previous
           </button>
           
-          {isEditMode ? (
+          {(isEditMode && formData.statusId === ModelStatus.Processing) ? (
             <button
               className={`px-4 py-2 rounded gap-2 w-32 ${isTraining ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "btn-primary-dark text-white"}`}
               disabled={isTraining}

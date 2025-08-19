@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Check } from "lucide-react";
 import clsx from "clsx";
-import { usePermission } from "@/app/contexts/permission-context";
-import { useTrainingSocketStore } from "@/app/stores/useTrainingSocketStore";
+// import { usePermission } from "@/app/contexts/permission-context";
+// import { useTrainingSocketStore } from "@/app/stores/useTrainingSocketStore";
 import { UseTrainingStatusWebSocket } from '@/app/stores/useTrainingStatusSocketStore'; 
 import { usePopupTraining } from "@/app/contexts/popup-training-context";
 import { getModelVersion } from "@/app/libs/services/detection-model";
@@ -10,8 +10,8 @@ import DetectionModelStep1 from './detection-model-step1';
 import DetectionModelStep2 from './detection-model-step2';
 import DetectionModelStep3 from './detection-model-step3';
 import DetectionModelStep4 from './detection-model-step4';
-
 import type { FormData } from "@/app/types/detection-model";
+import { ModelStatus } from "@/app/constants/status"
 
 const stepOptions = [
   "Select function and feature",
@@ -22,6 +22,7 @@ const stepOptions = [
 
 const statusMap: Record<string, { label: string; className: string }> = {
   Processing: { label: "Processing", className: "bg-yellow-100 text-yellow-800" },
+  Training: { label: "Training", className: "bg-red-100 text-red-800" },
   Ready: { label: "Ready", className: "bg-blue-100 text-blue-800" },
   Using: { label: "Using", className: "bg-green-100 text-green-800" },
 };
@@ -32,13 +33,21 @@ type DetectionModelStepsProps = {
 };
 
 export default function DetectionModelSteps({ modelVersionId, isEditMode }: DetectionModelStepsProps) {
-  const { hasPermission } = usePermission();
-  const { connectTraining, sendTraining, cancelTraining } = useTrainingSocketStore();
-  const { connect, isTraining } = UseTrainingStatusWebSocket();
+  // const { hasPermission } = usePermission();
+  // const { connectTraining, disconnectTraining, cancelTraining } = useTrainingSocketStore();
+  const { connectStatus, disconnectStatus, isTraining } = UseTrainingStatusWebSocket();
   const { displaySuccess, displayError } = usePopupTraining();
   const [formData, setFormData] = useState<FormData>({} as FormData);
   const [step, setStep] = useState(1);
   const [maxStep, setMaxStep] = useState(4);
+  const [localStatusId, setLocalStatusId] = useState<string>();
+
+  useEffect(() => {
+    return () => {
+      console.log('[TrainingStatus] disconnecting...');
+      disconnectStatus();
+    };
+  }, [disconnectStatus]);
 
   useEffect(() => {
     setFormData(prev => ({ ...prev, modelVersionId }));
@@ -54,9 +63,6 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
         setMaxStep(allowedMaxStep);
 
         setStep(Math.min(currentStep, allowedMaxStep));
-        // setStep(prevStep => {
-        //   return Math.min(prevStep, allowedMaxStep);
-        // });
 
         setFormData(prev => ({
           ...prev,
@@ -65,7 +71,7 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
           modelVersionId,
           modelId: modelVersion?.modelId,
           modelName: modelVersion?.modelName,
-          statusId: modelVersion?.statusId,
+          statusId: modelVersion?.statusId ?? prev.statusId,
         }));
       } catch (error) {
         console.error("Failed to load model:", error);
@@ -76,7 +82,7 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
   }, [modelVersionId, isEditMode]);
 
   useEffect(() => {
-    checkTrainingStatus(modelVersionId);
+    trainingStatus(modelVersionId);
   }, [modelVersionId]);
 
   const next = useCallback((data: any) => {
@@ -85,9 +91,7 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
   }, [maxStep]);
 
   const prev = useCallback(() => {
-    // setStep(prev => Math.max(prev - 1, 1));
     setStep(prev => {
-       console.log("prev", Math.max(prev - 1, 1))
       return Math.max(prev - 1, 1);
     });
   }, []);
@@ -96,14 +100,42 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
     setStep(nextStep);
   }, []);
 
-  const checkTrainingStatus = useCallback(async (modelVersionId: number): Promise<boolean> => {
+  const handleStartTraining = useCallback(async (modelVersionId: number): Promise<boolean> => {
+    try {
+      const newStatus = ModelStatus.Training;
+      setFormData(prev => ({ ...prev, statusId: newStatus }));
+      setLocalStatusId(newStatus);
+
+      // await new Promise<void>((resolve) => {
+      //   connectTraining(modelVersionId, (status) => {
+      //     if (status === 'completed all') {
+      //       displaySuccess(`Detection model ${formData.modelName} training completed.`);
+      //       disconnectTraining();
+      //     } else if (status === 'error') {
+      //       displayError(`Detection model ${formData.modelName} training failed.`);
+      //     }
+      //   });
+      // });
+      return true;
+    } catch (error) {
+      console.error('Training operation failed:', error);
+      displayError('Model training failed.');
+      return false;
+    }
+  }, [formData, connectStatus, displaySuccess, displayError]);
+
+  const trainingStatus = useCallback(async (modelVersionId: number): Promise<boolean> => {
     try {
       await new Promise<void>((resolve) => {
-        connect(modelVersionId, (status) => {
-          if (status === 'success') {
-            // displaySuccess(`Detection model ${formData.modelName} training completed.`);
-          } else if (status === 'error') {
-            // displayError(`Detection model ${formData.modelName} training failed.`);
+        connectStatus(modelVersionId, (status) => {
+          if (status === ModelStatus.Ready) {
+            const newStatus = ModelStatus.Ready;
+            setFormData(prev => ({ ...prev, statusId: newStatus }));
+            setLocalStatusId(newStatus);
+            displaySuccess(`Detection model ${formData.modelName} training completed.`);
+            disconnectStatus();
+          } else if (status === 'Error') {
+            displayError(`Detection model ${formData.modelName} training failed.`);
           }
         });
 
@@ -130,43 +162,7 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
       displayError('Model training failed.');
       return false;
     }
-  }, [formData, connectTraining, displaySuccess, displayError]);
-
-  const handleStartTraining = useCallback(async (modelVersionId: number): Promise<boolean> => {
-    try {
-      await new Promise<void>((resolve) => {
-        connectTraining(modelVersionId, (status) => {
-          if (status === 'completed all') {
-            displaySuccess(`Detection model ${formData.modelName} training completed.`);
-          } else if (status === 'error') {
-            displayError(`Detection model ${formData.modelName} training failed.`);
-          }
-        });
-
-        // const checkSocketOpen = () => {
-        //   const socket = useTrainingSocketStore.getState().socket;
-        //   if (socket && socket.readyState === WebSocket.OPEN) {
-        //     resolve();
-        //   } else {
-        //     setTimeout(checkSocketOpen, 100);
-        //   }
-        // };
-        // checkSocketOpen();
-      });
-
-      // const success = await Training({ action: 'start-training', data: formData });
-      // if (!success) {
-      //   displayError('Model training failed.');
-      //   return false;
-      // }
-
-      return true;
-    } catch (error) {
-      console.error('Training operation failed:', error);
-      displayError('Model training failed.');
-      return false;
-    }
-  }, [formData, connect, sendTraining, displaySuccess, displayError]);
+  }, [formData, displaySuccess, displayError]);
 
   const renderStatusBadge = (statusId?: string) => {
     const status = statusMap[statusId ?? ""] || { label: "", className: "bg-gray-100 text-gray-800" };
@@ -220,7 +216,8 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
 
   const StepComponent = stepComponents[step - 1];
 
-  console.log("step", step)
+  // console.log("step", step)
+  // console.log("statusId", formData.statusId)
 
   return (
     <div>
@@ -233,7 +230,7 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
             <span className="text-2xl font-light">{formData.currentVersion}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-lg font-bold">Status:</span>{renderStatusBadge(formData.statusId)}
+            <span className="text-lg font-bold">Status:</span>{renderStatusBadge(localStatusId ?? formData.statusId)}
             {/* <span className="font-light text-xs">
               current Step: {formData.currentStep}
             </span> */}
@@ -253,8 +250,8 @@ export default function DetectionModelSteps({ modelVersionId, isEditMode }: Dete
             isEditMode={isEditMode}
             next={next}
             prev={prev}
-            startTraining={step === 4 ? handleStartTraining : undefined}
-            cancelTraining={cancelTraining}
+            startTraining={handleStartTraining}
+            // cancelTraining={cancelTraining}
             isTraining={isTraining}
           />
         )}

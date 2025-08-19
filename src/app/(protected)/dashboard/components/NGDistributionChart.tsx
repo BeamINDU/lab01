@@ -79,6 +79,7 @@ const NGDistributionChart = React.memo<NGDistributionChartProps>(({ data, loadin
       borderWidth: 1,
       borderRadius: 0,
       borderSkipped: false,
+      barThickness: 100, 
     }));
 
     return { labels: timeLabels, datasets };

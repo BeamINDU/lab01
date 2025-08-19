@@ -107,9 +107,10 @@ export default function DetectionModelColumns({
         const value = typeof rawValue === "string" ? rawValue : String(rawValue);
 
         const statusMap: Record<string, { label: string; className: string }> = {
-          Using: { label: "Using", className: "bg-green-100 text-green-800" },
           Processing: { label: "Processing", className: "bg-yellow-100 text-yellow-800" },
+          Training: { label: "Training", className: "bg-red-100 text-red-800" },
           Ready: { label: "Ready", className: "bg-blue-100 text-blue-800" },
+          Using: { label: "Using", className: "bg-green-100 text-green-800" },
         };
 
         const status = statusMap[value] || { label: "Unknown", className: "bg-gray-100 text-gray-800" };
